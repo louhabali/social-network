@@ -1,0 +1,111 @@
+.containereg {
+     width: 500px;
+     
+     margin: auto;
+     padding: 30px;
+     border-radius: 8px;
+     background-color:transparent;
+     backdrop-filter: blur(10px);
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.147);
+     
+   }
+   
+   .formreg {
+     display: flex;
+     gap: 10px;
+     flex-wrap: wrap;
+     justify-content: center;
+     align-items: center;
+   }
+   
+   .inputs {
+    width: 216px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+   }
+   .inputsd {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+   }
+.inputsavatar{
+    width: 100%;
+     display: flex;
+     gap: 10px;
+     flex-direction: column;
+     align-items: center;
+}
+.inp {
+    width: 100%;
+    padding: 10px;
+
+    border: 1px solid #ccc;
+    border-radius: 5px;
+   }
+   .inputsbtn{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+   }
+     .inputs:focus {
+         outline: none;
+         border-color: #c4c1c1;
+     }
+   
+   .submitButtonreg {
+     padding: 12px;
+     background-color: #000000;
+     color: white;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     font-size: 16px;
+   }
+   
+   .linkreg {
+     text-align: center;
+     margin-top: 15px;
+     color: rgb(0, 0, 0);
+   }
+   .loginregisterlink{
+     color: #000359;
+     font-weight: bold;
+   }
+   @media screen and (max-width:510px) {
+    .containereg {
+        width: 400px;
+        padding: 15px;
+        
+      }
+    .inputs {
+        width: 150px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+       }
+       .inputsd {
+        display: flex;
+        justify-content: space-evenly;
+        width: 100%;
+       }
+   }
+   @media screen and (max-width:410px) {
+    .containereg {
+        width: 300px;
+       padding: 10px;
+        
+      }
+    .inputs {
+        width: 100px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+       }
+       .inputsd {
+        display: flex;
+        justify-content: space-evenly;
+        width: 100%;
+       }
+   }
