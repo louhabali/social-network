@@ -1,0 +1,126 @@
+package handlers
+
+import (
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"time"
+)
+
+type Follower struct {
+	ID        int
+	Firstname string
+	Lastname  string
+	Nickname  string
+}
+
+func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
+
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		fmt.Println("invalid userId")
+		return
+	}
+
+	posts, err := getPostsByUserID(h.db, userID)
+	if err != nil {
+		fmt.Println("Error fetching posts:", err)
+	}
+
+	followers, err := getFollowers(h.db, userID)
+	if err != nil {
+		fmt.Println("Error fetching followers:", err)
+	}
+
+	following, err := getFollowing(h.db, userID)
+	if err != nil {
+		fmt.Println("Error fetching following:", err)
+	}
+
+	userInfo, err := getUserInfo(h.db, userID)
+	if err != nil {
+		fmt.Println("Error fetching profile privacy:", err)
+	}
+
+	response := struct {
+		User      User       `json:"user"`
+		Posts     []Post     `json:"posts"`
+		Followers []Follower `json:"followers"`
+		Following []Follower `json:"following"`
+	}{
+		User:      userInfo,
+		Posts:     posts,
+		Followers: followers,
+		Following: following,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+
+}
+
+func getPostsByUserID(db *sql.DB, userID int) ([]Post, error) {
+	rows, _ := db.Query(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,users.first_name, users.last_name 
+        FROM posts
+        JOIN users ON posts.user_id = users.id  WHERE posts.user_id = ? ORDER BY posts.id DESC LIMIT ? OFFSET ?`, userID, 4, 0)
+
+	var posts []Post
+	for rows.Next() {
+		var post Post
+		var timeCreated time.Time
+		var firstName, lastName string
+		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &firstName, &lastName)
+		post.Username = firstName + " " + lastName
+		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
+
+		db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
+		post.Likes = getPostLikeDisLike(post.Pid, 1, db)
+		post.Dislikes = getPostLikeDisLike(post.Pid, -1, db)
+		post.UserInteraction = getPostInteractions(post.Pid, userID, db)
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
+func getUserInfo(db *sql.DB, userID int) (User, error) {
+	var user User
+	err := db.QueryRow("select email,nickname,first_name,last_name,date_of_birth,avatar,about_me,is_public from users where id = ?", userID).
+		Scan(&user.ID, &user.Email, &user.Nickname, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.Avatar, &user.AboutMe, &user.IsPublic)
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
+func getFollowers(db *sql.DB, userID int) ([]Follower, error) {
+	rows, _ := db.Query(`
+		SELECT users.id, users.first_name, users.last_name, users.username FROM users
+		JOIN follow_requests ON users.id = follow_requests.follower_id
+		WHERE follow_requests.following_id = ? AND follow_requests.status = 'approved';
+	`, userID)
+
+	var followers []Follower
+	for rows.Next() {
+		var f Follower
+		rows.Scan(&f.ID, &f.Firstname, &f.Lastname, &f.Nickname)
+		followers = append(followers, f)
+	}
+	return followers, nil
+}
+
+func getFollowing(db *sql.DB, userID int) ([]Follower, error) {
+	rows, _ := db.Query(`
+		SELECT users.id, users.first_name, users.last_name, users.username FROM users
+		JOIN follow_requests ON users.id = follow_requests.following_id
+		WHERE follow_requests.follower_id = ? AND follow_requests.status = 'approved';
+	`, userID)
+
+	var following []Follower
+	for rows.Next() {
+		var f Follower
+		rows.Scan(&f.ID, &f.Firstname, &f.Lastname, &f.Nickname)
+		following = append(following, f)
+	}
+	return following, nil
+}
