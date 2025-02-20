@@ -1,13 +1,15 @@
+body{
+  align-items: center;
+  justify-content: center;
+}
 .containereg {
      width: 500px;
-     border: #000000 1px solid;
+     border: #1a1919 1px solid;
      margin: auto;
      padding: 30px;
      border-radius: 8px;
      background-color:transparent;
      backdrop-filter: blur(10px);
-     box-shadow: 0 0 10px rgba(0, 0, 0, 0.147);
-     
    }
    
    .formreg {
@@ -21,7 +23,9 @@
    .inputs {
     width: 216px;
     padding: 10px;
-    border: 1px solid #ccc;
+    background-color: #000000;
+    color: white;
+    border: 1px solid #292828;
     border-radius: 5px;
    }
    .inputsd {
@@ -37,10 +41,11 @@
      align-items: center;
 }
 .inp {
-    width: 100%;
+    width: 96%;
     padding: 10px;
-
-    border: 1px solid #ccc;
+    background-color: #000000;
+    color: #ffffff;
+    border: 1px solid #2c2b2b;
     border-radius: 5px;
    }
    .inputsbtn{
@@ -55,8 +60,10 @@
      }
    
    .submitButtonreg {
+    width: 100%;
+
      padding: 12px;
-     background-color: #000000;
+     background-color: #0a0a0a;
      color: white;
      border: none;
      border-radius: 5px;
@@ -67,10 +74,10 @@
    .linkreg {
      text-align: center;
      margin-top: 15px;
-     color: rgb(0, 0, 0);
+     color: rgb(255, 255, 255);
    }
    .loginregisterlink{
-     color: #000359;
+     color: #222222;
      font-weight: bold;
    }
    @media screen and (max-width:510px) {
@@ -81,15 +88,27 @@
       }
     .inputs {
         width: 150px;
+       }
+       .inp{
+        width: 88%;
         padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+      
        }
        .inputsd {
         display: flex;
         justify-content: space-evenly;
         width: 100%;
        }
+      .inputsbtn{
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+      }
+      .inputsbtn button{
+        width: 90%;
+        justify-content: center;
+        align-items: center;
+      }
    }
    @media screen and (max-width:410px) {
     .containereg {
@@ -99,10 +118,11 @@
       }
     .inputs {
         width: 100px;
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
        }
+.inp{
+        width: 84%;
+       
+}
        .inputsd {
         display: flex;
         justify-content: space-evenly;
