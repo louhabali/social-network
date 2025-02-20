@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import styles from './page.module.css';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faFileArrowUp,faShare} from '@fortawesome/free-solid-svg-icons';
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
     const [newPost, setNewPost] = useState('');
@@ -21,7 +22,9 @@ const HomePage = () => {
             setSelectedImage(URL.createObjectURL(file));
         }
     };
-
+    const triggerFileInput = () => {
+        document.getElementById('fileInput').click()
+      }
     const handlePostSubmit = async () => {
         if (!newPost.trim() && !selectedImage) return;
 
@@ -50,20 +53,24 @@ const HomePage = () => {
             <main className={styles.main}>
                 <div className={styles.feed}>
                     <div className={styles.createPost}>
-                        <Image src="http://localhost:8080/api/avatar/1" alt="User" width={32} height={32} />
+                        <Image src="http://localhost:8080/api/avatar/1" alt="" width={32} height={32} />
                         <input
                             type="text"
                             placeholder="What's on your mind?"
                             value={newPost}
                             onChange={(e) => setNewPost(e.target.value)}
                         />
+                         <div style ={{cursor:'pointer'}} onClick={triggerFileInput}><FontAwesomeIcon icon={faFileArrowUp} /></div>
                         <input
+                            id="fileInput"
+                            className={styles.btnsub}
                             type="file"
                             accept="image/*"
                             onChange={handleImageChange}
+                            style={{ display: 'none' }} 
                         />
                         {selectedImage && <Image src={selectedImage} alt="Selected" width={100} height={100} />}
-                        <button onClick={handlePostSubmit}>Post</button>
+                        <div className={styles.btnsub} onClick={handlePostSubmit}><FontAwesomeIcon icon={faShare} /></div>
                     </div>
                     {posts.map((post) => (
                         <div key={post.id} className={styles.post}>
