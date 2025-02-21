@@ -2,7 +2,7 @@
 import "./globals.css";
 import { usePathname } from "next/navigation";
 import NavigationMenu from "@/components/NavigationMenu"; 
-
+ 
 const metadata = {
   title: "My App",
   description: "A Next.js app",

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import '../app/styles/menu.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse,faUserPlus,faEnvelope,faBell,faUser,faSquarePlus,faFolderPlus,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
+import { faHouse,faUserPlus,faEnvelope,faBell,faUser,faUserGroup,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
 export default function NavigationMenu(){
     return (
         <nav className="navbar">
@@ -9,11 +9,9 @@ export default function NavigationMenu(){
                 <li>
                     <Link className="menulinks" href="/"><FontAwesomeIcon icon={faHouse} /><span>Home</span></Link>
                 </li>
+             
                 <li>
-                    <Link className="menulinks" href="/postcreation"><FontAwesomeIcon icon={faSquarePlus} /><span>create post</span></Link>
-                </li>
-                <li>
-                    <Link className="menulinks" href="/groupcreation"><FontAwesomeIcon icon={faFolderPlus} /><span>create group</span></Link>
+                    <Link className="menulinks" href="/groupcreation"><FontAwesomeIcon icon={faUserGroup} /><span>groups</span></Link>
                 </li>
                 <li>
                     <Link className="menulinks" href="/messages"><FontAwesomeIcon icon={faEnvelope} /><span>messages</span></Link>

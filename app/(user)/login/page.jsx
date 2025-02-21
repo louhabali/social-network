@@ -21,6 +21,7 @@ export default function loginPage() {
     const response = await fetch("http://localhost:8080/api/login", {
       method: "POST",
       body: JSON.stringify(formData),
+      credentials: "include",
     })
 
     const result = await response.text()

@@ -93,7 +93,7 @@
   font-weight: bold;
 }
 
-.postHeader p {
+.postHeader span {
   font-size: 12px;
   color: #555;
 }
@@ -118,12 +118,16 @@
 .postActions button {
   background-color: transparent;
   border: none;
-  color: #1877f2;
+  color: #fff;
   cursor: pointer;
+  border: 1px solid #fff;
+  padding: 6px;
+  border-radius: 3px;
 }
 
 .postActions button:hover {
-  text-decoration: underline;
+  background-color: #fff;
+  color: #000000;
 }
 
 @media screen and (max-width:359px) {
