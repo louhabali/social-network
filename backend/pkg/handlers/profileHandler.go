@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -86,9 +89,12 @@ func getPostsByUserID(db *sql.DB, userID int) ([]Post, error) {
 func getUserInfo(db *sql.DB, userID int) (User, error) {
 	var user User
 	err := db.QueryRow("select email,nickname,first_name,last_name,date_of_birth,avatar,about_me,is_public from users where id = ?", userID).
-		Scan(&user.ID, &user.Email, &user.Nickname, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.Avatar, &user.AboutMe, &user.IsPublic)
+		Scan(&user.Email, &user.Nickname, &user.Firstname, &user.Lastname, &user.DateOfBirth, &user.Avatar, &user.AboutMe, &user.IsPublic)
 	if err != nil {
 		return User{}, err
+	}
+	if user.Avatar != nil {
+		*user.Avatar, _ = EncodeImg(*user.Avatar)
 	}
 	return user, nil
 }
@@ -123,4 +129,24 @@ func getFollowing(db *sql.DB, userID int) ([]Follower, error) {
 		following = append(following, f)
 	}
 	return following, nil
+}
+
+func EncodeImg(imagePath string) (string, error) {
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open image: %w", err)
+	}
+	defer file.Close()
+
+	imageBytes, err := io.ReadAll(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to read image file: %w", err)
+	}
+
+	if len(imageBytes) == 0 {
+		return "", fmt.Errorf("image file is empty")
+	}
+
+	encodedImage := base64.StdEncoding.EncodeToString(imageBytes)
+	return encodedImage, nil
 }

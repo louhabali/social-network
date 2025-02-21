@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"path"
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -21,7 +21,7 @@ type User struct {
 	Email       string
 	Password    string
 	DateOfBirth string
-	AboutMe     *string
+	AboutMe     string
 	Avatar      *string
 	IsPublic    bool
 }
@@ -52,6 +52,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			Email:       r.FormValue("email"),
 			Password:    r.FormValue("password"),
 			DateOfBirth: r.FormValue("dateOfBirth"),
+			AboutMe:     r.FormValue("aboutMe"),
 		}
 
 		// check if the informations are not empty
@@ -63,9 +64,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		if nickname := r.FormValue("nickname"); nickname != "" {
 			reg.Nickname = &nickname
-		}
-		if aboutMe := r.FormValue("aboutMe"); aboutMe != "" {
-			reg.AboutMe = &aboutMe
 		}
 
 		// emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
@@ -94,9 +92,9 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			defer file.Close()
 			rand, _ := GenereteTocken()
-			extensions := strings.Split(header.Filename, ".")[1]
-			name := rand + "." + extensions
-			avatarPath := "uploads/" + name
+			extensions := path.Ext(header.Filename)
+			name := rand + extensions
+			avatarPath := "uploads/avatars/" + name
 			out, err := os.Create(avatarPath)
 			if err != nil {
 				http.Error(w, "Failed to save avatar", http.StatusInternalServerError)

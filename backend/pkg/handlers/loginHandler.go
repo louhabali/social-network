@@ -68,8 +68,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Name:     "Token",
 			Value:    uuid.String(),
 			HttpOnly: true,
-			Secure:   true,
-			Expires:  time.Now().Add(1 * time.Hour),
+			Expires:  time.Now().Add(365 * 24 * time.Hour),
 		})
 
 		w.Write([]byte("connected successfully"))

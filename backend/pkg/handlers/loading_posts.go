@@ -13,8 +13,8 @@ type Post struct {
 	Pid             int
 	Uid             int
 	Username        string
-	Avatar          string
-	Image           string
+	Avatar          *string
+	Image           *string
 	Content         string
 	CreatedAt       string
 	Likes           int
@@ -26,8 +26,9 @@ type Post struct {
 func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 
 	var data struct {
-		Offset   int    `json:"offset"`
+		Offset int `json:"offset"`
 	}
+
 	json.NewDecoder(r.Body).Decode(&data)
 
 	userID, ok := r.Context().Value("userID").(int)
@@ -35,46 +36,37 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("invalid userId")
 		return
 	}
-	//The user must be able to specify the privacy of the post:
 
-	//public (all users in the social network will be able to see the post)
-	//almost private (only followers of the creator of the post will be able to see the post)
-	//private (only the followers chosen by the creator of the post will be able to see it)
-	//The user must be able to specify the type of post:
 	query := `
-        SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.privacy,users.fistname, users.lastname 
+        SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name , users.avatar
         FROM posts
-        JOIN users ON posts.user_id = users.id`
+        JOIN users ON posts.user_id = users.id ORDER BY posts.id DESC
+        `
 
-	rows, _ := h.db.Query(query)
+	//WHERE posts.privacy = 'public'
+	//OR (posts.privacy = 'almost_private' AND posts.user_id IN (SELECT follower_id FROM followers WHERE user_id = ?))
+	//OR (posts.privacy = 'private' AND posts.id IN (SELECT post_id FROM post_privacy WHERE user_id = ?))
+	rows, err := h.db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	var posts []Post
 	for rows.Next() {
 		var post Post
 		var timeCreated time.Time
-		var fistname, lastname ,privacy string
-		rows.Scan(&post.Pid, &post.Uid,  &timeCreated, &post.Content,&privacy, &fistname, &lastname)
+		var fistname, lastname string
+		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image,&fistname, &lastname, &post.Avatar)
 		post.Username = strings.Join([]string{fistname, lastname}, " ")
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
-
+		if post.Avatar != nil {
+			*post.Avatar,_  = EncodeImg(*post.Avatar)
+		}
 		h.db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
 		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.Dislikes = getPostLikeDisLike(post.Pid, -1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
-		if privacy == "public" {
-			posts = append(posts, post)
-		} else if privacy == "only followers" {
-			var isfollower int
-			err := h.db.QueryRow("select COUNT(*) from follow_requests where follower_id = ? and following_id = ? and status='accepted' ",userID, post.Pid).Scan(&isfollower)
-			if err != nil {
-				fmt.Println("not a follower")
-				continue
-			} else {
-				posts = append(posts, post)
-			}
-		} else {
-			// hadi ta nchoufo smo ndiro wash checkbox wla mn3rf
-		}
-
+		posts = append(posts, post)
 
 	}
 
@@ -94,10 +86,13 @@ func GetPost(db *sql.DB, postID int) Post {
 	var p Post
 	var timeCreated time.Time
 	var fistname, lastname string
-	db.QueryRow(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,users.firstname, users.lastname 
+	db.QueryRow(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar
         FROM posts
-        JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &fistname, &lastname)
+        JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image,&fistname, &lastname, &p.Avatar)
 	p.Username = strings.Join([]string{fistname, lastname}, " ")
+	if p.Avatar != nil {
+		*p.Avatar,_  = EncodeImg(*p.Avatar)
+	}
 	p.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 	return p
 }
