@@ -28,6 +28,9 @@
     .navbar{
         width: 100px;
      }
+     .navbar ul li h1 {
+        text-align: center;
+    }
      .navbar ul{
     
         padding: 0;
@@ -47,4 +50,8 @@
     .navbar{
         margin-right: 0px;
      }
+     .navbar ul li h1 {
+        text-align: center;
+    }
+
 }

@@ -97,14 +97,16 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			avatarPath := "uploads/avatars/" + name
 			out, err := os.Create(avatarPath)
 			if err != nil {
+
 				http.Error(w, "Failed to save avatar", http.StatusInternalServerError)
+				fmt.Println("66",err)
 				return
 			}
 			defer out.Close()
 			io.Copy(out, file)
 			reg.Avatar = &avatarPath
 		}
-
+		fmt.Println(reg.Avatar)
 		// insert them to users table these informations
 		var id int
 		err = h.db.QueryRow(`
@@ -128,7 +130,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("failed to insert the user", err)
 			return
 		}
-
+		fmt.Println("000")
 		w.Write([]byte("success"))
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)

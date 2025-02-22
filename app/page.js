@@ -65,10 +65,12 @@ const HomePage = () => {
         });
         
         const newPostData = await response.json();
-        setPosts(prevPosts => [newPostData, ...prevPosts]);
+        
+        setPosts(prevPosts => prevPosts ? [newPostData, ...prevPosts]:[newPostData]);
         setNewPost('');
         setSelectedImage(null);
         setSendImage(null);
+        document.getElementById('fileInput').value = ""
 
     };
 
@@ -78,7 +80,6 @@ const HomePage = () => {
     return (
         <div className={styles.container}>
             <nav className={styles.navbar}>
-                <h1 style={{ color: "rgba(155, 155, 155, 0.68)" }}>01<span style={{ color: "rgb(31, 31, 31)" }}>Connectify</span></h1>
             </nav>
             <main className={styles.main}>
                 <div className={styles.feed}>

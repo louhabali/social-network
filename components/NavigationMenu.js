@@ -7,6 +7,9 @@ export default function NavigationMenu(){
         <nav className="navbar">
             <ul>
                 <li>
+                    <h1 style={{ color: "rgba(155, 155, 155, 0.68)" }}>01<span style={{ color: "rgb(255, 255, 255)" }}>Connectify</span></h1>
+                </li>
+                <li>
                     <Link className="menulinks" href="/"><FontAwesomeIcon icon={faHouse} /><span>Home</span></Link>
                 </li>
              

@@ -1,8 +1,8 @@
 "use client"
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import NavigationMenu from "@/components/NavigationMenu"; 
- 
+import NavigationMenu from "@/components/NavigationMenu";
+import Header from "@/components/header";
 const metadata = {
   title: "My App",
   description: "A Next.js app",
@@ -15,8 +15,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {!hideMenu && <NavigationMenu />} 
-        <main>{children}</main> {/* Render page content */}
+        {!hideMenu && <NavigationMenu />}
+        {!hideMenu &&  <Header />}
+        <main>{children}</main>
       </body>
     </html>
   );

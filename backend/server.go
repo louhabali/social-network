@@ -18,10 +18,9 @@ func main() {
 	http.HandleFunc("/api/posts", handleCORS(handler.Midd(handler.ShowPosts)))
 	http.HandleFunc("/api/posting", handleCORS(handler.Midd(handler.PostCreationHandler)))
 	http.HandleFunc("/api/profile", handleCORS(handler.Midd(handler.GetProfile)))
+	http.HandleFunc("/api/searchData", handleCORS(handler.HandleSearch))
 	http.HandleFunc("/api/userdata", handleCORS(handler.Midd(handler.UserData)))
 	http.HandleFunc("/api/images/", handleCORS(handler.ServeImage))
-
-
 	
 	http.ListenAndServe(":8080", nil)
 }

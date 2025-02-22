@@ -49,7 +49,7 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 			io.Copy(out, file)
 			p.Image = &imagePath
 		}
-
+		
 		postID := 0
 
 		err = h.db.QueryRow(`INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?) RETURNING id`, userID, html.EscapeString(p.Content), p.Image).Scan(&postID)

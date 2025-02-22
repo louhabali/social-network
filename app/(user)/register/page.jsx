@@ -38,7 +38,11 @@ export default function RegisterPage() {
     const response = await fetch("http://localhost:8080/api/register", {
       method: "POST",
       body: formDataToSend,
-    })
+    }).catch((error) => {
+      console.error('Error', error);
+    });
+    console.log(response);
+    
     const result = await response.text()
 
     if (response.ok) {
