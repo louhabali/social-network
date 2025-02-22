@@ -16,7 +16,8 @@
   .header input[type="text"] {
     width: 40%;
     padding: 8px 12px;
-    
+    background-color: #000000;
+    color: #908f8f;
     font-size: 16px;
     border: 1px solid #424242;
     border-radius: 4px;

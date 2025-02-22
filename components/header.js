@@ -1,16 +1,28 @@
 "use client";
 import Link from "next/link";
 import '../app/styles/header.css';
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Header() {
     const [searchData, setSearchData] = useState('');
-
+    const router = useRouter();
     if (document.getElementById("s")){
         document.getElementById("s").innerHTML=""
     }
     function handleSearch(e) {
         setSearchData(e.target.value);
+    }
+
+    function handleKeyDown(e) {
+        if (e.key === "Enter") {
+            // reset search input
+             setSearchData("");
+             document.getElementById("s").innerHTML=""
+            if (searchData.trim()) {
+                router.push(`/search?q=${searchData}`);
+            }
+        }
     }
     useEffect(() => {
             
@@ -28,9 +40,6 @@ export default function Header() {
                 .then(data => {
                     if (data){
                         Object.entries(data).forEach(x=>{
-                   
-                            //console.log(document.getElementById("s").innerHTML);
-                    
                                 if (searchData){
                                     document.getElementById("s").innerHTML+= `
                                     <p>${x[1].Fname+" "+x[1].Lname}</p>
@@ -57,6 +66,7 @@ export default function Header() {
                 placeholder="search for users..."
                 value={searchData}
                 onChange={handleSearch}
+                onKeyDown={handleKeyDown} 
             />
             <div className="profile">
                 <Link href="/api/profile">profile</Link>

@@ -29,7 +29,7 @@ const HomePage = () => {
             .then(data => setPosts(data))
             .catch(error => console.error('Error fetching posts:', error));
     }, []);
-
+    console.log("psts: ",posts);
     useEffect(() => {
         fetch('http://localhost:8080/api/userdata', {
             credentials: "include",
@@ -74,7 +74,7 @@ const HomePage = () => {
 
     };
 
-    console.log(posts);
+  
     
 
     return (
