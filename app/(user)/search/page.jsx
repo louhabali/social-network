@@ -1,6 +1,8 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function SearchResults() {
     const searchParams = useSearchParams();
@@ -28,14 +30,22 @@ export default function SearchResults() {
             } )
             .catch((err) => console.error("Error:", err));
     }, [query]);
-
+    console.log("results", results);
     return (
         <div style={{ margin: "80px" }}>
             <h1>results for "{query}"</h1>
             {results.length > 0 ? (
                 <ul>
                     {results.map((user, index) => (
-                        <li key={index}>{user.Fname} {user.Lname}</li>
+                        <li style={{ listStyle:"none",marginBottom:"10px"}} key={index}>
+                            <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/user/${user.Uid}`}>
+                             {user.Avatar ? (
+                                <Image src={`data:image/png;base64,${user.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
+                               
+                                ) : (
+                                <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
+                                )} {user.Fname} {user.Lname}</Link></li> 
+                            
                     ))}
                 </ul>
             ) : (
