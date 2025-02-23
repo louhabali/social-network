@@ -2,19 +2,19 @@
 .header {
     position: absolute;
     top: 10px;
-    left: 300px; 
+  
     width: 75%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background-color: #000000;
+    padding: 7px 15px;
+
     border-radius: 8px; 
     z-index: 10;
   }
   
   .header input[type="text"] {
-    width: 40%;
+    width: 185px;
     padding: 8px 12px;
     background-color: #000000;
     color: #908f8f;

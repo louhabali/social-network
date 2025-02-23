@@ -71,7 +71,7 @@ export default function Header() {
             <div className="profile">
                 <Link href="/api/profile">profile</Link>
             </div>
-            <div id="s" style={{marginTop:"45px",opacity:"50%",top:"0", background:"rgb(36, 35, 35)", position:"absolute" ,color:"white"}}></div>
+            <div id="s" style={{marginTop:"45px",top:"0" , width: "206px", background:"rgb(0, 0, 0)", paddingLeft:"5px", position:"absolute" ,color:"white"}}></div>
         </header>
     );
 }

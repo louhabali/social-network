@@ -7,7 +7,10 @@
   
   padding: 20px;
 }
-
+body{
+  align-items: normal;
+  justify-content: normal;
+}
 .navbar {
   padding: 10px 20px;
   color: white;
