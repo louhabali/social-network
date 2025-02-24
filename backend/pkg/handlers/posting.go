@@ -26,7 +26,7 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 			Content: r.FormValue("content"),
 		}
 		file, header, err := r.FormFile("image")
-
+		fmt.Println(file, header)
 		if p.Content == "" && file == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)

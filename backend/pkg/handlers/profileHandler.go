@@ -78,8 +78,8 @@ func getPostsByUserID(db *sql.DB, userID int) ([]Post, error) {
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 
 		db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
-		post.Likes = getPostLikeDisLike(post.Pid, 1, db)
-		post.Dislikes = getPostLikeDisLike(post.Pid, -1, db)
+		post.Likes = getPostLikes(post.Pid, 1, db)
+		
 		post.UserInteraction = getPostInteractions(post.Pid, userID, db)
 		posts = append(posts, post)
 	}

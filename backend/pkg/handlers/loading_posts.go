@@ -63,8 +63,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 			*post.Avatar,_  = EncodeImg(*post.Avatar)
 		}
 		h.db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
-		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
-		post.Dislikes = getPostLikeDisLike(post.Pid, -1, h.db)
+		post.Likes = getPostLikes(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
 		posts = append(posts, post)
 
@@ -98,7 +97,7 @@ func GetPost(db *sql.DB, postID int) Post {
 	return p
 }
 
-func getPostLikeDisLike(post_id, inter int, db *sql.DB) int {
+func getPostLikes(post_id, inter int, db *sql.DB) int {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM PostInteractions WHERE PostID=? AND Interaction=?", post_id, inter).Scan(&count)
 	if err != nil {
