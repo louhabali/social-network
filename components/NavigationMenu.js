@@ -1,8 +1,7 @@
-
 import Link from "next/link";
 import '../app/styles/menu.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse,faEnvelope,faBell,faUser,faUserGroup,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
+import { faHouse,faEnvelope,faBell,faUser,faUserGroup,faRightFromBracket,faUserPlus} from '@fortawesome/free-solid-svg-icons';
 
 export default function NavigationMenu(){
    async function handlelogout() {
@@ -43,6 +42,9 @@ export default function NavigationMenu(){
                 </li>
                 <li>
                     <Link className="menulinks" href="/notifications"><FontAwesomeIcon icon={faBell} /><span>notifications</span></Link>
+                </li>
+                <li>
+                    <Link className="menulinks" href="/suggestions"><FontAwesomeIcon icon={faUserPlus} /><span>suggestions</span></Link>
                 </li>
                 <li>
                     <Link className="menulinks" href="/profile"><FontAwesomeIcon icon={faUser} /><span>profile</span></Link>

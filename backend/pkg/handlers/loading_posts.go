@@ -56,28 +56,34 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		var post Post
 		var timeCreated time.Time
 		var fistname, lastname string
-		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image,&fistname, &lastname, &post.Avatar)
+		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &fistname, &lastname, &post.Avatar)
 		post.Username = strings.Join([]string{fistname, lastname}, " ")
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 		if post.Avatar != nil {
-			*post.Avatar,_  = EncodeImg(*post.Avatar)
+			*post.Avatar, _ = EncodeImg(*post.Avatar)
 		}
 		h.db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
 		post.Likes = getPostLikes(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
+
 		posts = append(posts, post)
 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	json.NewEncoder(w).Encode(posts)
 
 }
 
 func getPostInteractions(pid, uid int, db *sql.DB) int {
 	var ii int
-	db.QueryRow(`select Interaction from PostInteractions where UserID = ? and PostID=?`, uid, pid).Scan(&ii)
+	err := db.QueryRow(`SELECT Interaction FROM postInteractions WHERE UserID = ? AND PostID = ?`, uid, pid).Scan(&ii)
+	if err != nil {
+		
+		return 0
+	}
+
 	return ii
 }
 
@@ -88,10 +94,10 @@ func GetPost(db *sql.DB, postID int) Post {
 	var fistname, lastname string
 	db.QueryRow(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar
         FROM posts
-        JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image,&fistname, &lastname, &p.Avatar)
+        JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image, &fistname, &lastname, &p.Avatar)
 	p.Username = strings.Join([]string{fistname, lastname}, " ")
 	if p.Avatar != nil {
-		*p.Avatar,_  = EncodeImg(*p.Avatar)
+		*p.Avatar, _ = EncodeImg(*p.Avatar)
 	}
 	p.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 	return p
@@ -99,9 +105,11 @@ func GetPost(db *sql.DB, postID int) Post {
 
 func getPostLikes(post_id, inter int, db *sql.DB) int {
 	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM PostInteractions WHERE PostID=? AND Interaction=?", post_id, inter).Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM postInteractions WHERE PostID = ? AND Interaction = ?", post_id, inter).Scan(&count)
 	if err != nil {
+		
 		return 0
 	}
+	
 	return count
 }

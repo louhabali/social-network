@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import styles from './page.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileArrowUp, faShare } from '@fortawesome/free-solid-svg-icons';
+import { faFileArrowUp, faShare,faHeart ,faComment} from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from "next/navigation"
 
 const HomePage = () => {
+   
     const [posts, setPosts] = useState([]);
+
     const [newPost, setNewPost] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
@@ -29,7 +31,7 @@ const HomePage = () => {
             .then(data => setPosts(data))
             .catch(error => console.error('Error fetching posts:', error));
     }, []);
-    console.log("psts: ",posts);
+    
     useEffect(() => {
         fetch('http://localhost:8080/api/userdata', {
             credentials: "include",
@@ -38,8 +40,39 @@ const HomePage = () => {
             .then(data => setUserInfo(data))
             .catch(error => console.error('Error fetching posts:', error));
     }, []);
+    
+    const handleLike = async (e) => {
+        
+        const pd = e.target.closest('section').id
+        const likeIcon = e.target
+        
+        const postIndex = posts.findIndex(post => post.Pid.toString() === pd)
+        const uPosts = [...posts]
 
+        let lk = uPosts[postIndex].UserInteraction === 1 ? 0 : 1
+    
+       
+    
+        const response = await fetch(`http://localhost:8080/api/like`, {
+            method: 'POST',
+            body: JSON.stringify({ pd, lk }),
+            credentials: "include",
+        });
 
+        if (response.ok) {
+        
+            if (uPosts[postIndex].UserInteraction === 1) {
+                likeIcon.style.color = 'white'
+                uPosts[postIndex].Likes -= 1
+                uPosts[postIndex].UserInteraction = 0
+            } else{
+                likeIcon.style.color = 'red'
+                uPosts[postIndex].Likes += 1
+                uPosts[postIndex].UserInteraction = 1
+            }
+            setPosts(uPosts)
+        }
+    }
     const handleImageChange = (event) => {
         const file = event.target.files[0];        
         if (file) {
@@ -74,6 +107,7 @@ const HomePage = () => {
 
     };
 
+
   
     
 
@@ -106,33 +140,40 @@ const HomePage = () => {
                             onChange={handleImageChange}
                             style={{ display: 'none' }}
                         />
-                        {selectedImage && <Image src={selectedImage} alt="Selected" width={100} height={100} />}
+                        
                         <div className={styles.btnsub} onClick={handlePostSubmit}><FontAwesomeIcon icon={faShare} /></div>
+                      
                     </div>
+                    {selectedImage && <Image src={selectedImage}style={{borderRadius:"5px"}} alt="Selected" width={400} height={200} />}
                 </div>
-                {posts && posts.map((post) => (
-                    <div key={post.Pid} className={styles.post}>
+                {typeof posts!=="string" && posts && posts.map((post) => (
+                    <section id={post.Pid} key={post.Pid} className={styles.post}>
                         <div className={styles.postHeader}>
                             {post.Avatar ? (
-                                <Image src={`data:image/png;base64,${post.Avatar}`} alt="" width={32} height={32} />
+                                <Image style={{borderRadius:"50%"}} src={`data:image/png;base64,${post.Avatar}`} alt="" width={32} height={32} />
                             ) : (
-                                <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
+                                <Image style={{borderRadius:"50%"}} src="/image/no-avatar.png" alt="" width={32} height={32} />
 
                             )}
                             <div>
                                 <strong>{post.Username}</strong>
-                                <span> {post.CreatedAt}</span>
                             </div>
+                            <div><span>{post.CreatedAt}</span></div>
                         </div>
                         <div>{post.Content}</div>
                         <p>{post.content}</p>
-                        {post.Image && <Image src={"http://localhost:8080/api/images/"+post.Image} alt="" width={300} height={300} />}
+                        {post.Image && <Image src={"http://localhost:8080/api/images/"+post.Image} alt="" width={400} height={200} />}
                         <div className={styles.postActions}>
-                            <button>Like {post.Likes}</button>
-                            <button>Dislike {post.Dislikes}</button>
-                            <button>Comment {post.NbComment}</button>
+                            <FontAwesomeIcon 
+                                style={{ cursor: "pointer", color: post.UserInteraction === 1 ? 'red' : 'white' }} 
+                                onClick={handleLike} 
+                                icon={faHeart} 
+                                
+                            />{post.Likes}
+                            <FontAwesomeIcon icon={faComment} />
+                            {post.NbComment}
                         </div>
-                    </div>
+                    </section>
                 ))}
             </main>
         </div>

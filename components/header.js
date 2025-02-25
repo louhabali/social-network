@@ -20,7 +20,7 @@ export default function Header() {
              setSearchData("");
              document.getElementById("s").innerHTML=""
             if (searchData.trim()) {
-                router.push(`/search?q=${searchData}`);
+                router.push(`/search?q=${encodeURIComponent(searchData)}`);
             }
         }
     }

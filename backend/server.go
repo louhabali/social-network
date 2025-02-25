@@ -21,6 +21,7 @@ func main() {
 	http.HandleFunc("/api/searchData", handleCORS(handler.HandleSearch))
 	http.HandleFunc("/api/userdata", handleCORS(handler.Midd(handler.UserData)))
 	http.HandleFunc("/api/images/", handleCORS(handler.ServeImage))
+	http.HandleFunc("/api/like", handleCORS(handler.Midd(handler.LikeHandler)))
 	http.HandleFunc("/api/logout", handleCORS(handler.Midd(handler.LogoutHandler)))
 	
 	http.ListenAndServe(":8080", nil)
