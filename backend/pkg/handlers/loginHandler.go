@@ -69,6 +69,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Value:    uuid.String(),
 			HttpOnly: true,
 			Expires:  time.Now().Add(365 * 24 * time.Hour),
+			Path: "/",
 		})
 
 		w.Write([]byte("connected successfully"))

@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowUp, faShare,faHeart ,faComment} from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from "next/navigation"
+import Link from 'next/link';
 
 const HomePage = () => {
    
@@ -109,6 +110,7 @@ const HomePage = () => {
 
 
   
+    console.log(posts);
     
 
     return (
@@ -160,8 +162,9 @@ const HomePage = () => {
                             </div>
                             <div><span>{post.CreatedAt}</span></div>
                         </div>
+                                <Link href={"/post/"+post.Pid}>
                         <div>{post.Content}</div>
-                        <p>{post.content}</p>
+                            </Link>
                         {post.Image && <Image src={"http://localhost:8080/api/images/"+post.Image} alt="" width={400} height={200} />}
                         <div className={styles.postActions}>
                             <FontAwesomeIcon 

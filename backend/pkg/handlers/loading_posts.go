@@ -62,7 +62,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		if post.Avatar != nil {
 			*post.Avatar, _ = EncodeImg(*post.Avatar)
 		}
-		h.db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
+		h.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", post.Pid).Scan(&post.NbComment)
 		post.Likes = getPostLikes(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
 
@@ -96,6 +96,7 @@ func GetPost(db *sql.DB, postID int) Post {
         FROM posts
         JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image, &fistname, &lastname, &p.Avatar)
 	p.Username = strings.Join([]string{fistname, lastname}, " ")
+	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", postID).Scan(&p.NbComment)
 	if p.Avatar != nil {
 		*p.Avatar, _ = EncodeImg(*p.Avatar)
 	}

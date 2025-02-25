@@ -21,9 +21,18 @@ func main() {
 	http.HandleFunc("/api/searchData", handleCORS(handler.HandleSearch))
 	http.HandleFunc("/api/userdata", handleCORS(handler.Midd(handler.UserData)))
 	http.HandleFunc("/api/images/", handleCORS(handler.ServeImage))
+
+	
 	http.HandleFunc("/api/like", handleCORS(handler.Midd(handler.LikeHandler)))
 	http.HandleFunc("/api/logout", handleCORS(handler.Midd(handler.LogoutHandler)))
-	
+
+	http.HandleFunc("/api/profile/{userId}", handleCORS(handler.Midd(handler.GetProfile)))
+	http.HandleFunc("/api/profile/{userId}/privacy", handleCORS(handler.Midd(handler.TogglePrivacy)))
+	http.HandleFunc("/api/profile/{userId}/follow", handleCORS(handler.Midd(handler.FollowUser)))
+
+	http.HandleFunc("/api/posts/{postId}/comments", handleCORS(handler.Midd(handler.CommentCreationHandler)))
+	http.HandleFunc("/api/posts/{postId}", handleCORS(handler.Midd(handler.ShowPost)))
+
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -31,7 +40,8 @@ func handleCORS(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
@@ -39,4 +49,3 @@ func handleCORS(next http.HandlerFunc) http.HandlerFunc {
 		next.ServeHTTP(w, r)
 	})
 }
-
