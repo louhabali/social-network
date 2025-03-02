@@ -1,0 +1,15 @@
+"use client";
+
+import Link from "next/link";
+
+export default function ErrorPage({ error }) {
+  return (
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>Error</h1>
+      <p>{error.message || "Something went wrong."}</p>
+      <Link href="/">
+        Go back to home
+      </Link>
+    </div>
+  );
+}

@@ -21,7 +21,13 @@
   font-weight: bold;
 }
 
-
+.post {
+  flex-direction: column;
+  display: flex
+;
+  gap: 7px;
+  
+}
 .main {
   flex: 1;
   padding: 20px;
@@ -106,7 +112,6 @@
 
 .post img {
   margin: 10px 0;
-  border-radius: 8px;
 }
 
 .postActions {

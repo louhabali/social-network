@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 )
 
 func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +27,9 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		p := Post{
 			Content: r.FormValue("content"),
 		}
+
+		groupID, _ := strconv.Atoi(r.FormValue("groupId"))
+
 		file, header, err := r.FormFile("image")
 
 		if p.Content == "" && file == nil {
@@ -36,8 +41,14 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 		if err == nil {
 			defer file.Close()
-			rand, _ := GenereteTocken()
 			extensions := path.Ext(header.Filename)
+			if !IsValidImageExtension(extensions) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode("Invalid image type. Supported formats: JPEG, PNG, GIF")
+				return
+			}
+			rand, _ := GenereteTocken()
 			name := rand + extensions
 			imagePath := "uploads/images/" + name
 			out, err := os.Create(imagePath)
@@ -45,14 +56,14 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Failed to save image", http.StatusInternalServerError)
 				return
 			}
-			defer out.Close()	
+			defer out.Close()
 			io.Copy(out, file)
 			p.Image = &imagePath
 		}
-		
+
 		postID := 0
 
-		err = h.db.QueryRow(`INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?) RETURNING id`, userID, html.EscapeString(p.Content), p.Image).Scan(&postID)
+		err = h.db.QueryRow(`INSERT INTO posts (user_id, content, image_path, group_id) VALUES (?, ?, ?, ?) RETURNING id`, userID, html.EscapeString(p.Content), p.Image, groupID).Scan(&postID)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -67,4 +78,15 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+}
+
+func IsValidImageExtension(fileExt string) bool {
+	allowedExtensions := []string{".jpg", ".jpeg", ".png", ".gif"}
+	lowerFileExt := strings.ToLower(fileExt)
+	for _, ext := range allowedExtensions {
+		if ext == lowerFileExt {
+			return true
+		}
+	}
+	return false
 }

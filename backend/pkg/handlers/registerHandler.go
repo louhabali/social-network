@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -91,15 +92,21 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		file, header, err := r.FormFile("avatar")
 		if err == nil {
 			defer file.Close()
-			rand, _ := GenereteTocken()
 			extensions := path.Ext(header.Filename)
+			if !IsValidImageExtension(extensions) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode("Invalid image type. Supported formats: JPEG, PNG, GIF")
+				return
+			}
+			rand, _ := GenereteTocken()
 			name := rand + extensions
 			avatarPath := "uploads/avatars/" + name
 			out, err := os.Create(avatarPath)
 			if err != nil {
 
 				http.Error(w, "Failed to save avatar", http.StatusInternalServerError)
-				fmt.Println("66",err)
+				fmt.Println("66", err)
 				return
 			}
 			defer out.Close()
