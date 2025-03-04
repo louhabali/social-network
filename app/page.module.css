@@ -7,10 +7,7 @@
   
   padding: 20px;
 }
-body{
-  align-items: normal;
-  justify-content: normal;
-}
+
 .navbar {
   padding: 10px 20px;
   color: white;
@@ -24,7 +21,13 @@ body{
   font-weight: bold;
 }
 
-
+.post {
+  flex-direction: column;
+  display: flex
+;
+  gap: 7px;
+  
+}
 .main {
   flex: 1;
   padding: 20px;
@@ -109,7 +112,6 @@ body{
 
 .post img {
   margin: 10px 0;
-  border-radius: 8px;
 }
 
 .postActions {

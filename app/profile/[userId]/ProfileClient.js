@@ -7,6 +7,7 @@ import Image from "next/image";
 export default function ProfileClient({ profile, userId }) {
   const [isPublic, setIsPublic] = useState(profile.user.IsPublic);
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
+  const [posts, setPosts] = useState(profile.posts || []);
   const [activeTab, setActiveTab] = useState("posts");
 
   const isOwnProfile = profile.user.ID === profile.userid;
@@ -36,6 +37,34 @@ export default function ProfileClient({ profile, userId }) {
       setIsFollowing(!isFollowing)
     }
   }
+
+  const handleLike = async (e) => {
+
+    const pd = e.target.closest('section').id
+    const likeIcon = e.target
+
+    const postIndex = posts.findIndex(post => post.Pid.toString() === pd)
+    const uPosts = [...posts]
+
+    let lk = uPosts[postIndex].UserInteraction === 1 ? 0 : 1
+
+
+
+    const response = await fetch(`http://localhost:8080/api/like`, {
+        method: 'POST',
+        body: JSON.stringify({ pd, lk }),
+        credentials: "include",
+    });
+
+    if (response.ok) {
+
+        uPosts[postIndex].UserInteraction = lk
+        uPosts[postIndex].Likes += lk ? 1 : -1
+        likeIcon.style.color = lk ? 'red': 'white'
+
+        setPosts(uPosts)
+    }
+}
   
 
 
@@ -83,7 +112,7 @@ export default function ProfileClient({ profile, userId }) {
       <div className="profile-content">
         {activeTab === "posts" && (
           <div className="profile-posts">
-            {(profile.posts?.length || 0) === 0 ? <p>No posts yet!</p> : profile.posts.map((post) => <Post key={post.Pid} post={post} />)}
+            {(profile.posts?.length || 0) === 0 ? <p>No posts yet!</p> : profile.posts.map((post) => <Post key={post.Pid} post={post} handleLike={handleLike}/>)}
           </div>
         )}
 

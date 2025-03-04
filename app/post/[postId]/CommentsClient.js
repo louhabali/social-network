@@ -5,12 +5,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowUp, faShare } from '@fortawesome/free-solid-svg-icons';
 import Image from "next/image";
 
-export default function ClientSideComments({ postId,lenComments }) {
-    const [comments, setComments] = useState([]);
+export default function ClientSideComments({ postId,lenComments,initialComments  }) {
+    const [comments, setComments] = useState(initialComments ||[]);
     const [content, setContent] = useState('');
-    const [offset, setOffset] = useState(0);
+    const [offset, setOffset] = useState(initialComments?.length);
     const [lenC, setlenC] = useState(lenComments);
-    const [hasMore, setHasMore] = useState(true);
+    const [hasMore, setHasMore] = useState(lenComments > initialComments?.length);
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
 
@@ -24,11 +24,6 @@ export default function ClientSideComments({ postId,lenComments }) {
     const triggerFileInput = () => {
         document.getElementById('fileInput').click()
     }
-
-    useEffect(() => {
-        loadMoreComments();
-        
-    }, [postId]);
 
     async function loadMoreComments() {
         const newOffset = offset + 4;

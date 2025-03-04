@@ -25,7 +25,6 @@ export default function Header() {
         }
     }
     useEffect(() => {
-            
             const formDataToSend = new FormData();
             formDataToSend.append("searchValue", searchData);
             fetch('http://localhost:8080/api/searchData', {
@@ -68,9 +67,6 @@ export default function Header() {
                 onChange={handleSearch}
                 onKeyDown={handleKeyDown} 
             />
-            <div className="profile">
-                <Link href="/api/profile">profile</Link>
-            </div>
             <div id="s" style={{marginTop:"45px",top:"0" , width: "206px", background:"rgb(0, 0, 0)", paddingLeft:"5px", position:"absolute" ,color:"white"}}></div>
         </header>
     );

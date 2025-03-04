@@ -13,24 +13,35 @@ import (
 )
 
 type Follower struct {
-	ID        int
-	Firstname string
-	Lastname  string
-	Nickname  string
+	ID        int    `json:"id"`
+	Firstname string `json:"fname"`
+	Lastname  string `json:"lname"`
+	Nickname  string `json:"nickname"`
+	Avatar  	*string `json:"avatar"`
 }
 
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.Atoi(r.PathValue("userId"))
 	fid, ok := r.Context().Value("userID").(int)
-	
 	if !ok {
 		fmt.Println("invalid userId")
 		return
 	}
 
-	posts, err := getPostsByUserID(h.db, userID)
+	userInfo, err := getUserInfo(h.db, userID)
 	if err != nil {
-		fmt.Println("Error fetching posts:", err)
+		fmt.Println("Error fetching profile privacy:", err)
+	}
+
+	c := 0
+	s := ""
+	h.db.QueryRow("SELECT COUNT(*), status FROM follow_requests WHERE follower_id = ? AND following_id = ?", fid, userID).Scan(&c,&s)
+	isFollowing := c != 0
+	ss := s == "approved" 
+	if !userInfo.IsPublic && !ss && fid != userID {
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(map[string]string{"error": "This profile is private"})
+		return
 	}
 
 	followers, err := getFollowers(h.db, userID)
@@ -38,18 +49,19 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching followers:", err)
 	}
 
+	posts, err := getPostsByUserID(h.db, userID)
+	if err != nil {
+		fmt.Println("Error fetching posts:", err)
+	}
+
 	following, err := getFollowing(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching following:", err)
 	}
 
-	userInfo, err := getUserInfo(h.db, userID)
-	if err != nil {
-		fmt.Println("Error fetching profile privacy:", err)
-	}
-	c := 0
-	err = h.db.QueryRow("SELECT COUNT(*) FROM users JOIN follow_requests ON users.id = follow_requests.following_id WHERE follow_requests.follower_id = ? AND follow_requests.following_id = ?", userID, fid).Scan(&c)
-	isFollowing := c != 0
+	// c := 0
+	// h.db.QueryRow("SELECT COUNT(*) FROM users JOIN follow_requests ON users.id = follow_requests.following_id WHERE follow_requests.follower_id = ? AND follow_requests.following_id = ?", userID, fid).Scan(&c)
+	// isFollowing := c != 0
 
 	response := struct {
 		User        User       `json:"user"`
@@ -88,7 +100,8 @@ func getPostsByUserID(db *sql.DB, userID int) ([]Post, error) {
 			*post.Avatar, _ = EncodeImg(*post.Avatar)
 		}
 		db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
-		post.Likes = getPostLikes(post.Pid, 1, db)
+		post.Likes = getPostLikeDisLike(post.Pid, 1, db)
+		post.Dislikes = getPostLikeDisLike(post.Pid, -1, db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, db)
 		posts = append(posts, post)
 	}
@@ -130,7 +143,7 @@ func getFollowers(db *sql.DB, userID int) ([]Follower, error) {
 func getFollowing(db *sql.DB, userID int) ([]Follower, error) {
 	rows, _ := db.Query(`
 		SELECT users.id, users.first_name, users.last_name, users.nickname FROM users
-		JOIN follow_requests ON users.id = follow_requests.following_id
+		LEFT JOIN follow_requests ON users.id = follow_requests.following_id
 		WHERE follow_requests.follower_id = ? AND follow_requests.status = 'approved';
 	`, userID)
 

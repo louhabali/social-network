@@ -27,7 +27,6 @@ export default function loginPage() {
     const result = await response.text()
 
     if (response.ok) {
-      console.log(result);
       router.push("/")
     } else {
       console.log(result);

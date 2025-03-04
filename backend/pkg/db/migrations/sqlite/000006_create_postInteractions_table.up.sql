@@ -1,9 +1,0 @@
--- +migrate Up
-CREATE TABLE IF NOT EXISTS postInteractions (
-    UserID INTEGER,
-    PostID INTEGER,
-    Interaction INTEGER DEFAULT 0,
-    PRIMARY KEY (UserID, PostID), 
-    FOREIGN KEY (PostID) REFERENCES posts(id) ON DELETE CASCADE,
-    FOREIGN KEY (UserID) REFERENCES users(id) ON DELETE CASCADE
-);

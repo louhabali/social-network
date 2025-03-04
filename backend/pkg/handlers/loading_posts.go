@@ -16,6 +16,7 @@ type Post struct {
 	Avatar          *string
 	Image           *string
 	Content         string
+	Privacy         string
 	CreatedAt       string
 	Likes           int
 	Dislikes        int
@@ -25,11 +26,8 @@ type Post struct {
 
 func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 
-	var data struct {
-		Offset int `json:"offset"`
-	}
-
-	json.NewDecoder(r.Body).Decode(&data)
+	offset := r.URL.Query().Get("offset")
+	groupId := r.URL.Query().Get("groupId")
 
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
@@ -38,57 +36,96 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := `
-        SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name , users.avatar
-        FROM posts
-        JOIN users ON posts.user_id = users.id ORDER BY posts.id DESC
-        `
+	SELECT posts.id, posts.user_id, posts.created_at, posts.content, posts.image_path, users.first_name, users.last_name, users.avatar
+	FROM posts
+	JOIN users ON posts.user_id = users.id
+	`
+	var args []interface{}
+	if groupId != "" {
+		query += " WHERE group_id = ?"
+		args = append(args, groupId)
+	} else {
+		query += " WHERE group_id IS '0'"
+	}
+	query += " ORDER BY posts.id DESC LIMIT 4 OFFSET ?"
+	args = append(args, offset)
 
-	//WHERE posts.privacy = 'public'
-	//OR (posts.privacy = 'almost_private' AND posts.user_id IN (SELECT follower_id FROM followers WHERE user_id = ?))
-	//OR (posts.privacy = 'private' AND posts.id IN (SELECT post_id FROM post_privacy WHERE user_id = ?))
-	rows, err := h.db.Query(query)
+	rows, err := h.db.Query(query, args...)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	defer rows.Close()
+
 	var posts []Post
 	for rows.Next() {
 		var post Post
 		var timeCreated time.Time
-		var fistname, lastname string
-		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &fistname, &lastname, &post.Avatar)
-		post.Username = strings.Join([]string{fistname, lastname}, " ")
+		var firstname, lastname string
+		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &firstname, &lastname, &post.Avatar)
+		post.Username = strings.Join([]string{firstname, lastname}, " ")
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 		if post.Avatar != nil {
 			*post.Avatar, _ = EncodeImg(*post.Avatar)
 		}
 		h.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", post.Pid).Scan(&post.NbComment)
-		post.Likes = getPostLikes(post.Pid, 1, h.db)
+		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
+		pp := ""
+		err := h.db.QueryRow("SELECT privacy FROM posts WHERE id = ?", post.Pid).Scan(&pp)
+		if err != nil {
+			fmt.Println("eroor pp :", err)
+		}
+		fmt.Println("privacy is :", pp)
+		usId := 0
+		err = h.db.QueryRow("SELECT user_id FROM posts WHERE id = ?", post.Pid).Scan(&usId)
+		if err != nil {
+				fmt.Println("rws error :", err)
+				return
+		}
+		if pp == "almost_private" {
+			fmt.Println("000000")
+			isApproved := ""
+			fmt.Println("hihi : ", userID, usId)
+			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ? ", usId, userID).Scan(&isApproved)
+			fmt.Println("isapp : ", isApproved, err)
+			if err != nil {
+				fmt.Println("not included")
 
-		posts = append(posts, post)
+			}
+			if isApproved == "approved" || usId == userID {
+				posts = append(posts, post)
+			}
+		} else if pp == "private" {
+			fmt.Println("2111")
+			exist := 0
+			err = h.db.QueryRow(`SELECT EXISTS(
+				SELECT 1 FROM post_privacy_users 
+				WHERE post_id = ? AND user_id = ?)`, post.Pid, userID).Scan(&exist)
+			if err != nil {
+				fmt.Println("not found", err)
+			}
+			fmt.Println("exist is : ", exist)
+			if exist == 1 || usId == userID {
+				posts = append(posts, post)
+			}
 
+		} else if pp == "public" {
+			posts = append(posts, post)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-
 	json.NewEncoder(w).Encode(posts)
-
 }
 
 func getPostInteractions(pid, uid int, db *sql.DB) int {
 	var ii int
-	err := db.QueryRow(`SELECT Interaction FROM postInteractions WHERE UserID = ? AND PostID = ?`, uid, pid).Scan(&ii)
-	if err != nil {
-		
-		return 0
-	}
-
+	db.QueryRow(`select interaction from post_interactions where user_id = ? and post_id=?`, uid, pid).Scan(&ii)
 	return ii
 }
 
 func GetPost(db *sql.DB, postID int) Post {
-
 	var p Post
 	var timeCreated time.Time
 	var fistname, lastname string
@@ -96,7 +133,8 @@ func GetPost(db *sql.DB, postID int) Post {
         FROM posts
         JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image, &fistname, &lastname, &p.Avatar)
 	p.Username = strings.Join([]string{fistname, lastname}, " ")
-	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", postID).Scan(&p.NbComment)
+	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", p.Pid).Scan(&p.NbComment)
+
 	if p.Avatar != nil {
 		*p.Avatar, _ = EncodeImg(*p.Avatar)
 	}
@@ -104,13 +142,11 @@ func GetPost(db *sql.DB, postID int) Post {
 	return p
 }
 
-func getPostLikes(post_id, inter int, db *sql.DB) int {
+func getPostLikeDisLike(post_id, inter int, db *sql.DB) int {
 	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM postInteractions WHERE PostID = ? AND Interaction = ?", post_id, inter).Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM post_interactions WHERE post_id=? AND interaction=?", post_id, inter).Scan(&count)
 	if err != nil {
-		
 		return 0
 	}
-	
 	return count
 }

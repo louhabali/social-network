@@ -13,7 +13,7 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("invalid userId")
 		return
 	}
-	fmt.Println(userID,followerID)
+
 	if r.Method == "POST" {
 		_, err := h.db.Exec("INSERT INTO follow_requests (follower_id, following_id) VALUES (?, ?)", followerID, userID)
 		if err != nil {

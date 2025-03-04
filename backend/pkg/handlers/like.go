@@ -9,22 +9,22 @@ import (
 
 func (h *Handler) LikeHandler(w http.ResponseWriter, r *http.Request) {
 	var data struct {
-		Pid      string `json:"pd"`
-		Interact int `json:"lk"`
+		Pid      string `json:"postId"`
+		Interact int `json:"likeStatus"`
 	}
 	json.NewDecoder(r.Body).Decode(&data)
 	userID, ok := r.Context().Value("userID").(int)
 	thepostId,_ := strconv.Atoi(data.Pid)
-	fmt.Println(thepostId,userID,data.Interact)
+	fmt.Println(thepostId,data.Pid,userID,data.Interact)
 	if !ok {
 		fmt.Println("invalid userId")
 		return
 	}
 
 	query := `
-		INSERT INTO postInteractions (UserID, PostID, Interaction)
+		INSERT INTO post_interactions (user_id, post_id, interaction)
 		VALUES (?, ?, ?)
-		ON CONFLICT(UserID, PostID) DO UPDATE SET Interaction=excluded.Interaction
+		ON CONFLICT(user_id, post_id) DO UPDATE SET interaction=excluded.interaction
 	`
 
 	_, err := h.db.Exec(query, userID,thepostId, data.Interact)

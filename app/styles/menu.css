@@ -1,15 +1,15 @@
 .navbar{
    background-color: rgb(9, 9, 9);
-   margin-right: 10px;
-   padding-top: 30px;
+  
+ 
    width: 250px;
 }
 .navbar ul{
     list-style-type: none;
     display: flex;
-    padding: 5px 15px;
+    padding: 0px 20px;
     flex-direction: column;
-    gap: 50px;
+    gap: 40px;
 }
 .menulinks{
     color: #8e8e8f;
