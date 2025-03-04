@@ -6,7 +6,8 @@ export default function Sugg() {
     const [suggs , setSuggs ]= useState([])
     useEffect(()=>{
     fetch("http://localhost:8080/api/suggestions", { credentials: "include" }).then(d=>d.json()).then(dd=>{
-        setSuggs(dd)
+        const uniqueSuggestions = Array.from(new Map(dd.map(obj => [obj.id, obj])).values());
+        setSuggs(uniqueSuggestions)
     })
 },[])
 console.log(suggs);
