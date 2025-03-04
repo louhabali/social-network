@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
 
-export default function ClientSideGroups({ groupId, initialPosts, userInfo }) {
+export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
     const [posts, setPosts] = useState(initialPosts || []);
     const [events, setEvents] = useState([]);
     const [offset, setOffset] = useState(0);
@@ -18,6 +18,7 @@ export default function ClientSideGroups({ groupId, initialPosts, userInfo }) {
         description: "",
         date: "",
     });
+    const [memberStatus,setMemberStatus] = useState(status)
 
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
@@ -126,7 +127,7 @@ export default function ClientSideGroups({ groupId, initialPosts, userInfo }) {
 
             if (response.ok) {
                 const createdEvent = await response.json();
-                setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents]:[]);
+                setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents] : []);
                 setShowEventForm(false);
                 setNewEvent({ title: "", description: "", date: "" });
             } else {
@@ -142,7 +143,7 @@ export default function ClientSideGroups({ groupId, initialPosts, userInfo }) {
         try {
             const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events/going`, {
                 method: "POST",
-                body: JSON.stringify({ eventId,status }),
+                body: JSON.stringify({ eventId, status }),
                 credentials: "include",
             });
 
@@ -159,6 +160,36 @@ export default function ClientSideGroups({ groupId, initialPosts, userInfo }) {
             console.error("Error updating RSVP:", error);
         }
     };
+
+    async function handleJoinGroup() {
+        let method = memberStatus === "pending" ? "DELETE" : "POST";
+    
+        const response = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
+            method,
+            credentials: "include",
+        });
+    
+        if (response.ok) {
+            setMemberStatus(memberStatus === "pending" ? "" : "pending");
+        }
+    }
+        
+    if (memberStatus != "accepted" && memberStatus != "creator") {
+        return (
+            <div>
+                <p>This is a private group. Join to see posts and events.</p>
+                {memberStatus === "pending" ? (
+                    <>
+                    <span>Request Pending </span>
+                    <button onClick={handleJoinGroup}>Cancel Join Request</button>
+                    </>
+                ) : (
+                    <button onClick={handleJoinGroup}>Join Group</button>
+                )}
+            </div>
+        );
+    }
+    
 
     return (
         <div>

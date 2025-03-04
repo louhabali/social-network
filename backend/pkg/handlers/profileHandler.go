@@ -32,17 +32,8 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching profile privacy:", err)
 	}
 
-	c := 0
-	s := ""
-	h.db.QueryRow("SELECT COUNT(*), status FROM follow_requests WHERE follower_id = ? AND following_id = ?", fid, userID).Scan(&c,&s)
-	isFollowing := c != 0
-	ss := s == "approved" 
-	if !userInfo.IsPublic && !ss && fid != userID {
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{"error": "This profile is private"})
-		return
-	}
-
+	followStatus := ""
+	h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ?", fid, userID).Scan(&followStatus)
 	followers, err := getFollowers(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching followers:", err)
@@ -58,24 +49,20 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching following:", err)
 	}
 
-	// c := 0
-	// h.db.QueryRow("SELECT COUNT(*) FROM users JOIN follow_requests ON users.id = follow_requests.following_id WHERE follow_requests.follower_id = ? AND follow_requests.following_id = ?", userID, fid).Scan(&c)
-	// isFollowing := c != 0
-
 	response := struct {
-		User        User       `json:"user"`
-		Posts       []Post     `json:"posts"`
-		Followers   []Follower `json:"followers"`
-		Following   []Follower `json:"following"`
-		IsFollowing bool       `json:"isFollowing"`
-		UserId      int        `json:"userid"`
+		User         User       `json:"user"`
+		Posts        []Post     `json:"posts"`
+		Followers    []Follower `json:"followers"`
+		Following    []Follower `json:"following"`
+		UserId       int        `json:"userid"`
+		FollowStatus string     `json:"followStatus"`
 	}{
-		User:        userInfo,
-		Posts:       posts,
-		Followers:   followers,
-		Following:   following,
-		IsFollowing: isFollowing,
-		UserId:      fid,
+		User:           userInfo,
+		Posts:          posts,
+		Followers:      followers,
+		Following:      following,
+		UserId:         fid,
+		FollowStatus: followStatus,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

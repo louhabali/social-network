@@ -12,6 +12,7 @@ export default function GroupsPage() {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
+
     function openModal() {
         setIsOpen(true);
     }
@@ -48,7 +49,7 @@ export default function GroupsPage() {
             credentials: "include",
             body: JSON.stringify({ title, description }),
         });
-        
+
         const newGroup = await response.json();
         console.log(newGroup);
         setGroups((prevGroups) => (prevGroups ? [newGroup, ...prevGroups] : [newGroup]));
@@ -79,7 +80,25 @@ export default function GroupsPage() {
     }, [fetchGroups, loading, hasMore]);
 
 
+    async function handleJoin(groupId, currentStatus) {
+        let newStatus = currentStatus === "pending" ? "" : "pending";
+        let method = currentStatus === "pending" ? "DELETE" : "POST";
 
+        const response = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
+            method,
+            credentials: "include",
+        });
+
+        if (response.ok) {
+            setGroups((prevGroups) =>
+                prevGroups.map((group) =>
+                    group.id === groupId ? { ...group, status: newStatus } : group
+                )
+            );
+        }
+
+    }
+        
     return (
         <div>
             <h1>Groups</h1>
@@ -118,10 +137,20 @@ export default function GroupsPage() {
             <ul>
                 {groups?.map((group) => (
                     <li key={group.id}>
-                        <Link href={`/groups/${group.id}`}>
-                            <strong>{group.title}</strong>
-                        </Link>
+                        <strong>{group.title}</strong>
                         <p>{group.description}</p>
+                        {group.status === "accepted" || group.status === "creator" ? (
+                            <Link href={`/groups/${group.id}`}>
+                                <button>Open</button>
+                            </Link>
+                        ) : group.status === "pending" ? (
+                            <>
+                                <span>Request Pending </span>
+                                <button onClick={() => handleJoin(group.id, "pending")}>Cancel Request</button>
+                            </>
+                        ) : (
+                            <button onClick={() => handleJoin(group.id)}>Join Group</button>
+                        )}
                     </li>
                 ))}
             </ul>

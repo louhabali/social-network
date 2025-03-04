@@ -50,6 +50,7 @@ export default async function GroupDetailsPage({ params }) {
     const group = await fetchGroupById(params.groupId);
     const initialPosts = await getPosts();
     const userInfo = await fetchUserInfo();
+
     console.log(group,params.groupId);
     
     return (
@@ -57,7 +58,7 @@ export default async function GroupDetailsPage({ params }) {
             <h1>{group.title}</h1>
             <p>{group.description}</p>
 
-            <GroupsClient groupId={params.groupId} initialPosts={initialPosts} userInfo={userInfo}/>
+            <GroupsClient  groupId={params.groupId} status={group.status} initialPosts={initialPosts} userInfo={userInfo}/>
         </div>
     );
 }
