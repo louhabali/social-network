@@ -139,7 +139,7 @@ export default function GroupsPage() {
                     <li key={group.id}>
                         <strong>{group.title}</strong>
                         <p>{group.description}</p>
-                        {group.status === "accepted" || group.status === "creator" ? (
+                        {group.status === "approved" || group.status === "creator" ? (
                             <Link href={`/groups/${group.id}`}>
                                 <button>Open</button>
                             </Link>

@@ -10,7 +10,7 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
 
-    const [ops, setOp] = useState("")
+    const [ops, setOp] = useState("public")
     const [privateUsers,setPrivateUsers] = useState([])
     const [selectedOptions, setSelectedOptions] = useState([]);
  // select 
@@ -21,19 +21,26 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
     };
     useEffect(() => {
         if (ops === "private") {
-            console.log(888);
-            //document.getElementById("popup").style.display="flex"
-            fetch('http://localhost:8080/api/getallusers', {
+            if (document.getElementById("popup")) document.getElementById("popup").style.display="flex"
+          
+            fetch('http://localhost:8080/api/getfollowedusers', {
                 credentials: "include",
             }).then(data => data.json()).then(d => {
+                
                 setPrivateUsers(d)
               
             })
-              
-        }else{
-            //document.getElementById("popup").style.display="none"
+           
+            
+            
+            
+        }else {
+            if (document.getElementById("popup")) document.getElementById("popup").style.display="none"
         }
     }, [ops]);
+    
+    
+    
 //
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -53,6 +60,13 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
         const formData = new FormData();
         formData.append("content", newPost);
         formData.append("groupId", groupId);
+        formData.append("privacy",ops)
+        if (ops=="private"){
+            selectedOptions.forEach(userId => {
+                formData.append("selectedUsers", userId);
+            });
+        }
+        
         if (sendImage) formData.append("image", sendImage);
 
         try {
@@ -72,6 +86,8 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
             setSelectedImage(null);
             setSendImage(null);
             document.getElementById("fileInput").value = "";
+            //document.getElementById("popup").style.display="none"
+            
 
         } catch (error) {
             console.error("Error posting:", error);
@@ -93,12 +109,34 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
             </div>
 
             <input id="fileInput" type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
-            <select onChange={(o)=> setOp(o.target.value)}>
+            <select id="slct" onChange={(o)=> setOp(o.target.value)}>
                     <option value="public">public</option>
                     <option value="private">only for</option>
                     <option value="almost_private">only followers</option>
-                </select>
-            
+            </select>
+          {privateUsers && <div id='popup'  style={{
+                  
+                    height: "45px",
+                    display:"flex",
+                    flexDirection:"column",
+                    overflowY: "auto",
+                    border: "1px solid #ccc", 
+                    padding: "5px",
+                    backgroundColor: "black",
+                    borderRadius: "8px", 
+                    boxShadow: "0 2px 10px rgba(154, 148, 148, 0.77)",
+  }} >
+                    {privateUsers && privateUsers.map((p) => (
+                        <label key={p.id} className="flex items-center space-x-2">
+                    <input
+                    type="checkbox"
+                    checked={selectedOptions.includes(p.id)}
+                    onChange={() => handleToggle(p.id)}
+                    />
+                    <span>{`${p.fname} ${p.lname}`}</span>
+                        </label>
+                    ))}
+                </div>}
             <div className={styles.btnsub} onClick={handlePostSubmit}>
                 <FontAwesomeIcon icon={faShare} />
             </div>

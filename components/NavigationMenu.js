@@ -2,9 +2,23 @@ import Link from "next/link";
 import '../app/styles/menu.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse,faUserPlus,faEnvelope,faBell,faUser,faUserGroup,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from "next/navigation";
 
 export default function NavigationMenu(){
-    
+    const r = useRouter()
+    function handlelogout() {
+        fetch("http://localhost:8080/api/logout",{
+            credentials:"include"
+        }).then(d =>{
+            d.text()
+        }).then(dd=>{
+            if (dd=="logged out"){
+                console.log("55");
+                
+                r.push("/login")
+            }
+        })
+    }
     return (
         <nav className="navbar">
             <ul>
@@ -30,7 +44,7 @@ export default function NavigationMenu(){
                     <Link className="menulinks" href="/profile"><FontAwesomeIcon icon={faUser} /><span>profile</span></Link>
                 </li>
                 <li>
-                    <Link className="menulinks" href="/logout"><FontAwesomeIcon icon={faRightFromBracket} /><span>logout</span></Link>
+                    <Link className="menulinks" onClick={handlelogout} href="/logout"><FontAwesomeIcon icon={faRightFromBracket} /><span>logout</span></Link>
                 </li>
             </ul>
         </nav>

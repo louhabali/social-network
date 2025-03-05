@@ -38,7 +38,7 @@ export default function SearchResults() {
                 <ul>
                     {results.map((user, index) => (
                         <li style={{ listStyle:"none",marginBottom:"10px"}} key={index}>
-                            <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/user/${user.Uid}`}>
+                            <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/profile/${user.Uid}`}>
                              {user.Avatar ? (
                                 <Image src={`data:image/png;base64,${user.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
                                

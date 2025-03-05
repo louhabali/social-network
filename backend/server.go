@@ -10,7 +10,6 @@ import (
 func main() {
 	db := database.CreateTables()
 	defer db.Close()
-
 	handler := handlers.NewHandler(db)
 
 	http.HandleFunc("/api/login", handleCORS(handler.LoginHandler))
@@ -40,7 +39,8 @@ func main() {
 
 	http.HandleFunc("/api/images/", handleCORS(handler.ServeImage))
 	http.HandleFunc("/api/getallusers", handleCORS(handler.Midd(handler.GetAllusers)))
-	
+	http.HandleFunc("/api/getfollowedusers", handleCORS(handler.Midd(handler.GetAllusers)))
+
 	http.ListenAndServe(":8080", nil)
 }
 

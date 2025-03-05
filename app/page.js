@@ -41,7 +41,6 @@ const HomePage = () => {
             setOffset((prevOffset) => prevOffset + data?.length);
         } catch (error) {
             router.push("/login");
-            console.error("Error fetching posts:", error);
         } finally {
             setLoading(false);
         }
@@ -53,7 +52,7 @@ const HomePage = () => {
             .then((data) => setUserInfo(data))
             .catch((error) => console.error("Error fetching user data:", error));
     }, []);
-    console.log(posts);
+ 
     
     useEffect(() => {
         if (loading || !hasMore) return;
@@ -96,7 +95,7 @@ const HomePage = () => {
             setPosts(updatedPosts);
         }
     };
-    console.log(hasMore,loading);
+    console.log(posts);
     
     return (
         <div className={styles.container}>

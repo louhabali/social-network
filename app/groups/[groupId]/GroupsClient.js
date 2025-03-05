@@ -173,8 +173,8 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             setMemberStatus(memberStatus === "pending" ? "" : "pending");
         }
     }
-        
-    if (memberStatus != "accepted" && memberStatus != "creator") {
+    
+    if (memberStatus != "approved" && memberStatus != "creator") {
         return (
             <div>
                 <p>This is a private group. Join to see posts and events.</p>

@@ -10,7 +10,7 @@ export default function ProfileClient({ profile, userId }) {
   const [posts, setPosts] = useState(profile.posts || []);
   const [activeTab, setActiveTab] = useState("posts");
   const isOwnProfile = profile.user.ID === profile.userid;
-  const canViewProfile = isPublic || profile.followStatus === "accepted" || isOwnProfile;
+  const canViewProfile = isPublic || profile.followStatus === "approved" || isOwnProfile;
 
   async function handleProfilePrivacyToggle() {
     const newStatus = !isPublic;
@@ -69,7 +69,8 @@ export default function ProfileClient({ profile, userId }) {
     }
   }
 
-
+  console.log(profile);
+  
 
   return (
     <div>
@@ -106,7 +107,7 @@ export default function ProfileClient({ profile, userId }) {
                   Cancel Request
                 </button>
               </>
-            ) : followStatus === "accepted" ? (
+            ) : followStatus === "approved" ? (
               <button onClick={onFollowToggle} className="follow-button">Unfollow</button>
             ) : (
               <button onClick={onFollowToggle} className="follow-button">Follow</button>

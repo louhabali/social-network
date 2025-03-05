@@ -16,6 +16,7 @@ type Post struct {
 	Avatar          *string
 	Image           *string
 	Content         string
+	Privacy         string
 	CreatedAt       string
 	Likes           int
 	Dislikes        int
@@ -35,19 +36,19 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := `
-	SELECT posts.id, posts.user_id, posts.created_at, posts.content, posts.image_path, users.first_name, users.last_name, users.avatar
+	SELECT posts.id, posts.user_id, posts.created_at, posts.content, posts.image_path, posts.privacy, users.first_name, users.last_name, users.avatar
 	FROM posts
 	JOIN users ON posts.user_id = users.id
 	`
 	var args []interface{}
 	if groupId != "" {
-        query += " WHERE group_id = ?"
-        args = append(args, groupId)
-    } else {
-        query += " WHERE group_id IS '0'"
-    }
+		query += " WHERE group_id = ?"
+		args = append(args, groupId)
+	} else {
+		query += " WHERE group_id IS '0'"
+	}
 	query += " ORDER BY posts.id DESC LIMIT 4 OFFSET ?"
-    args = append(args, offset)
+	args = append(args, offset)
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
@@ -61,7 +62,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		var post Post
 		var timeCreated time.Time
 		var firstname, lastname string
-		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &firstname, &lastname, &post.Avatar)
+		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &post.Privacy, &firstname, &lastname, &post.Avatar)
 		post.Username = strings.Join([]string{firstname, lastname}, " ")
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 		if post.Avatar != nil {
@@ -70,7 +71,24 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		h.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", post.Pid).Scan(&post.NbComment)
 		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
-		posts = append(posts, post)
+		fmt.Println(post.Uid, post.Privacy)
+		if post.Privacy == "almost_private" {
+			isApproved := ""
+			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ? ", post.Uid, userID).Scan(&isApproved)
+
+			if err == nil && isApproved == "approved" || post.Uid == userID {
+				posts = append(posts, post)
+			}
+		} else if post.Privacy == "private" {
+			exist := 0
+			h.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM post_privacy_users WHERE post_id = ? AND user_id = ?)`, post.Pid, userID).Scan(&exist)
+			if exist == 1 || post.Uid == userID {
+				posts = append(posts, post)
+			}
+
+		} else if post.Privacy == "public" {
+			posts = append(posts, post)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

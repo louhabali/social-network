@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +27,7 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		p := Post{
 			Content: r.FormValue("content"),
+			Privacy: r.FormValue("privacy"),
 		}
 
 		groupID, _ := strconv.Atoi(r.FormValue("groupId"))
@@ -63,12 +65,21 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 		postID := 0
 
-		err = h.db.QueryRow(`INSERT INTO posts (user_id, content, image_path, group_id) VALUES (?, ?, ?, ?) RETURNING id`, userID, html.EscapeString(p.Content), p.Image, groupID).Scan(&postID)
+		err = h.db.QueryRow(`INSERT INTO posts (user_id, content,privacy, image_path, group_id) VALUES (?, ?, ?, ?, ?) RETURNING id`, userID, html.EscapeString(p.Content), p.Privacy, p.Image, groupID).Scan(&postID)
 		if err != nil {
+			fmt.Println("err01 ", err)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode("failed to insert the post")
 			return
+		}
+		selectUsers := r.Form["selectedUsers"]
+		fmt.Println("selectUsers", selectUsers)
+		if len(selectUsers) > 0 {
+			for _, sID := range selectUsers {
+				i, _ := strconv.Atoi(sID)
+				h.db.Exec(`INSERT INTO post_privacy_users (user_id, post_id, created_at) VALUES (?, ?, ?)`, i, postID, time.Now())
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/json")

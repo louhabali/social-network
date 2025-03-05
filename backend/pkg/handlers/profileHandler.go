@@ -33,7 +33,8 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	followStatus := ""
-	h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ?", fid, userID).Scan(&followStatus)
+	err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ?", fid, userID).Scan(&followStatus)
+	fmt.Println(followStatus,fid,userID,err)
 	followers, err := getFollowers(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching followers:", err)
