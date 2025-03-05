@@ -39,7 +39,7 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		g.ID = groupId
 		g.CreatedAt = time.Now().Format("Jan 2, 2006 at 3:04")
 		g.Status = "creator"
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(g)
 
@@ -72,10 +72,15 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	groupID, _ := strconv.Atoi(r.PathValue("groupId"))
-	userID, ok := r.Context().Value("userID").(int)
-	if !ok {
-		fmt.Println("invalid userId")
-		return
+	var userID int
+	var requestBody struct {
+		UserID int `json:"userId"`
+	}
+	json.NewDecoder(r.Body).Decode(&requestBody)
+	if requestBody.UserID == 0 {
+		userID = r.Context().Value("userID").(int)
+	}else {
+		userID = requestBody.UserID
 	}
 
 	if r.Method == "POST" {

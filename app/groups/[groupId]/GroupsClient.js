@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
+import InviteUsers from "./InviteUsers";
 
 export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
     const [posts, setPosts] = useState(initialPosts || []);
@@ -193,6 +194,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
     return (
         <div>
+            <InviteUsers groupId={groupId} />
             <div className="group-tabs">
                 <button className={activeTab === "posts" ? "active" : ""} onClick={() => setActiveTab("posts")}>
                     Posts
