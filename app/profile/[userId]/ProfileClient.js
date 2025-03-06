@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Post from "@/components/post";
 import Image from "next/image";
+import "../../styles/profile.css"
 
 export default function ProfileClient({ profile, userId }) {
   const [isPublic, setIsPublic] = useState(profile.user.IsPublic);
@@ -69,7 +70,7 @@ export default function ProfileClient({ profile, userId }) {
     }
   }
 
-  console.log(profile);
+  // console.log("postss",profile.posts.length);
   
 
   return (
@@ -94,6 +95,7 @@ export default function ProfileClient({ profile, userId }) {
           <p><strong>Followers:</strong> {profile.followers?.length || 0}</p>
           <p><strong>Following:</strong> {profile.following?.length || 0}</p>
           <p><strong>Posts:</strong> {profile.posts?.length || 0}</p>
+          
 
           {isOwnProfile ? (
             <button onClick={handleProfilePrivacyToggle}>
