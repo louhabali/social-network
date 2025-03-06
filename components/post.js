@@ -5,7 +5,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
-export default function Post({ post,handleLike }) {
+export default function Post({ post,handleLike,likestext }) {
+    console.log(likestext);
+    
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>
             <div className={styles.postHeader}>
@@ -25,17 +27,26 @@ export default function Post({ post,handleLike }) {
                 {post.Image && <Image src={"http://localhost:8080/api/images/" + post.Image} alt="" width={400} height={200} />}
             </Link>
             <div className={styles.postActions}>
-                <FontAwesomeIcon
+                
+                <div style={{ flexDirection:"column",textAlign:"center" }}>
+                    <FontAwesomeIcon
                     style={{ cursor: "pointer", color: post.UserInteraction === 1 ? 'red' : 'white' }}
                     onClick={handleLike}
-                    icon={faHeart}
-
-                />{post.Likes}
-
-                <Link href={"/post/" + post.Pid}>
+                    icon={faHeart}/>
+                    <div>
+                    {post.Likes}{likestext=="" ? post.Likes!=1 ?" likes":" like":likestext}
+                    </div>
+                    </div>
+                <div  style={{ flexDirection:"column",textAlign:"center" }}>
+                <Link style={{ textDecoration:"none",color:"white"}} href={"/post/" + post.Pid}>
                     <FontAwesomeIcon icon={faComment} />
-                    {post.NbComment}
                 </Link>
+                <div>
+                    {post.NbComment==0?"no":post.NbComment}{" comments"}
+                </div>
+                
+                </div>
+                
             </div>
         </section>
     );

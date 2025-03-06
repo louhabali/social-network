@@ -38,7 +38,7 @@ export default async function PostPage({ params }) {
   const post = await getPost(params.postId);
   const initialComments = await getComments(params.postId);
 
-  console.log(post);
+  console.log("post is : ", post);
   
   return (
     <div>

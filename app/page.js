@@ -12,6 +12,8 @@ const HomePage = () => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
+    const [likes, setLikes] = useState("");
+
     const router = useRouter();
 // posts
     const fetchPosts = async () => {
@@ -74,6 +76,7 @@ const HomePage = () => {
     }, [fetchPosts, loading, hasMore]);
 
     const handleLike = async (e) => {
+        
         const postId = e.target.closest("section").id;
         const likeIcon = e.target;
         const postIndex = posts.findIndex((post) => post.Pid.toString() === postId);
@@ -93,6 +96,12 @@ const HomePage = () => {
             updatedPosts[postIndex].Likes += likeStatus ? 1 : -1;
             likeIcon.style.color = likeStatus ? "red" : "white";
             setPosts(updatedPosts);
+            if (updatedPosts[postIndex].Likes!=1){
+                console.log(122);
+                setLikes(" likes")
+            }else{
+                setLikes(" like")
+            }
         }
     };
     
@@ -105,7 +114,7 @@ const HomePage = () => {
                 </div>
 
                 {posts.map((post) => (
-                    <Post key={post.Pid} post={post} handleLike={handleLike} />
+                    <Post key={post.Pid} post={post} handleLike={handleLike} likestext ={likes} />
                 ))}
 
                 {hasMore && <div id="load-more" style={{ height: "10px" }} />}

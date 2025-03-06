@@ -122,12 +122,7 @@
 
 .postActions button {
   background-color: transparent;
-  border: none;
-  color: #fff;
   cursor: pointer;
-  border: 1px solid #fff;
-  padding: 6px;
-  border-radius: 3px;
 }
 
 .postActions button:hover {
