@@ -29,7 +29,11 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-      
+  
+    if (formData.email.trim().length==0 || formData.password.trim().length==0 || formData.firstName.trim().length==0 || formData.lastName.trim().length==0 || formData.dateOfBirth.trim().length==0) {
+      setErrorMessage("Please fill all the required fields")
+      return
+    }
 
     const formDataToSend = new FormData()
     Object.entries(formData).forEach(([key, value]) => {

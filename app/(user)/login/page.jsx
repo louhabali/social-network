@@ -20,19 +20,27 @@ export default function loginPage() {
   }
   const handleSubmit = async (e) => {
     e.preventDefault()
-  
-    const response = await fetch("http://localhost:8080/api/login", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      credentials: "include",
-    })
+    if (formData.email.trim().length==0 || formData.password.trim().length==0) {
+      setErrorMessage("Please fill all the required fields")
+      return
+    }
+    
+    try {
+      const response = await fetch("http://localhost:8080/api/login", {
+        method: "POST",
+        body: JSON.stringify(formData),
+        credentials: "include",
+      })
 
-    const result = await response.text()
+      const result = await response.text()
 
-    if (response.ok) {
-      router.push("/")
-    } else {
-      setErrorMessage(result);
+      if (response.ok) {
+        router.push("/")
+      } else {
+        setErrorMessage(result)
+      }
+    } catch (error) {
+      console.error('Error', error)
     }
   }
   return (
