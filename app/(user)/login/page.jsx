@@ -3,11 +3,14 @@ import '../../styles/login.css'
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Link from "next/link"
+import InvalidCredentials from '@/components/invalidCredentials'
+
 export default function loginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+  const [errorMessage, setErrorMessage] = useState("");
 
   const router = useRouter()
 
@@ -29,7 +32,7 @@ export default function loginPage() {
     if (response.ok) {
       router.push("/")
     } else {
-      console.log(result);
+      setErrorMessage(result);
     }
   }
   return (
@@ -39,6 +42,7 @@ export default function loginPage() {
         <input type="password" name="password" placeholder="Password" className="inputField" required onChange={handleChange} />
         <button type="submit" className="submitButton">login</button>
       </form>
+      {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
       <p className="link">
         Create an account? <Link href="/register" className='registerlink'>Register</Link>
       </p>

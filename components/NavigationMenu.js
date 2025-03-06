@@ -10,11 +10,7 @@ export default function NavigationMenu(){
         fetch("http://localhost:8080/api/logout",{
             credentials:"include"
         }).then(d =>{
-            d.text()
-        }).then(dd=>{
-            if (dd=="logged out"){
-                console.log("55");
-                
+            if (d.ok){
                 r.push("/login")
             }
         })

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -66,21 +67,30 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if nickname := r.FormValue("nickname"); nickname != "" {
 			reg.Nickname = &nickname
 		}
-
-		// emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-		// // Validate field lengths
-		// if len(reg.Nickname) > 8 || len(reg.Firstname) > 8 || len(reg.Lastname) > 8 {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	w.Write([]byte("Nickname, Firstname, and Lastname must be at most 8 characters long"))
-		// 	return
-		// }
-
-		// Validate email format
-		// if !emailRegex.MatchString(reg.Email) {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	w.Write([]byte("Invalid email format"))
-		// 	return
-		// }
+		emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+		if !emailRegex.MatchString(reg.Email) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid email format"))
+			return
+		}
+		
+		if !isValidPassword(reg.Password) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Password must be at least 8 characters ,include at least one uppercase letter, one lowercase letter, and one number"))
+			return
+		}
+		nameRegex := regexp.MustCompile(`^[a-zA-Z]{1,10}$`)
+		if !nameRegex.MatchString(reg.Firstname) || !nameRegex.MatchString(reg.Lastname) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Firstname and Lastname must contain only letters and be at most 10 characters long"))
+			return
+		}
+		dateRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+		if !dateRegex.MatchString(reg.DateOfBirth) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Date of Birth must be in DD-MM-YYYY format"))
+			return
+		}
 
 		// hash the password first
 		hashedPass, err := bcrypt.GenerateFromPassword([]byte(reg.Password), bcrypt.DefaultCost)
@@ -129,7 +139,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	
 		fmt.Println("000")
 		w.Write([]byte("success"))
 	} else {
@@ -145,4 +154,13 @@ func GenereteTocken() (string, error) {
 		return "", err
 	}
 	return u2.String(), nil
+}
+func isValidPassword(password string) bool {
+	if len(password) < 8 {
+		return false
+	}
+	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
+	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
+	hasDigit := regexp.MustCompile(`\d`).MatchString(password)
+	return hasUpper && hasLower && hasDigit
 }

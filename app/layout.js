@@ -3,14 +3,13 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 import NavigationMenu from "@/components/NavigationMenu";
 import Header from "@/components/header";
-import { useEffect, useState } from "react";
 const metadata = {
   title: "My App",
   description: "A Next.js app",
 };
 
 export default function RootLayout({ children }) {
-  const [log , setlog] = useState(false)
+  
 
   const pathname = usePathname()
   const hideMenu = pathname === "/login" || pathname === "/register"

@@ -19,10 +19,6 @@ func main() {
 	http.HandleFunc("/api/posting", handleCORS(handler.Midd(handler.PostCreationHandler)))
 	http.HandleFunc("/api/searchData", handleCORS(handler.HandleSearch))
 	http.HandleFunc("/api/suggestions", handleCORS(handler.Midd(handler.Suggestions)))
-
-	http.HandleFunc("/api/islogged", handleCORS(handler.Midd(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("logged"))
-	})))
 	
 	http.HandleFunc("/api/userdata", handleCORS(handler.Midd(handler.UserData)))
 	http.HandleFunc("/api/profile/{userId}", handleCORS(handler.Midd(handler.GetProfile)))
@@ -33,9 +29,7 @@ func main() {
 	http.HandleFunc("/api/posts/{postId}", handleCORS(handler.Midd(handler.ShowPost)))
 
 	http.HandleFunc("/api/like", handleCORS(handler.Midd(handler.LikeHandler)))
-	http.HandleFunc("/api/logout", handleCORS(handler.Midd(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(""))
-	})))
+	http.HandleFunc("/api/logout", handleCORS(handler.Midd(handler.LogoutHandler)))
 
 	http.HandleFunc("/api/groups/{groupId}", handleCORS(handler.Midd(handler.GetGroupByIdHandler)))
 	http.HandleFunc("/api/groups", handleCORS(handler.Midd(handler.CreateGroupHandler)))

@@ -2,15 +2,24 @@
 import {useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 export default function Sugg() {
     const [suggs , setSuggs ]= useState([])
+    const r = useRouter()
     useEffect(()=>{
+        
     fetch("http://localhost:8080/api/suggestions", { credentials: "include" }).then(d=>d.json()).then(dd=>{
-        const uniqueSuggestions = Array.from(new Map(dd.map(obj => [obj.id, obj])).values());
-        setSuggs(uniqueSuggestions)
+        
+        
+        if (typeof dd !="string"){
+            const uniqueSuggestions = Array.from(new Map(dd.map(obj => [obj.id, obj])).values());
+            setSuggs(uniqueSuggestions)
+        }else{
+            r.push("/login")
+        }
     })
+    
 },[])
-console.log(suggs);
 
     return (
         <div>

@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import '../../styles/register.css'
 import Link from "next/link"
+import InvalidCredentials from '@/components/invalidCredentials'
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: "",
@@ -14,7 +15,7 @@ export default function RegisterPage() {
     nickname: "",
     aboutMe: ""
   })
-
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter()
 
   const handleChange = (e) => {
@@ -35,21 +36,20 @@ export default function RegisterPage() {
       formDataToSend.append(key, value)
     })
 
-    const response = await fetch("http://localhost:8080/api/register", {
-      method: "POST",
-      body: formDataToSend,
-    }).catch((error) => {
-      console.error('Error', error);
-    });
-    console.log(response);
-    
-    const result = await response.text()
+    try {
+      const response = await fetch("http://localhost:8080/api/register", {
+        method: "POST",
+        body: formDataToSend,
+      })
 
-    if (response.ok) {
-      console.log(result);
-      router.push("/login")
-    } else {
-      console.log(result);
+      if (!response.ok) {
+        const result = await response.text()
+        setErrorMessage(result)
+      } else {
+        router.push("/login")
+      }
+    } catch (error) {
+      console.error('Error', error)
     }
   }
 
@@ -74,6 +74,7 @@ export default function RegisterPage() {
         </div>
         <div className="inputsbtn">
         <button type="submit" className="submitButtonreg">Register</button>
+        {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
         <p className="linkreg">
         already have an acount? <Link href="/login" className='loginregisterlink'>login</Link>
         </p>

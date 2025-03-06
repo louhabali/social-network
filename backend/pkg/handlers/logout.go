@@ -11,9 +11,10 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:   "Token",
+		Value:  "",     
+		Path:   "/", 
 		MaxAge: -1,
-	},
-	)
+	})
 
 	_, err = h.db.Exec(`UPDATE tokens SET token=NULL WHERE token=?`, cookie.Value)
 	if err != nil {
