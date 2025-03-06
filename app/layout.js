@@ -15,19 +15,18 @@ export default function RootLayout({ children }) {
             fetch('http://localhost:8080/api/userdata', {
                 credentials: "include",
             }).then(data => data.json()).then(d => {
-                
                 setUser(d)
-              
             })
-      
     }, []);
+    console.log(u);
+    
   
   const pathname = usePathname()
   const hideMenu = pathname === "/login" || pathname === "/register"
   return (
     <html lang="en">
       <body>
-        {!hideMenu && <NavigationMenu userID={u.ID} />}
+        {!hideMenu && <NavigationMenu userID={u.ID} Avatar={u.Avatar} fname={u.Firstname} lname={u.Lastname} />}
         {!hideMenu &&  <Header />}
         {<main>{children}</main>}
         
