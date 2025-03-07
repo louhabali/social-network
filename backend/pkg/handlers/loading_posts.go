@@ -76,7 +76,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("eroor pp :", err)
 		}
-		fmt.Println("privacy is :", pp)
+		
 		usId := 0
 		err = h.db.QueryRow("SELECT user_id FROM posts WHERE id = ?", post.Pid).Scan(&usId)
 		if err != nil {
@@ -84,11 +84,10 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 				return
 		}
 		if pp == "almost_private" {
-			fmt.Println("000000")
+			
 			isApproved := ""
 			fmt.Println("hihi : ", userID, usId)
 			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ? ", usId, userID).Scan(&isApproved)
-			fmt.Println("isapp : ", isApproved, err)
 			if err != nil {
 				fmt.Println("not included")
 
@@ -97,7 +96,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 				posts = append(posts, post)
 			}
 		} else if pp == "private" {
-			fmt.Println("2111")
+		
 			exist := 0
 			err = h.db.QueryRow(`SELECT EXISTS(
 				SELECT 1 FROM post_privacy_users 
@@ -105,7 +104,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println("not found", err)
 			}
-			fmt.Println("exist is : ", exist)
+		
 			if exist == 1 || usId == userID {
 				posts = append(posts, post)
 			}

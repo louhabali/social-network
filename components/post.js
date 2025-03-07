@@ -6,8 +6,8 @@ import {faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
 export default function Post({ post,handleLike,likestext }) {
-    console.log(likestext);
-    
+   
+  
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>
             <div className={styles.postHeader}>
@@ -34,7 +34,7 @@ export default function Post({ post,handleLike,likestext }) {
                     onClick={handleLike}
                     icon={faHeart}/>
                     <div>
-                    {post.Likes}{likestext=="" ? post.Likes!=1 ?" likes":" like":likestext}
+                    {post.Likes}{ likestext=="" ? post.Likes!=1 ?" likes":" like":likestext}
                     </div>
                     </div>
                 <div  style={{ flexDirection:"column",textAlign:"center" }}>

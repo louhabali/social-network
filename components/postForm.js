@@ -10,7 +10,7 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
 
-    const [ops, setOp] = useState("")
+    const [ops, setOp] = useState("public")
     const [privateUsers,setPrivateUsers] = useState([])
     const [selectedOptions, setSelectedOptions] = useState([]);
  // select 
