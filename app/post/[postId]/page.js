@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import Post from "@/components/post";
+import { handleLike } from "@/app/page"; // Adjust the import path as needed
 import CommentsClient from "./CommentsClient";
 
 async function getPost(postId) {
@@ -34,7 +35,6 @@ async function getComments(postId, offset = 0) {
 }
 
 export default async function PostPage({ params }) {
-
   const post = await getPost(params.postId);
   const initialComments = await getComments(params.postId);
 
@@ -43,7 +43,6 @@ export default async function PostPage({ params }) {
   return (
     <div>
       <Post post={post} />
-      
       <CommentsClient postId={params.postId} lenComments={post.NbComment} initialComments={initialComments} />
     </div>
   );

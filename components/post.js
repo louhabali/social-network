@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import Image from 'next/image';
 import styles from '../app/page.module.css';
@@ -9,7 +10,8 @@ export default function Post({ post, handleLike }) {
     const handleLikeClick = () => {
         handleLike(Number(post.Pid));
     };
-
+    console.log(post.NbComment);
+    
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>
             <div className={styles.postHeader}>
