@@ -44,7 +44,7 @@ export default function Post({ post, handleLike }) {
                         <FontAwesomeIcon icon={faComment} />
                     </Link>
                     <div>
-                        {post.NbComment === 0 ? "no" : post.NbComment}{" comments"}
+                        {post.NbComment === 0 ? "no" : post.NbComment}{post.NbComment != 1?" comments":" comment"}
                     </div>
                 </div>
             </div>
