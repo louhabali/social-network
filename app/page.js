@@ -12,10 +12,9 @@ const HomePage = () => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
-    const [likes, setLikes] = useState("");
 
     const router = useRouter();
-// posts
+
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
 
@@ -75,15 +74,12 @@ const HomePage = () => {
         return () => observer.current?.disconnect();
     }, [fetchPosts, loading, hasMore]);
 
-    const handleLike = async (e) => {
-        
-        const postId = e.target.closest("section").id;
-        const likeIcon = e.target;
-        const postIndex = posts.findIndex((post) => post.Pid.toString() === postId);
-        if (postIndex === -1) return;
+    const handleLike = async (postId) => {
+        const postIndex = posts.findIndex((post) => post.Pid === postId)
+        if (postIndex === -1) return
 
-        let updatedPosts = [...posts];
-        let likeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1;
+        let updatedPosts = [...posts]
+        let likeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1
 
         const response = await fetch("http://localhost:8080/api/like", {
             method: "POST",
@@ -92,16 +88,11 @@ const HomePage = () => {
         });
 
         if (response.ok) {
+            console.log(likeStatus);
+            
             updatedPosts[postIndex].UserInteraction = likeStatus;
             updatedPosts[postIndex].Likes += likeStatus ? 1 : -1;
-            likeIcon.style.color = likeStatus ? "red" : "white";
             setPosts(updatedPosts);
-            if (updatedPosts[postIndex].Likes!=1){
-                console.log(122);
-                setLikes(" likes")
-            }else{
-                setLikes(" like")
-            }
         }
     };
     
@@ -114,7 +105,7 @@ const HomePage = () => {
                 </div>
 
                 {posts.map((post) => (
-                    <Post key={post.Pid} post={post} handleLike={handleLike} likestext ={likes} />
+                    <Post key={post.Pid} post={post} handleLike={handleLike} />
                 ))}
 
                 {hasMore && <div id="load-more" style={{ height: "10px" }} />}
