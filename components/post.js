@@ -6,20 +6,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
+
 export default function Post({ post, handleLike }) {
+   
     const handleLikeClick = () => {
         handleLike(Number(post.Pid));
     };
-    console.log(post.NbComment);
     
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>
             <div className={styles.postHeader}>
+                <Link href={`/profile/${post.Uid}`}>
                 {post.Avatar ? (
-                    <Image style={{ borderRadius: "50%" }} src={`data:image/png;base64,${post.Avatar}`} alt="" width={32} height={32} />
+                    <Image  style={{ cursor:"pointer", borderRadius: "50%" }} src={`data:image/png;base64,${post.Avatar}`} alt="" width={32} height={32} />
                 ) : (
-                    <Image style={{ borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
+                    
+                    <Image  style={{cursor:"pointer", borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
+                    
                 )}
+                </Link>
                 <div>
                     <strong>{post.Username}</strong>
                 </div>
