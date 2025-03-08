@@ -15,7 +15,7 @@ func (h Handler) Suggestions(w http.ResponseWriter, r *http.Request) {
 
 	rows, _ := h.db.Query(`SELECT users.id, users.first_name, users.last_name ,users.avatar FROM users
     LEFT JOIN follow_requests ON users.id = follow_requests.follower_id
-    WHERE follow_requests.follower_id != ?`, userID)
+    WHERE follow_requests.follower_id != ? or users.id !=?`,userID, userID)
 	fmt.Println("uid", userID)
 	defer rows.Close()
 

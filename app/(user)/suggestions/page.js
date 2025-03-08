@@ -5,12 +5,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 export default function Sugg() {
     const [suggs , setSuggs ]= useState([])
+    const [text , settext ]= useState("")
     const r = useRouter()
     useEffect(()=>{
         
     fetch("http://localhost:8080/api/suggestions", { credentials: "include" }).then(d=>d.json()).then(dd=>{
         
-        
+        if (dd==null){
+            settext("no ")
+            return
+        } 
         if (typeof dd !="string"){
             const uniqueSuggestions = Array.from(new Map(dd.map(obj => [obj.id, obj])).values());
             setSuggs(uniqueSuggestions)
@@ -23,7 +27,7 @@ export default function Sugg() {
 
     return (
         <div>
-            <div style={{marginTop:"100px"}}>suggestions</div>
+            <div style={{marginTop:"100px"}}>{text}suggestions</div>
             <ul style={{listStyle:"none"}}>
             {suggs.map((v) => (
                  <li style={{ listStyle:"none",marginBottom:"10px"}} key={v.id}>
