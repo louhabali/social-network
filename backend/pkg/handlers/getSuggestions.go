@@ -13,10 +13,18 @@ func (h Handler) Suggestions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, _ := h.db.Query(`SELECT users.id, users.first_name, users.last_name ,users.avatar FROM users
-    LEFT JOIN follow_requests ON users.id = follow_requests.follower_id
-    WHERE follow_requests.follower_id != ? or users.id !=?`,userID, userID)
-	fmt.Println("uid", userID)
+	query := `
+	SELECT users.id, users.first_name, users.last_name, users.avatar
+	FROM users
+	WHERE users.id != ? AND users.id NOT IN (
+		SELECT following_id FROM follow_requests WHERE follower_id = ?
+	)
+	`
+	rows, err := h.db.Query(query, userID, userID)
+	if err != nil {
+		http.Error(w, "Failed to fetch suggestions", http.StatusInternalServerError)
+		return
+	}
 	defer rows.Close()
 
 	var notFollowing []Follower
@@ -31,5 +39,4 @@ func (h Handler) Suggestions(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("nf: ", notFollowing)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notFollowing)
-
 }
