@@ -42,6 +42,10 @@ func main() {
 	http.HandleFunc("/api/getallusers", handleCORS(handler.Midd(handler.GetAllusers)))
 	http.HandleFunc("/api/getfollowedusers", handleCORS(handler.Midd(handler.GetAllusers)))
 
+
+	http.HandleFunc("/api/conversations", handleCORS(handler.Midd(handler.GetConversations)))
+	http.HandleFunc("/api/messages", handleCORS(handler.Midd(handler.GetConversations)))
+
 	http.ListenAndServe(":8080", nil)
 }
 
