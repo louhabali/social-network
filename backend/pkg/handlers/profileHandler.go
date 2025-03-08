@@ -12,11 +12,13 @@ import (
 	"time"
 )
 
+ 
 type Follower struct {
-	ID        int    `json:"id"`
-	Firstname string `json:"fname"`
-	Lastname  string `json:"lname"`
-	Nickname  string `json:"nickname"`
+    ID        int    `json:"id"`
+    Firstname string `json:"fname"`
+    Lastname  string `json:"lname"`
+    Nickname  string `json:"nickname"`
+    Avatar      *string `json:"avatar"`
 }
 
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
