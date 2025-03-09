@@ -1,56 +1,92 @@
-.navbar{
-   background-color: rgb(9, 9, 9);
+/* Navbar styles for the sidebar */
+.navbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    background-color: #1e1e1e;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
   
- 
-   width: 250px;
-}
-.navbar ul{
-    list-style-type: none;
+  .navbar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .navbar li {
+    margin-bottom: 5px;
+  }
+  
+  .navbar li:first-child {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333333;
+  }
+  
+  .menulinks {
     display: flex;
-    padding: 0px 20px;
-    flex-direction: column;
-    gap: 40px;
-}
-.menulinks{
-    color: #8e8e8f;
-    text-decoration: none;
-    font-size: 15px;
     align-items: center;
-    gap: 10px;
-    display: flex;
-   
-}
-.menulinks:hover{
-    color: white;
-}
-@media screen and (max-width: 930px){
-    .navbar{
-        width: 100px;
-     }
-     .navbar ul li h1 {
-        text-align: center;
+    gap: 15px;
+    padding: 12px 20px;
+    color: #b0b0b0;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .menulinks:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
+  }
+  
+  .menulinks svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 992px) {
+    .navbar {
+      width: 70px;
     }
-     .navbar ul{
     
-        padding: 0;
-     
+    .navbar li:first-child h1 span,
+    .menulinks span {
+      display: none;
     }
-    .menulinks{
-        justify-content: center;
+  }
+  
+  @media (max-width: 576px) {
+    .navbar {
+      bottom: auto;
+      width: 100%;
+      height: 50px;
+      top: auto;
+      bottom: 0;
     }
-     .navbar ul li span{
-        display: none;
-    }
-}
-@media screen and (max-width:376px) {
+    
     .navbar ul {
-        width: 50px;
+      display: flex;
+      justify-content: space-around;
     }
-    .navbar{
-        margin-right: 0px;
-     }
-     .navbar ul li h1 {
-        text-align: center;
+    
+    .navbar li:first-child {
+      display: none;
     }
-
-}
+    
+    .navbar li {
+      margin: 0;
+    }
+    
+    .menulinks {
+      padding: 8px;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .menulinks span {
+      display: none;
+    }
+  }

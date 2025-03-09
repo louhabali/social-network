@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
+// Remove the Header import if your layout already includes it
+// import Header from "@/components/Header";
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
@@ -13,7 +15,8 @@ const HomePage = () => {
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
     const router = useRouter();
-// posts
+    
+    // posts
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
 
@@ -95,11 +98,11 @@ const HomePage = () => {
             setPosts(updatedPosts);
         }
     };
-    console.log(posts);
     
     return (
         <div className={styles.container}>
-            <nav className={styles.navbar}></nav>
+            {/* Remove the Header component from here */}
+            
             <main className={styles.main}>
                 <div className={styles.feed}>
                     <PostForm userInfo={userInfo} setPosts={setPosts} setOffset={setOffset} />
@@ -110,7 +113,7 @@ const HomePage = () => {
                 ))}
 
                 {hasMore && <div id="load-more" style={{ height: "10px" }} />}
-                {loading && <p>Loading...</p>}
+                {loading && <p className={styles.loading}>Loading...</p>}
             </main>
         </div>
     );
