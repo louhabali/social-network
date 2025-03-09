@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link"
 import React, { useState, useEffect, useRef } from "react";
+import styles from "./Groups.module.css";
 
 export default function GroupsPage() {
 
@@ -100,62 +101,85 @@ export default function GroupsPage() {
     }
         
     return (
-        <div>
-            <h1>Groups</h1>
+        <div className={styles.container}>
+            <div className={styles.pageHeader}>
+                <h1>Groups</h1>
+                <button className={styles.createGroupBtn} onClick={openModal}>Create Group</button>
+            </div>
 
-            <div>
-                <button onClick={openModal}>Create Group</button>
+            <ul className={styles.groupsList}>
+                {groups?.map((group) => (
+                    <li key={group.id} className={styles.groupItem}>
+                        <h3 className={styles.groupTitle}>{group.title}</h3>
+                        <p className={styles.groupDescription}>{group.description}</p>
+                        
+                        <div className={styles.groupActions}>
+                            {group.status === "approved" || group.status === "creator" ? (
+                                <Link href={`/groups/${group.id}`}>
+                                    <button className={styles.openBtn}>Open</button>
+                                </Link>
+                            ) : group.status === "pending" ? (
+                                <div className={styles.pendingStatus}>
+                                    <span>Request Pending</span>
+                                    <button 
+                                        className={styles.cancelBtn}
+                                        onClick={() => handleJoin(group.id, "pending")}
+                                    >
+                                        Cancel Request
+                                    </button>
+                                </div>
+                            ) : (
+                                <button 
+                                    className={styles.joinBtn} 
+                                    onClick={() => handleJoin(group.id)}
+                                >
+                                    Join Group
+                                </button>
+                            )}
+                        </div>
+                    </li>
+                ))}
+            </ul>
 
-                {isOpen && (
-                    <div className="modal-overlay" onClick={closeModal}>
-                        <div className="modal" onClick={(e) => e.stopPropagation()}>
-                            <h2>Create a New Group</h2>
-                            <form onSubmit={handleSubmit}>
+            {hasMore && <div id="load-more" className={styles.loadMore} />}
+            {loading && <p className={styles.loadingIndicator}>Loading...</p>}
+
+            {isOpen && (
+                <div className={styles.modalOverlay} onClick={closeModal}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                        <h2>Create a New Group</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className={styles.formGroup}>
+                                <label htmlFor="groupTitle">Group Title</label>
                                 <input
+                                    id="groupTitle"
                                     type="text"
-                                    placeholder="Group Title"
+                                    placeholder="Enter a name for your group"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     required
                                 />
+                            </div>
+                            
+                            <div className={styles.formGroup}>
+                                <label htmlFor="groupDescription">Description</label>
                                 <textarea
-                                    placeholder="Description"
+                                    id="groupDescription"
+                                    placeholder="What's your group about?"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     required
                                 ></textarea>
-                                <div className="modal-buttons">
-                                    <button type="submit">Create</button>
-                                    <button type="button" onClick={closeModal}>Cancel</button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                            
+                            <div className={styles.modalButtons}>
+                                <button type="button" onClick={closeModal}>Cancel</button>
+                                <button type="submit">Create</button>
+                            </div>
+                        </form>
                     </div>
-                )}
-            </div>
-
-            <ul>
-                {groups?.map((group) => (
-                    <li key={group.id}>
-                        <strong>{group.title}</strong>
-                        <p>{group.description}</p>
-                        {group.status === "approved" || group.status === "creator" ? (
-                            <Link href={`/groups/${group.id}`}>
-                                <button>Open</button>
-                            </Link>
-                        ) : group.status === "pending" ? (
-                            <>
-                                <span>Request Pending </span>
-                                <button onClick={() => handleJoin(group.id, "pending")}>Cancel Request</button>
-                            </>
-                        ) : (
-                            <button onClick={() => handleJoin(group.id)}>Join Group</button>
-                        )}
-                    </li>
-                ))}
-            </ul>
-            {hasMore && <div id="load-more" style={{ height: "10px" }} />}
-            {loading && <p>Loading...</p>}
+                </div>
+            )}
         </div>
     );
 }
