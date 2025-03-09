@@ -12,13 +12,12 @@ import (
 	"time"
 )
 
- 
 type Follower struct {
-    ID        int    `json:"id"`
-    Firstname string `json:"fname"`
-    Lastname  string `json:"lname"`
-    Nickname  string `json:"nickname"`
-    Avatar      *string `json:"avatar"`
+	ID        int     `json:"id"`
+	Firstname string  `json:"fname"`
+	Lastname  string  `json:"lname"`
+	Nickname  string  `json:"nickname"`
+	Avatar    *string `json:"avatar"`
 }
 
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +35,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	followStatus := ""
 	err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ?", fid, userID).Scan(&followStatus)
-	fmt.Println(followStatus,fid,userID,err)
+	fmt.Println(followStatus, fid, userID, err)
 	followers, err := getFollowers(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching followers:", err)
@@ -60,11 +59,11 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		UserId       int        `json:"userid"`
 		FollowStatus string     `json:"followStatus"`
 	}{
-		User:           userInfo,
-		Posts:          posts,
-		Followers:      followers,
-		Following:      following,
-		UserId:         fid,
+		User:         userInfo,
+		Posts:        posts,
+		Followers:    followers,
+		Following:    following,
+		UserId:       fid,
 		FollowStatus: followStatus,
 	}
 
