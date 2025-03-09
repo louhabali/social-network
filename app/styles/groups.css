@@ -1,0 +1,632 @@
+/* Facebook-style Groups CSS */
+:root {
+  --fb-dark-bg: #18191a;
+  --fb-card-bg: #242526;
+  --fb-hover: #3a3b3c;
+  --fb-dark-text: #e4e6eb;
+  --fb-light-text: #b0b3b8;
+  --fb-blue: #1877f2;
+  --fb-border: #393a3b;
+  --fb-green: #42b72a;
+  --fb-red: #f02849;
+}
+
+body {
+  background-color: var(--fb-dark-bg);
+  color: var(--fb-dark-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* .mainDiv {
+  margin-top: 7rem;
+  margin-left: 30rem;
+} */
+
+.mainDiv {
+  margin-top: 7rem;
+  margin-left: 30rem;
+  max-width: 800px;
+  padding: 0 16px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .mainDiv {
+    margin-left: 20rem;
+  }
+}
+
+@media screen and (max-width: 992px) {
+
+  .mainDiv,
+  .groups-container {
+    margin-left: 10rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .mainDiv {
+    margin-left: 7rem;
+    margin-top: 5rem;
+    /* padding: 0 20px; */
+    /* margin: 5rem auto 0;  }
+}
+
+@media screen and (max-width: 576px) {
+  .mainDiv {
+    margin-top: 4rem;
+    margin-left: 5rem;
+    /* padding: 0 16px; */
+  }
+}
+
+/* Groups container - main content */
+.groups-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-left: 40rem;
+  margin-top: 10rem;
+  transform: scale(1.2);
+  transform-origin: center;
+}
+
+.groups-container h1 {
+  color: var(--fb-dark-text);
+  font-size: 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--fb-border);
+  padding-bottom: 16px;
+  font-weight: 700;
+}
+
+/* Create group button */
+.create-group-btn {
+  background-color: var(--fb-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.create-group-btn:hover {
+  background-color: #166fe5;
+}
+
+.create-group-btn::before {
+  content: "+";
+  margin-right: 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Tabs */
+.group-tabs {
+  display: flex;
+  background-color: var(--fb-card-bg);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 4px;
+}
+
+.group-tabs button {
+  flex: 1;
+  background-color: transparent;
+  color: var(--fb-light-text);
+  border: none;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  text-transform: capitalize;
+}
+
+.group-tabs button:hover {
+  background-color: var(--fb-hover);
+}
+
+.group-tabs button.active {
+  background-color: var(--fb-hover);
+  color: var(--fb-blue);
+}
+
+/* Group title and description */
+.group-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fb-dark-text);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.group-description {
+  color: var(--fb-light-text);
+  font-size: 15px;
+  line-height: 1.4;
+  margin-bottom: 24px;
+  max-width: 800px;
+}
+
+/* Invite button */
+.fb-invite-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--fb-dark-text);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  margin-bottom: 2rem;
+}
+
+.fb-invite-btn:hover {
+  background-color: var(--fb-hover);
+}
+
+.fb-invite-btn::before {
+  content: "+";
+  margin-right: 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Groups list */
+.groups-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.groups-list li {
+  background-color: var(--fb-card-bg);
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 31rem;
+}
+
+.groups-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Add header image style for each group card */
+.groups-list li::before {
+  content: "";
+  display: block;
+  height: 80px;
+  background-color: var(--fb-blue);
+  background-image: linear-gradient(45deg, var(--fb-blue), #0099ff);
+  margin-bottom: 12px;
+}
+
+.groups-list li strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fb-dark-text);
+  margin: 0 16px 8px;
+  padding: 0;
+}
+
+.groups-list li p {
+  color: var(--fb-light-text);
+  margin: 0 16px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  flex-grow: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.groups-list li button,
+.groups-list li a button {
+  background-color: var(--fb-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 0 16px 16px;
+  width: calc(100% - 32px);
+  text-align: center;
+}
+
+.groups-list li a {
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+.groups-list li button:hover,
+.groups-list li a button:hover {
+  background-color: #166fe5;
+}
+
+.groups-list li .open-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.groups-list li .open-group::before {
+  content: "→";
+  margin-right: 6px;
+}
+
+/* Status specific styling */
+.groups-list li .pending-status {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 16px;
+  gap: 8px;
+}
+
+.groups-list li span {
+  color: var(--fb-light-text);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.groups-list li button.cancel-request {
+  background-color: #505151;
+  margin: 0;
+  width: 100%;
+}
+
+.groups-list li button.cancel-request:hover {
+  background-color: #636464;
+}
+
+.groups-list li button.join-group {
+  background-color: var(--fb-green);
+}
+
+.groups-list li button.join-group:hover {
+  background-color: #36a420;
+}
+
+.groups-list li button.join-group::before {
+  content: "+";
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+/* Modal/Popup styles */
+.popup,
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content,
+.modal {
+  background-color: var(--fb-card-bg);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  box-shadow: 0 2px 26px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content h2,
+.modal h2 {
+  color: #000000;
+  font-size: 20px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--fb-border);
+  font-weight: 600;
+}
+
+.popup-content input,
+.popup-content textarea,
+.modal input,
+.modal textarea {
+  width: 100%;
+  background-color: #fdfdfd;
+  border: 1px solid var(--fb-border);
+  border-radius: 6px;
+  padding: 12px;
+  color: #1b1b1c;
+  font-size: 15px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.popup-content textarea,
+.modal textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.popup-content input:focus,
+.popup-content textarea:focus,
+.modal input:focus,
+.modal textarea:focus {
+  border-color: var(--fb-blue);
+  outline: none;
+}
+
+.popup-buttons,
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.popup-content button,
+.modal-buttons button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.popup-content button:first-of-type,
+.modal-buttons button[type="submit"] {
+  background-color: var(--fb-blue);
+  color: #000000;
+  border: none;
+  min-width: 100px;
+}
+
+.popup-content button:first-of-type:hover,
+.modal-buttons button[type="submit"]:hover {
+  background-color: #166fe5;
+}
+
+.popup-content button:last-of-type,
+.modal-buttons button[type="button"] {
+  background-color: #2481eff5;
+  color: black;
+  border: none;
+}
+
+.popup-content button:last-of-type:hover,
+.modal-buttons button[type="button"]:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--fb-light-text);
+  background-color: var(--fb-card-bg);
+  border-radius: 8px;
+}
+
+.empty-state p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.empty-state .create-group-btn {
+  margin-bottom: 0;
+}
+
+/* Loading indicator */
+.loading-text {
+  text-align: center;
+  color: var(--fb-light-text);
+  padding: 16px;
+  background-color: var(--fb-card-bg);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1200px) {
+  .groups-container {
+    margin-left: 25rem;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .groups-container {
+    margin-left: 18rem;
+  }
+}
+
+/* @media screen and (max-width: 992px) {
+  .groups-container {
+    margin-left: 30px;
+  }
+} */
+
+@media screen and (max-width: 768px) {
+  .groups-container {
+    padding: 15px;
+    margin-left: 4rem;
+    transform: scale(1);
+    /* transform-origin: left; */
+    margin-top: 4rem;
+  }
+
+  .groups-list {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    margin-left: 3rem;
+  }
+
+  .groups-list li {
+    width: 25rem;
+
+  }
+
+  .popup-content,
+  .modal {
+    max-width: 90%;
+    margin: 0 10px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .groups-list {
+    grid-template-columns: 1fr;
+    /* width: 10rem; */
+
+  }
+
+  .groups-list li {
+    width: 15rem;
+
+  }
+
+  .modal-buttons,
+  .popup-buttons {
+    flex-direction: column;
+  }
+
+  .modal-buttons button,
+  .popup-buttons button {
+    width: 100%;
+  }
+}
+
+
+.events-container {
+  background-color: #242526;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  max-width: 600px;
+  margin: 20px auto;
+  width: 33rem;
+}
+
+/* Add Event Button */
+.add-event-button {
+  background-color: #3a3b3c;
+  color: #e4e6eb;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background-color 0.2s;
+}
+
+.add-event-button:hover {
+  background-color: #4e4f50;
+}
+
+/* Event Cards */
+.event-card {
+  background-color: #3a3b3c;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: transform 0.1s;
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+}
+
+.event-card h3 {
+  color: #e4e6eb;
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.event-card p {
+  color: #b0b3b8;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.event-date {
+  color: #9fa1a7 !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+
+/* Event Action Buttons */
+.event-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.event-actions button {
+  background-color: #4e4f50;
+  color: #e4e6eb;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  flex: 1;
+  transition: background-color 0.2s;
+}
+
+.event-actions button:hover {
+  background-color: #606162;
+}
+
+.event-actions button.active {
+  background-color: #2d88ff;
+  color: white;
+}
+
+.event-actions button.active:hover {
+  background-color: #3578e5;
+}
+
+/* Empty state */
+.events-container>p {
+  color: #b0b3b8;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 15px;
+}
