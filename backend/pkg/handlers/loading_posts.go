@@ -28,6 +28,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 
 	offset := r.URL.Query().Get("offset")
 	groupId := r.URL.Query().Get("groupId")
+	userId := r.URL.Query().Get("userId")
 
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
@@ -45,8 +46,13 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		query += " WHERE group_id = ?"
 		args = append(args, groupId)
 	} else {
-		query += " WHERE group_id IS '0'"
+		query += " WHERE group_id IS 0"
+		if userId != "" {
+			query += " AND user_id = ?"
+			args = append(args, userId)
+		}
 	}
+	fmt.Println(offset, groupId, userId)
 	query += " ORDER BY posts.id DESC LIMIT 4 OFFSET ?"
 	args = append(args, offset)
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./invite-users.css"
 
 export default function InviteUsers({ groupId }) {
   const [showPopup, setShowPopup] = useState(false);

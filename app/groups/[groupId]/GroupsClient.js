@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
 import InviteUsers from "./InviteUsers";
+import './GroupClient.css';
+
 
 export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
     const [posts, setPosts] = useState(initialPosts || []);
@@ -19,7 +21,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
         description: "",
         date: "",
     });
-    const [memberStatus,setMemberStatus] = useState(status)
+    const [memberStatus, setMemberStatus] = useState(status)
 
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
@@ -164,25 +166,25 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
     async function handleJoinGroup() {
         let method = memberStatus === "pending" ? "DELETE" : "POST";
-    
+
         const response = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
             method,
             credentials: "include",
         });
-    
+
         if (response.ok) {
             setMemberStatus(memberStatus === "pending" ? "" : "pending");
         }
     }
-    
+
     if (memberStatus != "approved" && memberStatus != "creator") {
         return (
             <div>
                 <p>This is a private group. Join to see posts and events.</p>
                 {memberStatus === "pending" ? (
                     <>
-                    <span>Request Pending </span>
-                    <button onClick={handleJoinGroup}>Cancel Join Request</button>
+                        <span>Request Pending </span>
+                        <button onClick={handleJoinGroup}>Cancel Join Request</button>
                     </>
                 ) : (
                     <button onClick={handleJoinGroup}>Join Group</button>
@@ -190,11 +192,14 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             </div>
         );
     }
-    
+
 
     return (
-        <div>
-            <InviteUsers groupId={groupId} />
+        <div className="group-container">
+            <div className="invite-users">
+                <InviteUsers groupId={groupId} />
+            </div>
+
             <div className="group-tabs">
                 <button className={activeTab === "posts" ? "active" : ""} onClick={() => setActiveTab("posts")}>
                     Posts
@@ -205,7 +210,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             </div>
 
             {activeTab === "posts" && (
-                <>
+                <div className="posts-container">
                     <PostForm userInfo={userInfo} setPosts={setPosts} setOffset={setOffset} groupId={groupId} />
 
                     {posts.map((post) => (
@@ -213,62 +218,43 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
                     ))}
 
                     {hasMore && <div id="load-more" style={{ height: "10px" }} />}
-                    {loading && <p>Loading...</p>}
-                </>
+                    {loading && <p className="loading">Loading...</p>}
+                </div>
             )}
 
             {activeTab === "events" && (
-                <>
-                    <button onClick={() => setShowEventForm(true)}>+ Add Event</button>
+                <div className="events-container">
+                    <button className="add-event-btn" onClick={() => setShowEventForm(true)}>+ Add Event</button>
 
                     {events === null || events.length === 0 ? (
-                        <p>No events available.</p>
+                        <p className="no-events">No events available.</p>
                     ) : (
                         events.map((event) => (
                             <div key={event.id} className="event-card">
                                 <h3>{event.title}</h3>
                                 <p>{event.description}</p>
-                                <p>Date: {new Date(event.date).toLocaleDateString()}</p>
-                                <div>
-                                    <button
-                                        className={event.userStatus === "going" ? "active" : ""}
-                                        onClick={() => handleGoing(event.id, "going")}>
-                                        Going
-                                    </button>
-                                    <button
-                                        className={event.userStatus === "not_going" ? "active" : ""}
-                                        onClick={() => handleGoing(event.id, "not_going")}>
-                                        Not Going
-                                    </button>
+                                <p className="event-date">Date: {new Date(event.date).toLocaleDateString()}</p>
+                                <div className="event-actions">
+                                    <button className={event.userStatus === "going" ? "active" : ""} onClick={() => handleGoing(event.id, "going")}>Going</button>
+                                    <button className={event.userStatus === "not_going" ? "active" : ""} onClick={() => handleGoing(event.id, "not_going")}>Not Going</button>
                                 </div>
                             </div>
                         ))
                     )}
-                </>
+                </div>
             )}
 
             {showEventForm && (
                 <div className="popup">
                     <div className="popup-content">
                         <h2>Create Event</h2>
-                        <input
-                            type="text"
-                            placeholder="Title"
-                            value={newEvent.title}
-                            onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                        />
-                        <textarea
-                            placeholder="Description"
-                            value={newEvent.description}
-                            onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                        />
-                        <input
-                            type="datetime-local"
-                            value={newEvent.date}
-                            onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-                        />
-                        <button onClick={handleCreateEvent}>Create</button>
-                        <button onClick={() => setShowEventForm(false)}>Cancel</button>
+                        <input type="text" placeholder="Title" value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
+                        <textarea placeholder="Description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
+                        <input type="datetime-local" value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
+                        <div className="popup-actions">
+                            <button onClick={handleCreateEvent}>Create</button>
+                            <button onClick={() => setShowEventForm(false)}>Cancel</button>
+                        </div>
                     </div>
                 </div>
             )}

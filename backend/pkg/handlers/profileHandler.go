@@ -41,7 +41,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching followers:", err)
 	}
 
-	posts, err := getPostsByUserID(h.db, userID)
+	posts, totalPosts,err := getPostsByUserID(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching posts:", err)
 	}
@@ -58,6 +58,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		Following    []Follower `json:"following"`
 		UserId       int        `json:"userid"`
 		FollowStatus string     `json:"followStatus"`
+		TotalPosts   int        `json:"totalPosts"`
 	}{
 		User:         userInfo,
 		Posts:        posts,
@@ -65,16 +66,23 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		Following:    following,
 		UserId:       fid,
 		FollowStatus: followStatus,
+		TotalPosts:   totalPosts,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func getPostsByUserID(db *sql.DB, userID int) ([]Post, error) {
+func getPostsByUserID(db *sql.DB, userID int) ([]Post, int,error) {
+	var totalPosts int
+	err := db.QueryRow("SELECT COUNT(*) FROM posts WHERE user_id = ? AND group_id = 0", userID).Scan(&totalPosts)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	rows, _ := db.Query(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar
         FROM posts
-        JOIN users ON posts.user_id = users.id  WHERE posts.user_id = ? ORDER BY posts.id DESC LIMIT ? OFFSET ?`, userID, 4, 0)
+        JOIN users ON posts.user_id = users.id  WHERE posts.user_id = ? AND group_id = 0 ORDER BY posts.id DESC LIMIT ? OFFSET ?`, userID, 4, 0)
 
 	var posts []Post
 	for rows.Next() {
@@ -93,7 +101,7 @@ func getPostsByUserID(db *sql.DB, userID int) ([]Post, error) {
 		post.UserInteraction = getPostInteractions(post.Pid, userID, db)
 		posts = append(posts, post)
 	}
-	return posts, nil
+	return posts, totalPosts,nil
 }
 
 func getUserInfo(db *sql.DB, userID int) (User, error) {
