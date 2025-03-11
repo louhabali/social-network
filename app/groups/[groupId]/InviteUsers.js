@@ -7,6 +7,9 @@ export default function InviteUsers({ groupId }) {
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
 
+
+  console.log(users);
+  
   const fetchUsers = async (reset = false) => {
     const res = await fetch(
       `http://localhost:8080/api/groups/${groupId}/invite?search=${search}&offset=${reset ? 0 : offset}`,
@@ -55,7 +58,7 @@ export default function InviteUsers({ groupId }) {
               fetchUsers();
             }
           }}>
-              {users.map((user) => (
+              {users?.map((user) => (
                 <li key={user.id}>
                   {user.name}
                   <button onClick={() => inviteUser(user.id)}>Invite</button>
