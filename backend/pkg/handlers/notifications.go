@@ -8,69 +8,73 @@ import (
 	"net/http"
 )
 
-type folowNotif struct {
-	Type      string `json:"type"`
-	RequestID int    `json:"request_id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+type notificationToInsert struct {
+	Type      string
+	RelatedId int
+	ReciverId int
+	SenderId  int
 }
 
 func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	userId, _ := r.Context().Value("userID").(int)
-	fmt.Println(userId)
-	followReqs, err := getFolowReq(h.db, userId)
+	// fmt.Println(userId)
+	query := `
+		SELECT 
+		    n.id, 
+		    n.type, 
+		    n.related_id, 
+		    CASE 
+		        WHEN n.type = 'group event' THEN g.name 
+		        ELSE u.first_name || ' ' || u.last_name 
+		    END AS related_name
+		FROM notifications AS n
+		JOIN users AS u ON n.sender_id = u.id
+		LEFT JOIN groups AS g ON n.type = 'group event' AND n.related_id = g.id
+		WHERE n.reciver_id = ? AND n.is_read = 0
+	`
+	rows, err := h.db.Query(query, userId)
+	// followReqs, err := getFolowReq(h.db, userId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error fetching follow requests: %v", err), http.StatusInternalServerError)
+		log.Println("Error getting notifs: ", err)
+		http.Error(w, fmt.Sprintf("Error getting notifs: %v", err), http.StatusInternalServerError)
 		return
+	}
+
+	type notifRes struct {
+		Id          int    `json:"id"`
+		RelatedId   int    `json:"related_id"`
+		Type        string `json:"type"`
+		RelatedName string `json:"related_name"`
+	}
+
+	var notifications []notifRes
+	for rows.Next() {
+		fmt.Println("turn")
+		var notif notifRes
+		rows.Scan(&notif.Id, &notif.Type, &notif.RelatedId, &notif.RelatedName)
+		notifications = append(notifications, notif)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(followReqs); err != nil {
+	if err := json.NewEncoder(w).Encode(notifications); err != nil {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return
 	}
 }
 
-func getFolowReq(db *sql.DB, userId int) ([]folowNotif, error) {
-	fmt.Println("here")
+func insertNotification(db *sql.DB, notif *notificationToInsert) error {
 	query := `
-	SELECT fr.id AS request_id,
-		   u.first_name,
-		   u.last_name
-	FROM follow_requests fr
-	JOIN users u ON fr.follower_id = u.id
-	WHERE fr.following_id = ? AND fr.status = 'pending';
-`
-
-	rows, err := db.Query(query, userId)
+		INSERT INTO notifications (type, related_id, recever_id, sender_id, is_read, created_at)
+		VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+	`
+	fmt.Println(notif)
+	_, err := db.Exec(query, notif.Type, notif.RelatedId, notif.ReciverId, notif.SenderId)
 	if err != nil {
-		log.Printf("Error fetching follow requests: %v", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	var requests []folowNotif
-	for rows.Next() {
-		var requestId int
-		var firstName, lastName string
-		// var followerId int
-
-		if err := rows.Scan(&requestId, &firstName, &lastName); err != nil {
-			log.Printf("Error scanning row: %v", err)
-			return nil, err
-		}
-
-		notification := folowNotif{
-			RequestID: requestId,
-			FirstName: firstName,
-			LastName:  lastName,
-			Type:      "follow_request",
-		}
-
-		requests = append(requests, notification)
+		fmt.Println(err)
+		return err
 	}
 
-	return requests, nil
+	return nil
 }

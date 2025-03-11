@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,14 +32,35 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
+
 		groupId := 0
-		h.db.QueryRow("INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?) RETURNING id", g.Title, g.Description, userID).Scan(&groupId)
-		h.db.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, ?)", groupId, userID, "creator")
+		// tx, err := h.db.Begin()
+		// if err != nil {
+		// 	http.Error(w, "Error start conversation", http.StatusInternalServerError)
+		// }
+
+		err = h.db.QueryRow("INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?) RETURNING id", g.Title, g.Description, userID).Scan(&groupId)
+		if (err != nil) {
+			http.Error(w, "Error creating group", http.StatusInternalServerError)
+			return
+		}
+		_, err = h.db.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, ?)", groupId, userID, "creator")
+		if (err != nil) {
+			http.Error(w, "Error creating group", http.StatusInternalServerError)
+			return
+		}
 
 		g.CreatorId = userID
 		g.ID = groupId
 		g.CreatedAt = time.Now().Format("Jan 2, 2006 at 3:04")
 		g.Status = "creator"
+
+		// create related chate
+		_, err = CreatGroupChat(h.db, userID, g.Title) 
+		if (err != nil) {
+			http.Error(w, "Error creating group chat", http.StatusInternalServerError)
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(g)
@@ -71,24 +93,51 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
+	joinSender := r.Context().Value("userID").(int)
 	groupID, _ := strconv.Atoi(r.PathValue("groupId"))
 	var userID int
 	var requestBody struct {
 		UserID int `json:"userId"`
 	}
+
+	memberInvitation := true
 	json.NewDecoder(r.Body).Decode(&requestBody)
+	
 	if requestBody.UserID == 0 {
-		userID = r.Context().Value("userID").(int)
+		memberInvitation = false
+		userID = joinSender
 	}else {
 		userID = requestBody.UserID
 	}
 
 	if r.Method == "POST" {
-		_, err := h.db.Exec("INSERT INTO group_members (group_id, user_id) VALUES (?, ?)", groupID, userID)
+		res, err := h.db.Exec("INSERT INTO group_members (group_id, user_id) VALUES (?, ?)", groupID, userID)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+
+		joinReqId, _ := res.LastInsertId()
+		if (memberInvitation) {
+			insertNotification(h.db, &notificationToInsert{
+				RelatedId: int(joinReqId),
+				SenderId: joinSender,
+				ReciverId: userID,
+				Type: "group join invatation",
+			})
+		} else {
+			query := `SELECT creator_id FROM groups  WHERE id = ?`
+			var adminId int
+			h.db.QueryRow(query,groupID).Scan(&adminId)
+			insertNotification(h.db, &notificationToInsert{
+				RelatedId: int(joinReqId),
+				SenderId: joinSender,
+				ReciverId: adminId,
+				Type: "group join requst",
+			})
+		}
+
+		fmt.Println("add user")
 	} else if r.Method == "DELETE" {
 		_, err := h.db.Exec("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID)
 		if err != nil {
@@ -98,4 +147,35 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+
+func getGroupMembers(db *sql.DB, groupId int) ([]int, error){
+	var members []int
+
+    query := `
+        SELECT user_id 
+        FROM group_members 
+        WHERE group_id = ? AND (status = 'approved' OR status = 'creator')
+    `
+
+    rows, err := db.Query(query, groupId)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var userId int
+        if err := rows.Scan(&userId); err != nil {
+            return nil, err
+        }
+        members = append(members, userId)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return members, nil
 }

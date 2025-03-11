@@ -51,6 +51,8 @@ func main() {
 	http.HandleFunc("/api/notifications", handleCORS(handler.Midd(handler.GetNotifications)))
 	http.HandleFunc("/api/conversations", handleCORS(handler.Midd(handler.GetConversations)))
 	http.HandleFunc("/api/messages", handleCORS(handler.Midd(handler.GetMessages)))
+	http.HandleFunc("/api/follow/accept", handleCORS(handler.Midd(handler.AcceptFollowReq)))
+	http.HandleFunc("/api/follow/reject", handleCORS(handler.Midd(handler.RejectFollowReq)))
 
 	http.ListenAndServe(":8080", nil)
 }

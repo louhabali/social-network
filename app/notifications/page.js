@@ -1,58 +1,68 @@
 "use client"
 import { useState, useEffect } from "react";
-import Notification from "../../components/folowerRequestNotif";
+import { FollowNotif } from "../../components/notifications";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     async function fetchNotifications() {
-        try {
-          const response = await fetch(`http://localhost:8080/api/notifications`, {
-            credentials: "include",
-          });
-          const data = await response.json();
-          console.log("notif",data);
-          setNotifications(data);
-  
-          //   setConversations(data);
-        } catch (error) {
-          console.error("Failed to fetch conversations", error);
-        }
+      try {
+        const response = await fetch(`http://localhost:8080/api/notifications`, {
+          credentials: "include",
+        });
+        const data = await response.json();
+        console.log("notif", data);
+        setNotifications(data ? data : []);
+
+        //   setConversations(data);
+      } catch (error) {
+        console.error("Failed to fetch conversations", error);
       }
+    }
 
     fetchNotifications();
   }, []);
 
   const handleAccept = async (requestId) => {
-    await fetch(`/api/accept-follow-request`, {
-      method: 'POST',
-      body: JSON.stringify({ requestId }),
-    });
-    // Update the local state to reflect the accepted request
-    setNotifications(notifications.filter(notification => notification.id !== requestId));
+      const response = await fetch(`http://localhost:8080/api/follow/accept`, {
+        credentials: "include",
+        method: "post",
+        body: JSON.stringify({ requestId }),
+      });
+  
+      if(response.status == 200) {
+        setNotifications(notifications.filter(notification => notification.request_id !== requestId));
+      } else {
+        //error
+      }
   };
 
   const handleReject = async (requestId) => {
-    await fetch(`/api/reject-follow-request`, {
-      method: 'DELETE',
+    const response = await fetch(`http://localhost:8080/api/follow/reject`, {
+      credentials: "include",
+      method: "DELETE",
       body: JSON.stringify({ requestId }),
     });
-    // Update the local state to reflect the rejected request
-    setNotifications(notifications.filter(notification => notification.id !== requestId));
+
+    if(response.status == 200) {
+      setNotifications(notifications.filter(notification => notification.request_id !== requestId));
+    } else {
+      //error
+    }
   };
 
   return (
     <div className="notifications-page">
       <h3>Notifications</h3>
       {notifications.map((request) => (
-        
-        <Notification
-          key={request.id}
-          request={request}
-          onAccept={handleAccept}
-          onReject={handleReject}
-        />
+        request.type == "follow_request" ?
+          <FollowNotif
+            key={request.request_id}
+            request={request}
+            onAccept={handleAccept}
+            onReject={handleReject}
+          /> : ''
       ))}
     </div>
   );

@@ -246,15 +246,15 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	// Store message in database
 	// var chatID int
 	// var err error
-	if messageData.ChatId == 0 {
-		chatID, err := createPrivateChat(db, senderID,  messageData.ReciverId)
-		if err != nil {
-			log.Printf("Error inserting message: %v", err)
-			return
-		}
+	// if messageData.ChatId == 0 {
+	// 	chatID, err := createPrivateChat(db, senderID,  messageData.ReciverId)
+	// 	if err != nil {
+	// 		log.Printf("Error inserting message: %v", err)
+	// 		return
+	// 	}
 
-		messageData.ChatId = chatID
-	}
+	// 	messageData.ChatId = chatID
+	// }
 
 	msg, err := InsertMessage(senderID, messageData.ChatId, messageData.Content, db)
 	if err != nil {

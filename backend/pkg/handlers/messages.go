@@ -163,6 +163,7 @@ func getUsersInChat(chatID int, db *sql.DB) ([]int, error) {
 func createPrivateChat(db *sql.DB, user1, user2 int) (int, error) {
 	res, err := db.Exec("INSERT INTO chats (name, is_group) VALUES (NULL, 0)")
 	if err != nil {
+		fmt.Println(err)
 		return 0, err
 	}
 
@@ -179,6 +180,25 @@ func createPrivateChat(db *sql.DB, user1, user2 int) (int, error) {
 			fmt.Println("fail to register chat member in private chat")
 			return 0, err
 		}
+	}
+
+	return int(chatID), nil
+}
+
+func CreatGroupChat(db *sql.DB, adminId int, name string) (int, error) {
+	res, err := db.Exec("INSERT INTO chats (name, is_group) VALUES (?, 1)", name)
+	if err != nil {
+		return 0, err
+	}
+
+	chatID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	err = addChatMember(db, int(chatID), adminId)
+	if err != nil {
+		return 0, err
 	}
 
 	return int(chatID), nil
