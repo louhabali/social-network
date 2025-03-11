@@ -7,6 +7,8 @@ export const websoketProvider = {
                 ws.onopen = () => {
                     console.log("ws connected");
                     this.ws = ws;
+                    window.websoketProvider = websoketProvider;
+                    window.websoketProvider = null;
                     resolve(ws);
                 }
 
@@ -19,31 +21,21 @@ export const websoketProvider = {
                     console.log("ws error:", error);
                     reject(new Error("Failed to connect to WebSocket"));
                 }
-
-                // ws.onmessage = (event) => {
-                //     this.onmessage(event)
-                // }
+                
             } else resolve(this.ws)
         })
     },
 
     disconnect() {
         if (this.ws) this.ws.close();
-    },
-
-    onmessage(event) {
-        console.log("New message:", event.data);
+        window.websoketProvider = null;
     },
 
     sendMessage(message) {
-        console.log(message);
-        
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(message));
-            console.log("sent");
-            
         } else {
-            console.warn("WebSocket not connected");
+            console.log("WebSocket not connected");
         }
     }
 }

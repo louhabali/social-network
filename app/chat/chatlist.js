@@ -4,7 +4,7 @@ export default function ChatList({ conversations, onChatSelect }) {
             { conversations ? 
                 conversations.map((conversation) => (
                     <div
-                        key={conversation.chat_id}
+                        key={conversation.chat_id?conversation.chat_id:conversation.user_id}
                         className="chat-item"
                         onClick={() => onChatSelect(conversation)}
                     >

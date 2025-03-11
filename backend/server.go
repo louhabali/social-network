@@ -12,6 +12,12 @@ func main() {
 	defer db.Close()
 	handler := handlers.NewHandler(db)
 
+
+	/*server := http.Server {
+		handler: handleCORS(mux),
+		addr: 8080,
+	}
+*/
 	http.HandleFunc("/api/login", handleCORS(handler.LoginHandler))
 	http.HandleFunc("/api/register", handleCORS(handler.RegisterHandler))
 	http.HandleFunc("/api/posts", handleCORS(handler.Midd(handler.ShowPosts)))
@@ -42,8 +48,9 @@ func main() {
 	http.HandleFunc("/api/getfollowedusers", handleCORS(handler.Midd(handler.GetAllusers)))
 
 	http.HandleFunc("/api/ws", handleCORS(handler.Midd(handler.HandleWebSocket)))
+	http.HandleFunc("/api/notifications", handleCORS(handler.Midd(handler.GetNotifications)))
 	http.HandleFunc("/api/conversations", handleCORS(handler.Midd(handler.GetConversations)))
-	// http.HandleFunc("/api/messages", handleCORS(handler.Midd(handler.GetConversations)))
+	http.HandleFunc("/api/messages", handleCORS(handler.Midd(handler.GetMessages)))
 
 	http.ListenAndServe(":8080", nil)
 }

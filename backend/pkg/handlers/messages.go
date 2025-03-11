@@ -3,22 +3,25 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-var db *sql.DB
 type Message struct {
-	ID        int    `json:"id"`
-	ChatID    int    `json:"chat_id"`
-	SenderID  int    `json:"sender_id"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"created_at"`
+	ID         int    `json:"id"`
+	ChatID     int    `json:"chat_id"`
+	SenderID   int    `json:"sender_id"`
+	IsSender bool   `json:"is_sender"`
+	Content    string `json:"content"`
+	CreatedAt  string `json:"created_at"`
 }
 
 func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
+	userID, _ := r.Context().Value("userID").(int)
 	chatID := r.URL.Query().Get("chat_id")
+	fmt.Println(chatID)
 	if chatID == "" {
 		http.Error(w, "chat_id is required", http.StatusBadRequest)
 		return
@@ -45,13 +48,14 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	var messages []Message
 	for rows.Next() {
 		var msg Message
-		if err := rows.Scan(&msg.SenderID, &msg.Content, &msg.CreatedAt); err != nil {
+		if err := rows.Scan(&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.CreatedAt); err != nil {
 			http.Error(w, "Error scanning messages", http.StatusInternalServerError)
 			return
 		}
+		msg.IsSender = msg.SenderID == userID
 		messages = append(messages, msg)
 	}
-
+	fmt.Println(messages)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
 }
@@ -68,7 +72,6 @@ func InsertMessage(sendeId, chatId int, content string, db *sql.DB) (Message, er
 	// 	return
 	// }
 
-	
 	query := `INSERT INTO messages (chat_id, sender_id, content, created_at) VALUES (?, ?, ?, ?)`
 	time := time.Now().Format("2006-01-02 15:04:05")
 	result, err := db.Exec(query, chatId, sendeId, content, time)
@@ -88,12 +91,12 @@ func InsertMessage(sendeId, chatId int, content string, db *sql.DB) (Message, er
 
 	// w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(msgResponse)
-	msgId, _ := result.LastInsertId();
-	msg := Message {
-		ID: int(msgId),
-		ChatID: chatId,
-		SenderID: sendeId,
-		Content: content,
+	msgId, _ := result.LastInsertId()
+	msg := Message{
+		ID:        int(msgId),
+		ChatID:    chatId,
+		SenderID:  sendeId,
+		Content:   content,
 		CreatedAt: time,
 	}
 
@@ -102,8 +105,8 @@ func InsertMessage(sendeId, chatId int, content string, db *sql.DB) (Message, er
 
 func (h *Handler) UpdateLastReadMessage(w http.ResponseWriter, r *http.Request) {
 	var ulmr struct {
-		ChatID          int `json:"chat_id"`
-		UserID          int `json:"user_id"`
+		ChatID            int `json:"chat_id"`
+		UserID            int `json:"user_id"`
 		LastReadMessageID int `json:"last_read_message_id"`
 	}
 
@@ -137,22 +140,51 @@ func (h *Handler) UpdateLastReadMessage(w http.ResponseWriter, r *http.Request) 
 }
 
 func getUsersInChat(chatID int, db *sql.DB) ([]int, error) {
-    query := "SELECT user_id FROM chat_members WHERE chat_id = ?"
-    rows, err := db.Query(query, chatID)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	query := "SELECT user_id FROM chat_members WHERE chat_id = ?"
+	rows, err := db.Query(query, chatID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    var userIDs []int
+	var userIDs []int
 
-    for rows.Next() {
-        var userID int
-        if err := rows.Scan(&userID); err != nil {
-            return nil, err
-        }
-        userIDs = append(userIDs, userID)
-    }
+	for rows.Next() {
+		var userID int
+		if err := rows.Scan(&userID); err != nil {
+			return nil, err
+		}
+		userIDs = append(userIDs, userID)
+	}
 
-    return userIDs, nil
+	return userIDs, nil
+}
+
+func createPrivateChat(db *sql.DB, user1, user2 int) (int, error) {
+	res, err := db.Exec("INSERT INTO chats (name, is_group) VALUES (NULL, 0)")
+	if err != nil {
+		return 0, err
+	}
+
+	chatID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	chatUsers := []int{user1, user2}
+	for _, userId := range chatUsers {
+		fmt.Println(userId)
+		err := addChatMember(db, int(chatID), userId)
+		if err != nil {
+			fmt.Println("fail to register chat member in private chat")
+			return 0, err
+		}
+	}
+
+	return int(chatID), nil
+}
+
+func addChatMember(db *sql.DB, chatID int, userID int) error {
+	_, err := db.Exec("INSERT INTO chat_members (chat_id, user_id) VALUES (?, ?)", chatID, userID)
+	return err
 }

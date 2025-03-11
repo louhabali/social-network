@@ -34,13 +34,13 @@ export default function MessageDisplay({ messages, onSendMessage, selectedChat, 
                 <h3>{selectedChat.caht_name}</h3>
             </div>
             <div className="messages">
-                {messages.map((msg) => (
+                {messages ? messages.map((msg) => (
                     <div key={msg.id} className="message">
                         <p>{msg.content}</p>
                         <br />
                         <span>{msg.created_at}</span>
                     </div>
-                ))}
+                )):''}
             </div>
             <div className="message-input">
                 <input

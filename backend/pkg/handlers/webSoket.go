@@ -43,7 +43,6 @@ var (
 
 func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value("userID").(int)
-	fmt.Println("here")
 	cookie, _ := r.Cookie("Token")
 
 	wsManager.mu.Lock()
@@ -245,6 +244,17 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	}
 
 	// Store message in database
+	// var chatID int
+	// var err error
+	if messageData.ChatId == 0 {
+		chatID, err := createPrivateChat(db, senderID,  messageData.ReciverId)
+		if err != nil {
+			log.Printf("Error inserting message: %v", err)
+			return
+		}
+
+		messageData.ChatId = chatID
+	}
 
 	msg, err := InsertMessage(senderID, messageData.ChatId, messageData.Content, db)
 	if err != nil {
@@ -260,14 +270,19 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	// }
 
 	// Prepare message notification
+
+	
+
 	notification := WebSocketMessage{
 		Type:    "new_message",
 		Payload: msg,
 	}
+
 	fmt.Println("cahtid =>",msg.ChatID, "reciver =>", messageData.ReciverId)
+	
 	recivers, _ := getUsersInChat(msg.ChatID, db)
-	fmt.Println(recivers, notification)
-	recivers = []int{2}
+	fmt.Println(notification)
+	// recivers = []int{2}
 	wm.sendToUsers(recivers, notification)
 	// wm.sendToUser(senderID, notification)
 }
