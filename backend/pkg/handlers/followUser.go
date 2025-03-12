@@ -23,7 +23,8 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		reqId, _ := res.LastInsertId()
+		reqId, err := res.LastInsertId()
+		
 		err = insertNotification(h.db, &notificationToInsert{
 			SenderId: followerID,
 			ReciverId: userID,
@@ -52,18 +53,13 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AcceptFollowReq(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("req")
 	if r.Method != http.MethodPost {
-		// fmt.Println("following.go 29: error method")
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	data := struct {
-		RequestId int `json:"requestId"`
-	}{}
-
-	err := json.NewDecoder(r.Body).Decode(&data)
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -71,13 +67,19 @@ func (h *Handler) AcceptFollowReq(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 
 	// fmt.Println(data)
-	_, err = h.db.Exec("UPDATE follow_requests SET status = 'accepted' WHERE id = ?", data.RequestId)
+	_, err = h.db.Exec("UPDATE follow_requests SET status = 'approved' WHERE id = ?", notif.RelatedId)
 	if err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
 
-	err = createChat(h.db, data.RequestId)
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		http.Error(w, "Database update failed", http.StatusInternalServerError)
+		return
+	}
+
+	err = createChat(h.db, notif.RelatedId)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Error creatint chat", http.StatusInternalServerError)
@@ -93,30 +95,28 @@ func (h *Handler) RejectFollowReq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := struct {
-		RequestId int `json:"requestId"`
-	}{}
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
 
-	err := json.NewDecoder(r.Body).Decode(&data)
-	defer r.Body.Close()
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+	r.Body.Close()
 
-	// fmt.Println(data)
-	result, err := h.db.Exec("DELETE FROM follow_requests  WHERE id = ?", data.RequestId)
+	// fmt.Println(notif)
+	_, err = h.db.Exec("DELETE FROM follow_requests  WHERE id = ?", notif.RelatedId)
 	if err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
 
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		http.Error(w, "Follow request not found", http.StatusNotFound)
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
-
+	fmt.Println("ooooooooooooooo")
 	w.WriteHeader(http.StatusOK)
 }
 

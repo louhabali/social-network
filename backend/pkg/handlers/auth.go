@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"net/http"
 )
 
 func (h *Handler) Midd(n http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		uu, b := CheckIfCookieValid(w, r, h.db)
-		fmt.Println("Auth: ", b)
+		// fmt.Println("Auth: ", b)
 		if !b {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("Logged out")

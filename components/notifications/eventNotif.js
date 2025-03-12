@@ -1,12 +1,12 @@
-export default function eventNotif({ notification }) {
-    function visit(relatedId) {
-        // to implement
-    }
+import Link from "next/link"
 
-    return (
-      <div className="notification">
-        <p>New event! visit {notification.related_name} for more info</p>
-        <button onClick={() => visit(notification.related_id)}>Accept</button>
-     </div>
-    )
+export default function EventNotif({ notification, markRead }) {
+  return (
+    <div className="notification">
+      <p>New event! visit {notification.related_name} for more info</p>
+      <Link href={`/groups/${notification.related_id}`}>
+        <button onClick={() => markRead(notification)}>Visit</button>
+      </Link>
+    </div>
+  )
 }

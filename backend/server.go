@@ -39,6 +39,8 @@ func main() {
 	http.HandleFunc("/api/groups/{groupId}", handleCORS(handler.Midd(handler.GetGroupByIdHandler)))
 	http.HandleFunc("/api/groups", handleCORS(handler.Midd(handler.CreateGroupHandler)))
 	http.HandleFunc("/api/groups/{groupId}/join", handleCORS(handler.Midd(handler.JoinGroupHandler)))
+	http.HandleFunc("/api/group-join/reject", handleCORS(handler.Midd(handler.JoinReject)))
+	http.HandleFunc("/api/group-join/accept", handleCORS(handler.Midd(handler.JoinAccept)))
 	http.HandleFunc("/api/groups/{groupId}/events", handleCORS(handler.Midd(handler.GroupEventsHandler)))
 	http.HandleFunc("/api/groups/{groupId}/events/going", handleCORS(handler.Midd(handler.CreateEventResponse)))
 	http.HandleFunc("/api/groups/{groupId}/invite", handleCORS(handler.Midd(handler.InviteUsersGroup)))
@@ -49,6 +51,7 @@ func main() {
 
 	http.HandleFunc("/api/ws", handleCORS(handler.Midd(handler.HandleWebSocket)))
 	http.HandleFunc("/api/notifications", handleCORS(handler.Midd(handler.GetNotifications)))
+	http.HandleFunc("/api/notification/read", handleCORS(handler.Midd(handler.MarkNotifAsRead)))
 	http.HandleFunc("/api/conversations", handleCORS(handler.Midd(handler.GetConversations)))
 	http.HandleFunc("/api/messages", handleCORS(handler.Midd(handler.GetMessages)))
 	http.HandleFunc("/api/follow/accept", handleCORS(handler.Midd(handler.AcceptFollowReq)))

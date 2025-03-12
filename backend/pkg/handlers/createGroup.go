@@ -34,11 +34,6 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		groupId := 0
-		// tx, err := h.db.Begin()
-		// if err != nil {
-		// 	http.Error(w, "Error start conversation", http.StatusInternalServerError)
-		// }
-
 		err = h.db.QueryRow("INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?) RETURNING id", g.Title, g.Description, userID).Scan(&groupId)
 		if (err != nil) {
 			http.Error(w, "Error creating group", http.StatusInternalServerError)
@@ -178,4 +173,76 @@ func getGroupMembers(db *sql.DB, groupId int) ([]int, error){
     }
 
     return members, nil
+}
+
+func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	_, err = h.db.Exec("UPDATE group_members SET status = 'approved' WHERE id = ?", notif.RelatedId)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	var chatId int
+	err = h.db.QueryRow("SELECT id FROM chats WHERE name = ?", notif.RelatedName).Scan(&chatId)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "CHAT SELECT ERROR", http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(chatId)
+	err = addChatMember(h.db, chatId, notif.ReceverId)
+	fmt.Println(err)
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	_, err = h.db.Exec("DELETE FROM group_members WHERE id = ?", notif.RelatedId)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("reject group",notif.Id, notif.RelatedId)
+	w.WriteHeader(http.StatusOK)
 }
