@@ -79,7 +79,7 @@ export default function InviteUsers({ groupId }) {
           display: flex; justify-content: center; align-items: center;
         }
         .popup-content {
-          background: white; padding: 20px; border-radius: 10px;
+          padding: 20px; border-radius: 10px;
           width: 300px;
         }
         .popup-content ul { list-style: none; padding: 0; max-height: 130px; overflow-y: auto; }

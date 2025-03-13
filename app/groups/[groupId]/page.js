@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import GroupsClient from './GroupsClient';
+import './GroupClient.css';
 
 
 async function fetchGroupById(groupId) {
@@ -35,13 +36,13 @@ async function fetchUserInfo() {
 async function getPosts() {
     const cookieStore = cookies();
     const sessionToken = cookieStore.get('Token')?.value;
-    
+
     const res = await fetch(`http://localhost:8080/api/posts`, {
-      headers: {
-        Cookie: sessionToken ? `Token=${sessionToken}` : "",
-      },
+        headers: {
+            Cookie: sessionToken ? `Token=${sessionToken}` : "",
+        },
     });
-  
+
     if (!res.ok) return [];
     return res.json();
 }
@@ -51,14 +52,20 @@ export default async function GroupDetailsPage({ params }) {
     const initialPosts = await getPosts();
     const userInfo = await fetchUserInfo();
 
-    console.log(group,params.groupId);
-    
-    return (
-        <div>
-            <h1>{group.title}</h1>
-            <p>{group.description}</p>
+    console.log(group, params.groupId);
 
-            <GroupsClient  groupId={params.groupId} status={group.status} initialPosts={initialPosts} userInfo={userInfo}/>
-        </div>
-    );
+    return (
+        <div className="groupContainer">
+            <div className="groupHeader">
+                <h1 className="groupTitle">{group.title}</h1>
+                <p className="groupDescription">{group.description}</p>
+            </div>
+
+            <GroupsClient
+                groupId={params.groupId}
+                status={group.status}
+                initialPosts={initialPosts}
+                userInfo={userInfo}
+            />
+        </div>);
 }

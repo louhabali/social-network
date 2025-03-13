@@ -173,7 +173,7 @@
 
 .modal input,
 .modal textarea {
-  width: 100%;
+  width: 95%;
   padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid #3a3b3c;
@@ -186,7 +186,7 @@
 
 .modal textarea {
   min-height: 120px;
-  resize: vertical;
+  resize: none;
 }
 
 .modal input:focus,
@@ -283,5 +283,8 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+  .groupItem {
+    width: 22rem;
   }
 }

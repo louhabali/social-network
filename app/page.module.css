@@ -33,7 +33,7 @@
   flex: 1;
   max-width: 600px;
   width: 100%;
-  margin: 0 auto 0 350px;
+  margin: 0 auto 0 30rem;
   /* Changed from margin: 0 auto; to position content more centered */
   padding: 20px;
   margin-top: 60px;
