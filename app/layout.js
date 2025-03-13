@@ -1,7 +1,7 @@
 "use client"
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import NavigationMenu from "@/components/NavigationMenu";
+// import NavigationMenu from "@/components/NavigationMenu";
 import Header from "@/components/header";
 const metadata = {
   title: "My App",
@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {!hideMenu && <NavigationMenu />}
+        {/* {!hideMenu && <NavigationMenu />} */}
         {!hideMenu &&  <Header />}
         <main>{children}</main>
         

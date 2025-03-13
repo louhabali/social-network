@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import Post from "@/components/post";
 import CommentsClient from "./CommentsClient";
+// import "./post.css"
 
 async function getPost(postId) {
   const cookieStore = cookies();

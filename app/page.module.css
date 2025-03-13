@@ -16,11 +16,17 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* background-color: var(--bg-primary); */
   color: var(--text-primary);
   padding: 0;
-  margin-left: 200px;
-  /* Account for the left sidebar */
+  margin-left: 5rem;
+  width: calc(100% - 5rem);
+  transition: margin 0.3s ease, width 0.3s ease;
+}
+
+/* If you have a collapsible sidebar, you might want something like this */
+.container.sidebar-collapsed {
+  margin-left: 0;
+  width: 100%;
 }
 
 .main {
@@ -228,6 +234,7 @@
 .postActions button.liked {
   color: #ff3b5c;
 }
+
 
 /* Loading indicator */
 #load-more {
@@ -508,14 +515,14 @@
 }
 
 @media (max-width: 576px) {
-  .container {
+  /* .container {
     margin-left: 0;
-  }
+  } */
 
-  .main {
+  /* .main {
     padding: 15px 10px;
     margin-top: 50px;
-  }
+  } */
 
   :global(.navbar) {
     bottom: auto;
@@ -600,5 +607,38 @@
   .main {
     margin: 0 auto;
     max-width: 90%;
+  }
+}
+
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+  .container {
+    margin-top: 3rem;
+    margin-left: -3rem;
+    width: calc(100% - 5rem);
+  }
+}
+
+@media (max-width: 992px) {
+  .container {
+    margin-left: 4rem;
+    width: calc(100% - 30rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-left: 4rem;
+    width: calc(100% - 10rem);
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    margin-left: 1rem;
+    margin-right: -5rem;
+    width: 79%;
+    padding: 0 0.5rem;
   }
 }

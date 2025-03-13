@@ -1,47 +1,48 @@
 "use client";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileArrowUp, faShare } from "@fortawesome/free-solid-svg-icons";
 import styles from "../app/page.module.css";
+import "./postform.css";
 
-const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
+const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     const [newPost, setNewPost] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
 
     const [ops, setOp] = useState("public")
-    const [privateUsers,setPrivateUsers] = useState([])
+    const [privateUsers, setPrivateUsers] = useState([])
     const [selectedOptions, setSelectedOptions] = useState([]);
- // select 
+    // select 
     const handleToggle = (option) => {
         setSelectedOptions((prev) =>
-        prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
-         );
+            prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
+        );
     };
     useEffect(() => {
         if (ops === "private") {
-            if (document.getElementById("popup")) document.getElementById("popup").style.display="flex"
-          
+            if (document.getElementById("popup")) document.getElementById("popup").style.display = "flex"
+
             fetch('http://localhost:8080/api/getfollowedusers', {
                 credentials: "include",
             }).then(data => data.json()).then(d => {
-                
+
                 setPrivateUsers(d)
-              
+
             })
-           
-            
-            
-            
-        }else {
-            if (document.getElementById("popup")) document.getElementById("popup").style.display="none"
+
+
+
+
+        } else {
+            if (document.getElementById("popup")) document.getElementById("popup").style.display = "none"
         }
     }, [ops]);
-    
-    
-    
-//
+
+
+
+    //
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -60,13 +61,13 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
         const formData = new FormData();
         formData.append("content", newPost);
         formData.append("groupId", groupId);
-        formData.append("privacy",ops)
-        if (ops=="private"){
+        formData.append("privacy", ops)
+        if (ops == "private") {
             selectedOptions.forEach(userId => {
                 formData.append("selectedUsers", userId);
             });
         }
-        
+
         if (sendImage) formData.append("image", sendImage);
 
         try {
@@ -87,7 +88,7 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
             setSendImage(null);
             document.getElementById("fileInput").value = "";
             //document.getElementById("popup").style.display="none"
-            
+
 
         } catch (error) {
             console.error("Error posting:", error);
@@ -95,55 +96,87 @@ const PostForm = ({ userInfo, setPosts,setOffset,groupId }) => {
     };
 
     return (
-        <div className={styles.createPost}>
-            {userInfo && userInfo.Avatar ? (
-                <Image src={`data:image/png;base64,${userInfo.Avatar}`} alt="User Avatar" width={32} height={32} />
-            ) : (
-                <Image src="/image/no-avatar.png" alt="No Avatar" width={32} height={32} />
-            )}
+        <div className="post-form-container">
+            <div className="create-post">
+                <div className="user-avatar">
+                    {userInfo && userInfo.Avatar ? (
+                        <Image src={`data:image/png;base64,${userInfo.Avatar}`} alt="User Avatar" width={40} height={40} />
+                    ) : (
+                        <Image src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} />
+                    )}
+                </div>
 
-            <input type="text" placeholder="What's on your mind?" value={newPost} onChange={(e) => setNewPost(e.target.value)} />
+                <div className="post-input-container">
+                    <div className="input-with-post-btn">
+                        <input
+                            type="text"
+                            className="post-input"
+                            placeholder="What's on your mind?"
+                            value={newPost}
+                            onChange={(e) => setNewPost(e.target.value)}
+                        />
+                        <div className="post-icon-btn" onClick={handlePostSubmit}>
+                            <FontAwesomeIcon icon={faShare} />
+                        </div>
+                    </div>
 
-            <div style={{ cursor: "pointer" }} onClick={triggerFileInput}>
-                <FontAwesomeIcon icon={faFileArrowUp} />
+                    <div className="post-actions">
+                        <div className="post-tools">
+                            <div className="upload-button" onClick={triggerFileInput}>
+                                <FontAwesomeIcon icon={faFileArrowUp} />
+                                <span>Photo</span>
+                            </div>
+
+                            <div className="privacy-selector">
+                                <select
+                                    id="slct"
+                                    className="privacy-dropdown"
+                                    onChange={(o) => setOp(o.target.value)}
+                                >
+                                    <option value="public">Public</option>
+                                    <option value="private">Only for</option>
+                                    <option value="almost_private">Only followers</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <input
+                            id="fileInput"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            style={{ display: "none" }}
+                        />
+                    </div>
+                </div>
             </div>
 
-            <input id="fileInput" type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
-            <select id="slct" onChange={(o)=> setOp(o.target.value)}>
-                    <option value="public">public</option>
-                    <option value="private">only for</option>
-                    <option value="almost_private">only followers</option>
-            </select>
-          {privateUsers && <div id='popup'  style={{
-                  
-                    height: "45px",
-                    display:"flex",
-                    flexDirection:"column",
-                    overflowY: "auto",
-                    border: "1px solid #ccc", 
-                    padding: "5px",
-                    backgroundColor: "black",
-                    borderRadius: "8px", 
-                    boxShadow: "0 2px 10px rgba(154, 148, 148, 0.77)",
-  }} >
-                    {privateUsers && privateUsers.map((p) => (
-                        <label key={p.id} className="flex items-center space-x-2">
-                    <input
-                    type="checkbox"
-                    checked={selectedOptions.includes(p.id)}
-                    onChange={() => handleToggle(p.id)}
-                    />
-                    <span>{`${p.fname} ${p.lname}`}</span>
+            {privateUsers && (
+                <div id='popup' className="private-users-popup">
+                    {privateUsers.map((p) => (
+                        <label key={p.id} className="user-checkbox">
+                            <input
+                                type="checkbox"
+                                checked={selectedOptions.includes(p.id)}
+                                onChange={() => handleToggle(p.id)}
+                            />
+                            <span>{`${p.fname} ${p.lname}`}</span>
                         </label>
                     ))}
-                </div>}
-            <div className={styles.btnsub} onClick={handlePostSubmit}>
-                <FontAwesomeIcon icon={faShare} />
-            </div>
+                </div>
+            )}
 
-            {selectedImage && <Image src={selectedImage} style={{ borderRadius: "5px" }} alt="Selected" width={400} height={200} />}
-        </div>
-    );
+            {selectedImage && (
+                <div className="selected-image-container">
+                    <Image
+                        src={selectedImage}
+                        alt="Selected"
+                        width={400}
+                        height={200}
+                    />
+                </div>
+            )}
+        </div>);
 };
 
 export default PostForm;

@@ -2,10 +2,10 @@ import React from 'react';
 import Image from 'next/image';
 import styles from '../app/page.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
+import { faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
-export default function Post({ post,handleLike }) {
+export default function Post({ post, handleLike }) {
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>
             <div className={styles.postHeader}>
@@ -32,11 +32,27 @@ export default function Post({ post,handleLike }) {
 
                 />{post.Likes}
 
-                <Link href={"/post/" + post.Pid}>
-                    <FontAwesomeIcon icon={faComment} />
-                    {post.NbComment}
-                </Link>
-            </div>
+                <Link href={"/post/" + post.Pid} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#B0B3B8',
+                    textDecoration: 'none',
+                    // padding: '8px 12px',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.2s ease'
+                }}>
+                    <FontAwesomeIcon
+                        icon={faComment}
+                        style={{
+                            fontSize: '16px',
+                            color: '#B0B3B8'
+                        }}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                        {post.NbComment}
+                    </span>
+                </Link>            </div>
         </section>
     );
 };
