@@ -128,7 +128,7 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 				RelatedId: int(joinReqId),
 				SenderId: joinSender,
 				ReciverId: adminId,
-				Type: "group join requst",
+				Type: "group join request",
 			})
 		}
 
@@ -176,6 +176,7 @@ func getGroupMembers(db *sql.DB, groupId int) ([]int, error){
 }
 
 func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("accept group join")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -191,32 +192,36 @@ func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.db.Exec("UPDATE group_members SET status = 'approved' WHERE id = ?", notif.RelatedId)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("update join status",err)
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
 
 	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("delet notif",err)
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
 
 	var chatId int
-	err = h.db.QueryRow("SELECT id FROM chats WHERE name = ?", notif.RelatedName).Scan(&chatId)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "CHAT SELECT ERROR", http.StatusInternalServerError)
-		return
+	joinerId := notif.ReceverId
+	
+	if (notif.Type == "group join request") {
+		joinerId = notif.SenderId
 	}
+	// fmt.Println(notif.RelatedName)
+	h.db.QueryRow("SELECT id FROM chats WHERE name = ?", notif.GroupName).Scan(&chatId)
 	fmt.Println(chatId)
-	err = addChatMember(h.db, chatId, notif.ReceverId)
-	fmt.Println(err)
+
+	addChatMember(h.db, chatId, joinerId)
+
+	// fmt.Println(err)
 	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("reject group join")
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return

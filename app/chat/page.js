@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
-import ChatList from "./chatlist";
-import MessageDisplay from "./diplayMsgs";
+import ChatList from "../../components/chat/chatlist";
+import ChatSection from "../../components/chat/chatSection";
 
 export default function messages() {
   const [conversations, setConversations] = useState([]);
@@ -9,6 +9,13 @@ export default function messages() {
   const [messages, setMessages] = useState([]);
   const [offset, setOffset] = useState(0);
 
+  useEffect(() => {
+    const storedConv = localStorage.getItem("conv")
+    if (storedConv) {
+    setSelectedChat(JSON.parse(storedConv))
+  }
+  },[])
+  
   // Fetch conversations
   useEffect(() => {
     async function fetchConversations() {
@@ -18,7 +25,7 @@ export default function messages() {
         });
         const data = await response.json();
         console.log("vonvs",data);
-        setConversations(data);
+        setConversations(data ? data : [] );
 
         //   setConversations(data);
       } catch (error) {
@@ -27,11 +34,11 @@ export default function messages() {
     }
 
     fetchConversations();
-  }, [selectedChat, offset]);
+  }, []);
 
   useEffect(() => {
     if (selectedChat) {
-      console.log("sdk");
+      // console.log("sdk");
       
       async function fetchMessages() {
         try {
@@ -41,7 +48,7 @@ export default function messages() {
           const data = await response.json();
           console.log("msgs => ", data);
           
-          setMessages(data);
+          setMessages(data ? data : []);
         } catch (error) {
           console.error("Failed to fetch messages", error);
         }
@@ -49,7 +56,7 @@ export default function messages() {
 
       fetchMessages();
     }
-  }, []);
+  }, [selectedChat, offset]);
 
   // useEffect(() => {
   //   if (window.ws) {
@@ -66,6 +73,7 @@ export default function messages() {
   // }, [selectedChat]);
 
   const handleChatSelect = (conv) => {
+    localStorage.setItem("conv", JSON.stringify(conv));
     setSelectedChat(conv);
     setOffset(0);
   };
@@ -73,19 +81,15 @@ export default function messages() {
 
   return (
     <div className="messages-page">
-      <div className="left-section">
         <ChatList
           conversations={conversations}
           onChatSelect={handleChatSelect}
         />
-      </div>
-      <div className="right-section">
         {(selectedChat 
-          && <MessageDisplay
+          && <ChatSection
           messages={messages}
           selectedChat={selectedChat}
         />)}
-      </div>
     </div>
   );
 }

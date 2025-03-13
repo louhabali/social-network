@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react";
 import EventNotif from "@/components/notifications/eventNotif.js";
-import AcceptRejectNotif from "@/components/notifications/followNotif.js";
+import AcceptRejectNotif from "@/components/notifications/acceptRejectNotif.js";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);

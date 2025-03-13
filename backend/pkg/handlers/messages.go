@@ -10,35 +10,32 @@ import (
 )
 
 type Message struct {
-	ID         int    `json:"id"`
-	ChatID     int    `json:"chat_id"`
-	SenderID   int    `json:"sender_id"`
-	IsSender bool   `json:"is_sender"`
-	Content    string `json:"content"`
-	CreatedAt  string `json:"created_at"`
+	ID        int    `json:"id"`
+	ChatID    int    `json:"chat_id"`
+	SenderID  int    `json:"sender_id"`
+	IsSender  bool   `json:"is_sender"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"created_at"`
 }
 
 func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value("userID").(int)
 	chatID := r.URL.Query().Get("chat_id")
 	fmt.Println(chatID)
+
 	if chatID == "" {
 		http.Error(w, "chat_id is required", http.StatusBadRequest)
 		return
 	}
 
-	limit := 10
-	offset := 0
-	if r.URL.Query().Get("offset") != "" {
-		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
-	}
+	chatId, _ := strconv.Atoi(chatID)
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 
 	rows, err := h.db.Query(`
 	SELECT id, chat_id, sender_id, content, created_at 
 	FROM messages 
 	WHERE chat_id = ? 
-	ORDER BY created_at DESC 
-	LIMIT ? OFFSET ?`, chatID, limit, offset)
+	LIMIT 10 OFFSET ?`, chatId, offset)
 	if err != nil {
 		http.Error(w, "Failed to fetch messages", http.StatusInternalServerError)
 		return
@@ -161,13 +158,29 @@ func getUsersInChat(chatID int, db *sql.DB) ([]int, error) {
 }
 
 func createPrivateChat(db *sql.DB, user1, user2 int) (int, error) {
+	var chatID int
+	err := db.QueryRow(`
+		SELECT chat_id 
+		FROM chat_members 
+		WHERE user_id IN (?, ?) 
+		GROUP BY chat_id 
+		HAVING COUNT(DISTINCT user_id) = 2
+	`, user1, user2).Scan(&chatID)
+
+	if err == nil {
+		return chatID, nil
+	} else if err != sql.ErrNoRows {
+		fmt.Println("error insert chat in checkin if it exist", err)
+		return 0, err
+	}
+
 	res, err := db.Exec("INSERT INTO chats (name, is_group) VALUES (NULL, 0)")
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
 	}
 
-	chatID, err := res.LastInsertId()
+	newChatID, err := res.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
@@ -175,14 +188,14 @@ func createPrivateChat(db *sql.DB, user1, user2 int) (int, error) {
 	chatUsers := []int{user1, user2}
 	for _, userId := range chatUsers {
 		fmt.Println(userId)
-		err := addChatMember(db, int(chatID), userId)
+		err := addChatMember(db, int(newChatID), userId)
 		if err != nil {
 			fmt.Println("fail to register chat member in private chat")
 			return 0, err
 		}
 	}
 
-	return int(chatID), nil
+	return int(newChatID), nil
 }
 
 func CreatGroupChat(db *sql.DB, adminId int, name string) (int, error) {

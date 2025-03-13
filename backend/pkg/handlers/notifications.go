@@ -16,34 +16,37 @@ type notificationToInsert struct {
 }
 
 type NotifRes struct {
-	Id          int    `json:"id"`
-	RelatedId   int    `json:"related_id"`
-	Type        string `json:"type"`
-	RelatedName string `json:"related_name"`
-	ReceverId   int    `json:"recever_id"`
-	SenderId    *int   `json:"sender_id"`
+	Id         int     `json:"id"`
+	RelatedId  int     `json:"related_id"`
+	Type       string  `json:"type"`
+	SenderName string  `json:"sender_name"`
+	SenderId   int     `json:"sender_id"`
+	ReceverId  int     `json:"recever_id"`
+	GroupId    *int    `json:"group_id"`
+	GroupName  *string `json:"group_name"`
 }
 
 func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 	userId, _ := r.Context().Value("userID").(int)
-	// fmt.Println(userId)
 	query := `
 		SELECT 
-			n.id, 
-			n.type, 
-			n.related_id,
+		    n.id, 
+		    n.type, 
+		    n.related_id,
+		    n.sender_id,
 			n.recever_id,
-			CASE 
-				WHEN n.type = 'group event' THEN g.title
-				ELSE u.first_name || ' ' || u.last_name
-			END AS related_name,
-			CASE 
-				WHEN n.type = 'group event' THEN null
-				ELSE n.sender_id
-			END AS sender_id
+		    COALESCE(ge.group_id, gm.group_id) AS group_id,
+		    u.first_name || ' ' || u.last_name AS sender_name,
+		    g.title AS group_name
 		FROM notifications AS n
 		JOIN users As u ON n.sender_id = u.id
-		LEFT JOIN groups AS g ON n.related_id = g.id
+		LEFT JOIN group_events AS ge ON ((n.type = 'group event') AND n.related_id = ge.id)
+		LEFT JOIN group_members AS gm ON  ((n.type = 'group join invatation' OR n.type = 'group join request') AND n.related_id = gm.id)
+		LEFT JOIN groups AS g ON g.id = COALESCE(ge.group_id, gm.group_id)
 		WHERE n.recever_id = ? AND n.is_read = 0;
 	`
 	rows, err := h.db.Query(query, userId)
@@ -58,7 +61,7 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		// fmt.Println("turn")
 		var notif NotifRes
-		rows.Scan(&notif.Id, &notif.Type, &notif.RelatedId, &notif.ReceverId, &notif.RelatedName, &notif.SenderId)
+		rows.Scan(&notif.Id, &notif.Type, &notif.RelatedId, &notif.SenderId, &notif.ReceverId, &notif.GroupId, &notif.SenderName, &notif.GroupName)
 		notifications = append(notifications, notif)
 	}
 
@@ -108,4 +111,29 @@ func (h *Handler) MarkNotifAsRead(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	userId, _ := r.Context().Value("userID").(int)
+	var notifsNum int
+	err := h.db.QueryRow("SELECT COUNT(*) FROM notifications WHERE recever_id = ? and is_read = 0;", userId).Scan(&notifsNum)
+	if err != nil {
+		fmt.Println("notifs numb ->", err)
+		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]int{"unread_count": notifsNum}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
+		return
+	}
 }

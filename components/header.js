@@ -59,7 +59,7 @@ export default function Header() {
     }, [searchData])
 
     return (
-        <header className="header">
+        <header className={"header"}>
             <input
                 type="text"
                 placeholder="search for users..."
