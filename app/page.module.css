@@ -10,7 +10,6 @@
   --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Base Container */
 .container {
   position: relative;
   display: flex;
@@ -23,7 +22,6 @@
   transition: margin 0.3s ease, width 0.3s ease;
 }
 
-/* If you have a collapsible sidebar, you might want something like this */
 .container.sidebar-collapsed {
   margin-left: 0;
   width: 100%;
@@ -34,7 +32,6 @@
   max-width: 600px;
   width: 100%;
   margin: 0 auto 0 30rem;
-  /* Changed from margin: 0 auto; to position content more centered */
   padding: 20px;
   margin-top: 60px;
 }
@@ -46,15 +43,13 @@
   box-shadow: var(--card-shadow);
   margin-bottom: 20px;
   transition: transform 0.2s ease;
-  width: 100%;
-  /* Ensure feed takes full width of container */
+  width: 96%;
 }
 
 .feed:hover {
   transform: translateY(-2px);
 }
 
-/* Post Creation Form */
 .createPost {
   display: flex;
   flex-direction: column;
@@ -123,15 +118,14 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  width: 100%;
-  /* Ensure posts take full width of container */
+  width: 36rem;
+  /* margin-left: 6rem; */
 }
 
 .post:hover {
   transform: translateY(-2px);
 }
 
-/* Post Header */
 .postHeader {
   display: flex;
   align-items: center;
@@ -149,7 +143,6 @@
   height: 40px;
   border-radius: 50%;
   border: none;
-  /* Remove border for cleaner look */
   object-fit: cover;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
@@ -205,7 +198,6 @@
   margin: 10px 0;
 }
 
-/* Post Actions */
 .postActions {
   display: flex;
   gap: 15px;
@@ -236,7 +228,6 @@
 }
 
 
-/* Loading indicator */
 #load-more {
   height: 20px;
   margin-bottom: 20px;
@@ -249,7 +240,6 @@
   font-style: italic;
 }
 
-/* Custom styles for navbar - global styles */
 :global(.navbar) {
   position: fixed;
   left: 0;
@@ -297,7 +287,6 @@
   height: 20px;
 }
 
-/* Header styles - add to globals */
 :global(.header) {
   position: fixed;
   top: 0;
@@ -480,7 +469,6 @@
   background-color: var(--hover-color);
 }
 
-/* Responsive styles */
 @media (max-width: 992px) {
   .container {
     margin-left: 70px;
@@ -579,10 +567,14 @@
 
   .feed {
     padding: 15px;
+    width: 18rem;
+    margin-left: -4rem;
   }
 
   .post {
     padding: 15px;
+    width: 18rem;
+    margin-left: -49px;
   }
 
   .createPost input[type="text"] {
@@ -607,11 +599,11 @@
   .main {
     margin: 0 auto;
     max-width: 90%;
+    margin-left: 2rem;
   }
 }
 
 
-/* Responsive breakpoints */
 @media (max-width: 1200px) {
   .container {
     margin-top: 3rem;

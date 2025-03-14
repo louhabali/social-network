@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
-// Remove the Header import if your layout already includes it
 // import Header from "@/components/Header";
 
 const HomePage = () => {
@@ -16,7 +15,6 @@ const HomePage = () => {
     const observer = useRef(null);
     const router = useRouter();
     
-    // posts
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
 

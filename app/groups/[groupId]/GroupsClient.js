@@ -213,11 +213,36 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
                 <div className="posts-container">
                     <PostForm userInfo={userInfo} setPosts={setPosts} setOffset={setOffset} groupId={groupId} />
 
-                    {posts.map((post) => (
-                        <Post key={post.Pid} post={post} handleLike={handleLike} />
-                    ))}
+                    <>
+                        <style jsx>{`
+    .posts-responsive-container {
+      width: 90%;
+      max-width: 800px;
+      margin-left: 6rem;
+    }
+    
+    @media (max-width: 768px) {
+      .posts-responsive-container {
+        width: 95%;
+        margin-left: 3.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .posts-responsive-container {
+        width: 82%;
+        margin-left: 1.5rem;
+        padding: 0 1rem;
+      }
+    }
+  `}</style>
 
-                    {hasMore && <div id="load-more" style={{ height: "10px" }} />}
+                        <div className="posts-responsive-container">
+                            {posts.map((post) => (
+                                <Post key={post.Pid} post={post} handleLike={handleLike} />
+                            ))}
+                        </div>
+                    </>                    {hasMore && <div id="load-more" style={{ height: "10px" }} />}
                     {loading && <p className="loading">Loading...</p>}
                 </div>
             )}

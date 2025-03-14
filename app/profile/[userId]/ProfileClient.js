@@ -113,122 +113,140 @@ export default function ProfileClient({ profile, userId }) {
       setPosts(updatedPosts);
     }
   };
-
   return (
-    <div>
+    <div className="profile-container">
       <div className="profile-header">
+        <div className="profile-cover-photo"></div>
         <div className="profile-info">
-          {profile.user.Avatar ? (
-            <Image src={`data:image/png;base64,${profile.user.Avatar}`} alt="Avatar" width={64} height={64} />
-          ) : (
-            <Image src="/image/no-avatar.png" alt="No Avatar" width={64} height={64} />
-          )}
-          <h1>
+          <div className="profile-avatar">
+            {profile.user.Avatar ? (
+              <Image src={`data:image/png;base64,${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
+            ) : (
+              <Image src="/image/no-avatar.png" alt="No Avatar" width={120} height={120} />
+            )}
+          </div>
+          <h1 className="profile-name">
             {profile.user.Firstname} {profile.user.Lastname}
           </h1>
           {!canViewProfile ? (
-            <p>This profile is private. Follow to see more.</p>
+            <p className="profile-private-notice">This profile is private. Follow to see more.</p>
           ) : (
-            <>
-              <p>
+            <div className="profile-details">
+              <p className="profile-email">
                 <strong>Email:</strong> {profile.user.Email}
               </p>
-              <p>{profile.user.AboutMe || "No bio available"}</p>
-              <p>
+              <p className="profile-bio">{profile.user.AboutMe || "No bio available"}</p>
+              <p className="profile-dob">
                 <strong>Date of Birth:</strong> {profile.user.DateOfBirth}
               </p>
-            </>
+            </div>
           )}
-          <p>
-            <strong>Followers:</strong> {profile.followers?.length || 0}
-          </p>
-          <p>
-            <strong>Following:</strong> {profile.following?.length || 0}
-          </p>
-          <p>
-            <strong>Posts:</strong> {profile.totalPosts}
-          </p>
 
-          {isOwnProfile ? (
-            <button onClick={handleProfilePrivacyToggle}>
-              {isPublic ? "Switch to Private Profile" : "Switch to Public Profile"}
-            </button>
-          ) : followStatus === "pending" ? (
-            <>
-              <span>Request Pending </span>
-              <button onClick={onFollowToggle} className="cancel-button">
-                Cancel Request
+          <div className="profile-stats">
+            <div className="stat-item">
+              <span className="stat-count">{profile.followers?.length || 0}</span>
+              <span className="stat-label">Followers</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-count">{profile.following?.length || 0}</span>
+              <span className="stat-label">Following</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-count">{profile.totalPosts}</span>
+              <span className="stat-label">Posts</span>
+            </div>
+          </div>
+
+          <div className="profile-actions">
+            {isOwnProfile ? (
+              <button onClick={handleProfilePrivacyToggle} className="profile-button privacy-button">
+                {isPublic ? "Switch to Private Profile" : "Switch to Public Profile"}
               </button>
-            </>
-          ) : followStatus === "approved" ? (
-            <button onClick={onFollowToggle} className="follow-button">
-              Unfollow
-            </button>
-          ) : (
-            <button onClick={onFollowToggle} className="follow-button">
-              Follow
-            </button>
-          )}
+            ) : followStatus === "pending" ? (
+              <div className="follow-actions">
+                <span className="pending-notice">Request Pending </span>
+                <button onClick={onFollowToggle} className="profile-button cancel-button">
+                  Cancel Request
+                </button>
+              </div>
+            ) : followStatus === "approved" ? (
+              <button onClick={onFollowToggle} className="profile-button follow-button unfollow">
+                Unfollow
+              </button>
+            ) : (
+              <button onClick={onFollowToggle} className="profile-button follow-button">
+                Follow
+              </button>
+            )}
+          </div>
         </div>
 
         {canViewProfile && (
           <div className="profile-tabs">
-            <button className={activeTab === "posts" ? "active" : ""} onClick={() => setActiveTab("posts")}>
+            <button className={`tab-button ${activeTab === "posts" ? "active" : ""}`} onClick={() => setActiveTab("posts")}>
               Posts
             </button>
-            <button className={activeTab === "followers" ? "active" : ""} onClick={() => setActiveTab("followers")}>
+            <button className={`tab-button ${activeTab === "followers" ? "active" : ""}`} onClick={() => setActiveTab("followers")}>
               Followers
             </button>
-            <button className={activeTab === "following" ? "active" : ""} onClick={() => setActiveTab("following")}>
+            <button className={`tab-button ${activeTab === "following" ? "active" : ""}`} onClick={() => setActiveTab("following")}>
               Following
             </button>
           </div>
         )}
       </div>
+
       {canViewProfile && (
         <div className="profile-content">
           {activeTab === "posts" && (
             <div className="profile-posts">
-              {posts.length === 0 ? <p>No posts yet!</p> : posts.map((post) => <Post key={post.Pid} post={post} handleLike={handleLike} />)}
-              {hasMore && <div id="load-more" style={{ height: "10px" }} />}
-              {loading && <p>Loading...</p>}
+              {posts.length === 0 ? (
+                <p className="no-content">No posts yet!</p>
+              ) : (
+                posts.map((post) => <Post key={post.Pid} post={post} handleLike={handleLike} />)
+              )}
+              {hasMore && <div id="load-more" className="load-more" />}
+              {loading && <p className="loading">Loading...</p>}
             </div>
           )}
 
           {activeTab === "followers" && (
-            <div>
-              <h3>Followers</h3>
+            <div className="followers-section">
+              <h3 className="section-title">Followers</h3>
               {profile.followers?.length > 0 ? (
-                profile.followers.map((follower) => (
-                  <div key={follower.ID} className="follower-item">
-                    <a href={`/profile/${follower.ID}`}>
-                      {follower.Firstname} {follower.Lastname}
-                    </a>
-                  </div>
-                ))
+                <div className="user-list">
+                  {profile.followers.map((follower) => (
+                    <div key={follower.ID} className="follower-item user-item">
+                      <a href={`/profile/${follower.ID}`} className="user-link">
+                        {follower.Firstname} {follower.Lastname}
+                      </a>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p>No followers yet.</p>
+                <p className="no-content">No followers yet.</p>
               )}
             </div>
           )}
 
           {activeTab === "following" && (
-            <div>
-              <h3>Following</h3>
+            <div className="following-section">
+              <h3 className="section-title">Following</h3>
               {profile.following?.length > 0 ? (
-                profile.following.map((followingUser) => (
-                  <div key={followingUser.ID} className="following-item">
-                    <a href={`/profile/${followingUser.ID}`}>
-                      {followingUser.Firstname} {followingUser.Lastname}
-                    </a>
-                  </div>
-                ))
+                <div className="user-list">
+                  {profile.following.map((followingUser) => (
+                    <div key={followingUser.ID} className="following-item user-item">
+                      <a href={`/profile/${followingUser.ID}`} className="user-link">
+                        {followingUser.Firstname} {followingUser.Lastname}
+                      </a>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p>Not following anyone.</p>
+                <p className="no-content">Not following anyone.</p>
               )}
             </div>
           )}
-
         </div>
       )}
     </div>

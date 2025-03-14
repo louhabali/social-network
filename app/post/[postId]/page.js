@@ -42,7 +42,9 @@ export default async function PostPage({ params }) {
   // console.log(post);
   
   return (
-    <div>
+    
+    <div className='comment-div'>
+      {/* <div className='margin'></div> */}
       <Post post={post} />
       
       <CommentsClient postId={params.postId} lenComments={post.NbComment} initialComments={initialComments} />
