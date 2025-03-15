@@ -74,27 +74,7 @@ const HomePage = () => {
         return () => observer.current?.disconnect();
     }, [fetchPosts, loading, hasMore]);
 
-    const handleLike = async (postId) => {
-        const postIndex = posts.findIndex((post) => post.Pid === postId)
-        if (postIndex === -1) return
-
-        let updatedPosts = [...posts]
-        let likeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1
-
-        const response = await fetch("http://localhost:8080/api/like", {
-            method: "POST",
-            body: JSON.stringify({ postId, likeStatus }),
-            credentials: "include",
-        });
-
-        if (response.ok) {
-            console.log(likeStatus)
-            
-            updatedPosts[postIndex].UserInteraction = likeStatus
-            updatedPosts[postIndex].Likes += likeStatus ? 1 : -1
-            setPosts(updatedPosts)
-        }
-    };
+    
     
     console.log(posts)
     return (
@@ -107,7 +87,7 @@ const HomePage = () => {
                 </div>
 
                 {posts.map((post) => (
-                    <Post key={post.Pid} post={post} handleLike={handleLike} />
+                    <Post key={post.Pid} post={post} />
                 ))}
 
                 {hasMore && <div id="load-more" style={{ height: "10px" }} />}

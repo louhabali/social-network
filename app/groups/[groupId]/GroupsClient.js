@@ -74,29 +74,6 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
     }, [fetchPosts, loading, hasMore]);
 
 
-    const handleLike = async (e) => {
-        const postId = e.target.closest("section").id;
-        const likeIcon = e.target;
-
-        const postIndex = posts.findIndex((post) => post.Pid.toString() === postId);
-        const updatedPosts = [...posts];
-
-        let likeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1;
-
-        const response = await fetch("http://localhost:8080/api/like", {
-            method: "POST",
-            body: JSON.stringify({ postId, likeStatus }),
-            credentials: "include",
-        });
-
-        if (response.ok) {
-            updatedPosts[postIndex].UserInteraction = likeStatus
-            updatedPosts[postIndex].Likes += likeStatus ? 1 : -1
-            likeIcon.style.color = likeStatus ? 'red' : 'white'
-            setPosts(updatedPosts);
-        }
-    };
-
 
 
     const fetchEvents = async () => {
@@ -239,7 +216,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
                         <div className="posts-responsive-container">
                             {posts.map((post) => (
-                                <Post key={post.Pid} post={post} handleLike={handleLike} />
+                                <Post key={post.Pid} post={post} />
                             ))}
                         </div>
                     </>                    {hasMore && <div id="load-more" style={{ height: "10px" }} />}

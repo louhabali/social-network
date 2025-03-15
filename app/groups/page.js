@@ -31,8 +31,10 @@ export default function GroupsPage() {
         });
         if (!res.ok) return;
         const data = await res.json();
+        
         if (data === null) {
             setHasMore(false);
+            setLoading(false);
             return
         }
         if (data.length < 4) {
