@@ -80,7 +80,11 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(post.Uid, post.Privacy)
 		if post.Privacy == "almost_private" {
 			isApproved := ""
+<<<<<<< HEAD
 			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ? ", post.Uid, userID).Scan(&isApproved)
+=======
+			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE (follower_id = ? AND following_id = ?) OR (following_id = ? AND follower_id = ?); ", post.Uid, userID,post.Uid,userID).Scan(&isApproved)
+>>>>>>> alouhab
 
 			if err == nil && isApproved == "approved" || post.Uid == userID {
 				posts = append(posts, post)

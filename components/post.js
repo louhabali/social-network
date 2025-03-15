@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+'use client';
+>>>>>>> alouhab
 import React from 'react';
 import Image from 'next/image';
 import styles from '../app/page.module.css';
@@ -5,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
+<<<<<<< HEAD
 export default function Post({ post, handleLike }) {
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>
@@ -15,6 +20,27 @@ export default function Post({ post, handleLike }) {
                     <Image style={{ borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
 
                 )}
+=======
+
+export default function Post({ post, handleLike }) {
+   
+    const handleLikeClick = () => {
+        handleLike(Number(post.Pid))
+    }
+    
+    return (
+        <section id={post.Pid} key={post.Pid} className={styles.post}>
+            <div className={styles.postHeader}>
+                <Link href={`/profile/${post.Uid}`}>
+                {post.Avatar ? (
+                    <Image  style={{ cursor:"pointer", borderRadius: "50%" }} src={`data:image/png;base64,${post.Avatar}`} alt="" width={32} height={32} />
+                ) : (
+                    
+                    <Image  style={{cursor:"pointer", borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
+                    
+                )}
+                </Link>
+>>>>>>> alouhab
                 <div>
                     <strong>{post.Username}</strong>
                 </div>
@@ -25,6 +51,7 @@ export default function Post({ post, handleLike }) {
                 {post.Image && <Image src={"http://localhost:8080/api/images/" + post.Image} alt="" width={400} height={200} />}
             </Link>
             <div className={styles.postActions}>
+<<<<<<< HEAD
                 <FontAwesomeIcon
                     style={{ cursor: "pointer", color: post.UserInteraction === 1 ? 'red' : 'white' }}
                     onClick={handleLike}
@@ -56,3 +83,27 @@ export default function Post({ post, handleLike }) {
         </section>
     );
 };
+=======
+                <div style={{ flexDirection: "column", textAlign: "center" }}>
+                    <FontAwesomeIcon
+                        style={{ cursor: "pointer", color: post.UserInteraction === 1 ? 'red' : 'white' }}
+                        onClick={handleLikeClick}
+                        icon={faHeart} />
+                    <div>
+                        {post.Likes} {post.Likes !== 1 ? "likes" : "like"}
+                    </div>
+                </div>
+                <div style={{ flexDirection: "column", textAlign: "center" }}>
+                    <Link style={{ textDecoration: "none", color: "white" }} href={"/post/" + post.Pid}>
+                        <FontAwesomeIcon icon={faComment} />
+                    </Link>
+                    <div>
+                        {post.NbComment === 0 ? "no" : post.NbComment}{post.NbComment != 1?" comments":" comment"}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+>>>>>>> alouhab

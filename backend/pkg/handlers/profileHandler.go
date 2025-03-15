@@ -140,8 +140,8 @@ func getFollowing(db *sql.DB, userID int) ([]Follower, error) {
 	rows, _ := db.Query(`
 		SELECT users.id, users.first_name, users.last_name, users.nickname FROM users
 		JOIN follow_requests ON users.id = follow_requests.following_id
-		WHERE follow_requests.follower_id = ? AND follow_requests.status = 'approved';
-	`, userID)
+		WHERE follow_requests.follower_id = ? OR follow_requests.following_id = ?  AND follow_requests.status = 'approved';
+	`, userID,userID)
 
 	var following []Follower
 	for rows.Next() {

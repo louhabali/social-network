@@ -3,7 +3,11 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import '../../styles/register.css'
 import Link from "next/link"
+<<<<<<< HEAD
 
+=======
+import InvalidCredentials from '@/components/invalidCredentials'
+>>>>>>> alouhab
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: "",
@@ -15,8 +19,13 @@ export default function RegisterPage() {
     nickname: "",
     aboutMe: ""
   })
+<<<<<<< HEAD
   
   const [avatarPreview, setAvatarPreview] = useState(null)
+=======
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [errorMessage, setErrorMessage] = useState("");
+>>>>>>> alouhab
   const router = useRouter()
 
   const handleChange = (e) => {
@@ -25,21 +34,39 @@ export default function RegisterPage() {
   }
 
   const handleFileChange = (e) => {
+<<<<<<< HEAD
     const file = e.target.files[0]
     setFormData({ ...formData, avatar: file })
     
     if (file) {
+=======
+    setFormData({ ...formData, avatar: e.target.files[0] })
+    if ( e.target.files[0]) {
+>>>>>>> alouhab
       const reader = new FileReader()
       reader.onloadend = () => {
         setAvatarPreview(reader.result)
       }
+<<<<<<< HEAD
       reader.readAsDataURL(file)
+=======
+      reader.readAsDataURL( e.target.files[0])
+>>>>>>> alouhab
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+<<<<<<< HEAD
       
+=======
+  
+    if (formData.email.trim().length==0 || formData.password.trim().length==0 || formData.firstName.trim().length==0 || formData.lastName.trim().length==0 || formData.dateOfBirth.trim().length==0) {
+      setErrorMessage("Please fill all the required fields")
+      return
+    }
+
+>>>>>>> alouhab
     const formDataToSend = new FormData()
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value)
@@ -50,6 +77,7 @@ export default function RegisterPage() {
         method: "POST",
         body: formDataToSend,
       })
+<<<<<<< HEAD
       
       const result = await response.text()
 
@@ -62,6 +90,17 @@ export default function RegisterPage() {
       }
     } catch (error) {
       console.error('Error:', error)
+=======
+
+      if (!response.ok) {
+        const result = await response.text()
+        setErrorMessage(result)
+      } else {
+        router.push("/login")
+      }
+    } catch (error) {
+      console.error('Error', error)
+>>>>>>> alouhab
     }
   }
 
@@ -182,6 +221,10 @@ export default function RegisterPage() {
         </div>
         
         <button type="submit" className="submitButtonreg">Create Account</button>
+<<<<<<< HEAD
+=======
+        {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
+>>>>>>> alouhab
         
         <div className="linkreg">
           Already have an account? <Link href="/login" className="loginregisterlink">Sign In</Link>

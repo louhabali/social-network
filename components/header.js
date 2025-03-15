@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import Link from 'next/link';
 import styles from './Header.module.css';
@@ -8,6 +9,22 @@ const Header = ({ userInfo }) => {
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+=======
+"use client";
+import React from 'react';
+import Link from 'next/link';
+import styles from './Header.module.css';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import Image from 'next/image';
+
+
+const Header = ({userID,Avatar,fname,lname }) => {
+    
+    const router = useRouter();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+>>>>>>> alouhab
     const handleLogout = async () => {
         try {
             const response = await fetch('http://localhost:8080/api/logout', {
@@ -22,8 +39,54 @@ const Header = ({ userInfo }) => {
             console.error('Logout error:', error);
         }
     };
+<<<<<<< HEAD
 
 
+=======
+  
+    const [searchData, setSearchData] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+  
+    function handleSearch(e) {
+        setSearchData(e.target.value);
+    }
+    function handleKeyDown(e) {
+        if (e.key === "Enter" && searchData.trim()) {
+            setSearchData("");
+            setSearchResults([]); 
+            router.push(`/search?q=${encodeURIComponent(searchData)}`);
+        }
+    }
+    useEffect(() => {
+        if (!searchData.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        const formDataToSend = new FormData();
+        formDataToSend.append("searchValue", searchData);
+        fetch('http://localhost:8080/api/searchData', {
+            method: 'POST',
+            credentials: "include",
+            body: formDataToSend,
+        })
+            .then(response => {
+               return response.json();
+                
+            })
+            .then(data => {
+                if (data){
+                    if (data) {
+                        setSearchResults(Object.values(data));
+                    }
+                }
+           
+                 //console.log(users);
+                 
+            }
+            )
+            .catch(error => console.error('error', error));
+}, [searchData])
+>>>>>>> alouhab
     return (
         <>
             {/* Desktop Header */}
@@ -32,12 +95,37 @@ const Header = ({ userInfo }) => {
                     <Link href="/" className={styles.logo}>
                         Connectify
                     </Link>
+<<<<<<< HEAD
                     <div className={styles.searchContainer}>
+=======
+                    <div className={styles.searchContainer} >
+>>>>>>> alouhab
                         <input
                             type="text"
                             placeholder="Search Connectify..."
                             className={styles.searchInput}
+<<<<<<< HEAD
                         />
+=======
+                            value={searchData}
+                            onChange={handleSearch}
+                            onKeyDown={handleKeyDown} 
+                        />
+                         {searchResults.length > 0 && (
+                            <div style={{marginTop:"45px",top:"0" ,
+                             width: "206px",
+                              background:"rgb(0, 0, 0)", 
+                              paddingLeft:"5px",
+                               position:"absolute" ,
+                               color:"white"}}>
+                                {searchResults.map((user, index) => (
+                                    <p key={index}>{user.Fname} {user.Lname}</p>
+                                 ))}
+                         </div>
+        )}
+                         <div id="s" style={{marginTop:"45px",top:"0" , width: "206px", background:"rgb(0, 0, 0)", paddingLeft:"5px", position:"absolute" ,color:"white"}}></div>
+
+>>>>>>> alouhab
                         <button className={styles.searchButton}>
                             {/* <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.searchIcon}>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -74,6 +162,7 @@ const Header = ({ userInfo }) => {
 
                 <div className={styles.headerRight}>
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+<<<<<<< HEAD
                         {userInfo && userInfo.Avatar ? (
                             <img
                                 src={userInfo.Avatar}
@@ -88,6 +177,19 @@ const Header = ({ userInfo }) => {
                         <span className={styles.userName}>
                             {userInfo?.Username || 'User'}
                         </span>
+=======
+                        {Avatar ? (
+                            <img
+                                 src={`data:image/png;base64,${Avatar}`} alt="user"
+                                className={styles.userAvatar}
+                                width={20} height={20}
+                            />
+                        ) : (
+                            <Image src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
+
+                        )}<span>{fname} {lname}</span>
+                     
+>>>>>>> alouhab
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -100,7 +202,11 @@ const Header = ({ userInfo }) => {
 
                         {isDropdownOpen && (
                             <div className={styles.dropdown}>
+<<<<<<< HEAD
                                 <Link href="/profile" className={styles.dropdownItem}>
+=======
+                                <Link href={`/profile/${userID}`} className={styles.dropdownItem}>
+>>>>>>> alouhab
                                     Profile
                                 </Link>
                                 {/* <Link href="/settings" className={styles.dropdownItem}>
@@ -148,6 +254,7 @@ const Header = ({ userInfo }) => {
 
                     <Link href="/profile" className={styles.mobileNavItem}>
                         <div className={styles.userMenuIcon}>
+<<<<<<< HEAD
                             {userInfo && userInfo.Avatar ? (
                                 <img
                                     src={userInfo.Avatar}
@@ -158,6 +265,18 @@ const Header = ({ userInfo }) => {
                                 <div className={styles.mobileDefaultAvatar}>
                                     {userInfo?.Username?.charAt(0)?.toUpperCase() || 'U'}
                                 </div>
+=======
+                            {Avatar ? (
+                                <img
+                                    src={Avatar}
+                                    alt={fname}
+                                    className={styles.mobileUserAvatar}
+                                    width={20} height={20}
+                                />
+                            ) : (
+                                <Image src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20}/>
+
+>>>>>>> alouhab
                             )}
                         </div>
                         <span className={styles.mobileNavLabel}>Profile</span>

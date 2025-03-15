@@ -74,6 +74,7 @@ const HomePage = () => {
         return () => observer.current?.disconnect();
     }, [fetchPosts, loading, hasMore]);
 
+<<<<<<< HEAD
     const handleLike = async (e) => {
         const postId = e.target.closest("section").id;
         const likeIcon = e.target;
@@ -82,6 +83,14 @@ const HomePage = () => {
 
         let updatedPosts = [...posts];
         let likeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1;
+=======
+    const handleLike = async (postId) => {
+        const postIndex = posts.findIndex((post) => post.Pid === postId)
+        if (postIndex === -1) return
+
+        let updatedPosts = [...posts]
+        let likeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1
+>>>>>>> alouhab
 
         const response = await fetch("http://localhost:8080/api/like", {
             method: "POST",
@@ -90,6 +99,7 @@ const HomePage = () => {
         });
 
         if (response.ok) {
+<<<<<<< HEAD
             updatedPosts[postIndex].UserInteraction = likeStatus;
             updatedPosts[postIndex].Likes += likeStatus ? 1 : -1;
             likeIcon.style.color = likeStatus ? "red" : "white";
@@ -97,6 +107,17 @@ const HomePage = () => {
         }
     };
     
+=======
+            console.log(likeStatus)
+            
+            updatedPosts[postIndex].UserInteraction = likeStatus
+            updatedPosts[postIndex].Likes += likeStatus ? 1 : -1
+            setPosts(updatedPosts)
+        }
+    };
+    
+    console.log(posts)
+>>>>>>> alouhab
     return (
         <div className={styles.container}>
             {/* Remove the Header component from here */}

@@ -55,12 +55,12 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err = h.db.Exec(`UPDATE tokens SET token=?,created_at=CURRENT_TIMESTAMP WHERE user_id=?`, uuid.String(), UserID)
+		_, err = h.db.Exec(`INSERT INTO tokens(user_id,token) VALUES (?,?)`, UserID,uuid.String())
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("failed to update the session"))
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("failed to insert the user"))
 
-			fmt.Println("failed to update the session", err)
+			fmt.Println("failed to insert the user", err)
 			return
 		}
 
@@ -69,7 +69,11 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Value:    uuid.String(),
 			HttpOnly: true,
 			Path: "/",
+<<<<<<< HEAD
 			Expires:  time.Now().Add(365 * 24 * time.Hour),
+=======
+			Expires:  time.Now().Add(200 * 365 * 24 * time.Hour),
+>>>>>>> alouhab
 		})
 
 		w.Write([]byte("connected successfully"))
