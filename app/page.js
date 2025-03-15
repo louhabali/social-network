@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
-// import Header from "@/components/Header";
+import { websoketProvider } from "./webSocket";
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
@@ -14,7 +14,18 @@ const HomePage = () => {
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
     const router = useRouter();
-    
+
+    useEffect(() => {
+        websoketProvider.connect().
+            then(res => {
+                console.log(res);
+                window.ws = res
+            }).catch(error => {
+                console.error("WebSocket error:", error);
+            });
+    }, [])
+
+    // posts
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
 
@@ -23,7 +34,7 @@ const HomePage = () => {
             const response = await fetch(`http://localhost:8080/api/posts?offset=${offset}`, {
                 credentials: "include",
             });
-            
+
             if (!response.ok) {
                 setHasMore(false);
                 throw Error("gg")
@@ -37,7 +48,7 @@ const HomePage = () => {
             }
             if (data.length < 4) {
                 setHasMore(false);
-            }; 
+            };
             setPosts((prevPosts) => [...prevPosts, ...data]);
             setOffset((prevOffset) => prevOffset + data?.length);
         } catch (error) {
@@ -53,8 +64,8 @@ const HomePage = () => {
             .then((data) => setUserInfo(data))
             .catch((error) => console.error("Error fetching user data:", error));
     }, []);
- 
-    
+
+
     useEffect(() => {
         if (loading || !hasMore) return;
 
@@ -89,18 +100,18 @@ const HomePage = () => {
 
         if (response.ok) {
             console.log(likeStatus)
-            
+
             updatedPosts[postIndex].UserInteraction = likeStatus
             updatedPosts[postIndex].Likes += likeStatus ? 1 : -1
             setPosts(updatedPosts)
         }
     };
-    
+
     console.log(posts)
     return (
         <div className={styles.container}>
             {/* Remove the Header component from here */}
-            
+
             <main className={styles.main}>
                 <div className={styles.feed}>
                     <PostForm userInfo={userInfo} setPosts={setPosts} setOffset={setOffset} />

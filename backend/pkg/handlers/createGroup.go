@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,14 +32,30 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
+
 		groupId := 0
-		h.db.QueryRow("INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?) RETURNING id", g.Title, g.Description, userID).Scan(&groupId)
-		h.db.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, ?)", groupId, userID, "creator")
+		err = h.db.QueryRow("INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?) RETURNING id", g.Title, g.Description, userID).Scan(&groupId)
+		if (err != nil) {
+			http.Error(w, "Error creating group", http.StatusInternalServerError)
+			return
+		}
+		_, err = h.db.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, ?)", groupId, userID, "creator")
+		if (err != nil) {
+			http.Error(w, "Error creating group", http.StatusInternalServerError)
+			return
+		}
 
 		g.CreatorId = userID
 		g.ID = groupId
 		g.CreatedAt = time.Now().Format("Jan 2, 2006 at 3:04")
 		g.Status = "creator"
+
+		// create related chate
+		_, err = CreatGroupChat(h.db, userID, g.Title) 
+		if (err != nil) {
+			http.Error(w, "Error creating group chat", http.StatusInternalServerError)
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(g)
@@ -71,24 +88,51 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
+	joinSender := r.Context().Value("userID").(int)
 	groupID, _ := strconv.Atoi(r.PathValue("groupId"))
 	var userID int
 	var requestBody struct {
 		UserID int `json:"userId"`
 	}
+
+	memberInvitation := true
 	json.NewDecoder(r.Body).Decode(&requestBody)
+	
 	if requestBody.UserID == 0 {
-		userID = r.Context().Value("userID").(int)
+		memberInvitation = false
+		userID = joinSender
 	}else {
 		userID = requestBody.UserID
 	}
 
 	if r.Method == "POST" {
-		_, err := h.db.Exec("INSERT INTO group_members (group_id, user_id) VALUES (?, ?)", groupID, userID)
+		res, err := h.db.Exec("INSERT INTO group_members (group_id, user_id) VALUES (?, ?)", groupID, userID)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+
+		joinReqId, _ := res.LastInsertId()
+		if (memberInvitation) {
+			insertNotification(h.db, &notificationToInsert{
+				RelatedId: int(joinReqId),
+				SenderId: joinSender,
+				ReciverId: userID,
+				Type: "group join invatation",
+			})
+		} else {
+			query := `SELECT creator_id FROM groups  WHERE id = ?`
+			var adminId int
+			h.db.QueryRow(query,groupID).Scan(&adminId)
+			insertNotification(h.db, &notificationToInsert{
+				RelatedId: int(joinReqId),
+				SenderId: joinSender,
+				ReciverId: adminId,
+				Type: "group join request",
+			})
+		}
+
+		fmt.Println("add user")
 	} else if r.Method == "DELETE" {
 		_, err := h.db.Exec("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID)
 		if err != nil {
@@ -97,5 +141,113 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+
+func getGroupMembers(db *sql.DB, groupId int) ([]int, error){
+	var members []int
+
+    query := `
+        SELECT user_id 
+        FROM group_members 
+        WHERE group_id = ? AND (status = 'approved' OR status = 'creator')
+    `
+
+    rows, err := db.Query(query, groupId)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var userId int
+        if err := rows.Scan(&userId); err != nil {
+            return nil, err
+        }
+        members = append(members, userId)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return members, nil
+}
+
+func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("accept group join")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	_, err = h.db.Exec("UPDATE group_members SET status = 'approved' WHERE id = ?", notif.RelatedId)
+	if err != nil {
+		fmt.Println("update join status",err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		fmt.Println("delet notif",err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	var chatId int
+	joinerId := notif.ReceverId
+	
+	if (notif.Type == "group join request") {
+		joinerId = notif.SenderId
+	}
+	// fmt.Println(notif.RelatedName)
+	h.db.QueryRow("SELECT id FROM chats WHERE name = ?", notif.GroupName).Scan(&chatId)
+	fmt.Println(chatId)
+
+	addChatMember(h.db, chatId, joinerId)
+
+	// fmt.Println(err)
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("reject group join")
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	_, err = h.db.Exec("DELETE FROM group_members WHERE id = ?", notif.RelatedId)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("reject group",notif.Id, notif.RelatedId)
 	w.WriteHeader(http.StatusOK)
 }

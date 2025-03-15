@@ -9,4 +9,8 @@ require (
 	golang.org/x/crypto v0.31.0
 )
 
-require github.com/go-gorp/gorp/v3 v3.1.0 // indirect
+require (
+	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
+	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
+)

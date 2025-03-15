@@ -1,0 +1,71 @@
+.chatList {
+    width: 250px;
+    height: calc(100% - 50px);
+    overflow-y: auto;
+    scrollbar-width: none;
+    box-sizing: border-box;
+    margin-top: 10px;
+    padding: 5px;
+    background-color: royalblue;
+}
+
+.chatList::-webkit-scrollbar {
+    display: none;
+}
+
+.chatItem {
+    height: 59px;
+    position: relative;
+    border-radius: 5px;
+    margin-bottom: 3px;
+    background-color: rgb(78, 67, 67);
+}
+
+.uImage {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    width: 55px;
+    height: 55px;
+    background-color: aqua;
+    border-radius: 50%;
+}
+
+.uName {
+    position: absolute;
+    left: 61px;
+    top: -8px;
+    font-size: 18px;
+}
+
+.lastMsg {
+    position: absolute;
+    left: 70px;
+    top: 18px;
+    font-size: 15px;
+}
+
+.count {
+    position: absolute;
+    text-align: center;
+    left: 45px;
+    bottom: 5px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background-color: green;
+}
+
+.plus {
+    font-size: 12px;
+    margin-left: -1.5px;
+}
+
+.unreaded {
+    background-color: rgb(78, 67, 67);
+}
+
+.readed {
+    background-color: rgb(51, 44, 44);
+}
+

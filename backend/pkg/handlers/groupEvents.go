@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -60,6 +61,37 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			http.Error(w, "Failed to create event", http.StatusInternalServerError)
+			return
+		}
+
+		// eventId, _ := res.LastInsertId();
+
+		// notification
+		members, err := getGroupMembers(h.db, groupID)
+		if err != nil {
+			log.Println("error geting G members for event notif")
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		
+		for _ , id := range members {
+			if id != userID {
+				err = insertNotification(h.db, &notificationToInsert{
+					SenderId: userID,
+					ReciverId: id,
+					RelatedId: groupID,
+					Type: "group event",
+				})
+				if err != nil {
+					log.Println("notif insert error")
+					http.Error(w, "Database error", http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
 

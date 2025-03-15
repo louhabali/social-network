@@ -32,7 +32,7 @@ export default function NavigationMenu(){
                     <Link className="menulinks" href="/groups"><FontAwesomeIcon icon={faUserGroup} /><span>groups</span></Link>
                 </li>
                 <li>
-                    <Link className="menulinks" href="/messages"><FontAwesomeIcon icon={faEnvelope} /><span>messages</span></Link>
+                    <Link className="menulinks" href="/chat"><FontAwesomeIcon icon={faEnvelope} /><span>messages</span></Link>
                 </li>
                 <li>
                     <Link className="menulinks" href="/notifications"><FontAwesomeIcon icon={faBell} /><span>notifications</span></Link>
