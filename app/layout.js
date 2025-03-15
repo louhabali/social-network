@@ -25,11 +25,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         {/* {!hideMenu && <NavigationMenu />} */}
-<<<<<<< HEAD
-        {!hideMenu &&  <Header />}
-=======
         {!hideMenu &&  <Header userID={u.ID} Avatar={u.Avatar} fname={u.Firstname} lname={u.Lastname} />}
->>>>>>> alouhab
         <main>{children}</main>
         
       </body>

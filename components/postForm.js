@@ -27,13 +27,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             fetch('http://localhost:8080/api/getfollowedusers', {
                 credentials: "include",
             }).then(data => data.json()).then(d => {
-<<<<<<< HEAD
-
                 setPrivateUsers(d)
-
-=======
-                setPrivateUsers(d)
->>>>>>> alouhab
             })
 
 

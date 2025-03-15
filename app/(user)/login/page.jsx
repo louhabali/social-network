@@ -3,10 +3,7 @@ import '../../styles/login.css'
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Link from "next/link"
-<<<<<<< HEAD
-=======
 import InvalidCredentials from '@/components/invalidCredentials'
->>>>>>> alouhab
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -23,14 +20,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-<<<<<<< HEAD
-
-    const response = await fetch("http://localhost:8080/api/login", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      credentials: "include",
-    })
-=======
     if (formData.email.trim().length==0 || formData.password.trim().length==0) {
       setErrorMessage("Please fill all the required fields")
       return
@@ -41,7 +30,6 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
         credentials: "include",
       })
->>>>>>> alouhab
 
       const result = await response.text()
 
@@ -92,10 +80,7 @@ export default function LoginPage() {
         </div>
 
         <button type="submit" className="submitButton">Sign In</button>
-<<<<<<< HEAD
-=======
         {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
->>>>>>> alouhab
 
         <div className="formDivider">
           <span>or</span>

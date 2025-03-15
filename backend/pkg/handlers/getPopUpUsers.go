@@ -14,13 +14,9 @@ type privateUsers struct {
 
 func (h *Handler) GetAllusers(w http.ResponseWriter, r *http.Request) {
 	myId, _ := r.Context().Value("userID").(int)
-<<<<<<< HEAD
-	flwrs ,err := getFollowing(h.db,myId)
-=======
 	
 	flwrs ,err := getFollowing(h.db,myId)
 	//fmt.Println("following is : ",flwrs)
->>>>>>> alouhab
 	if err != nil {
 		fmt.Println("11",err)
 		return
