@@ -124,7 +124,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			reg.Avatar = &avatarPath
 		}
 		fmt.Println(reg.Avatar)
-		// insert them to users table these informations
 		var id int
 		err = h.db.QueryRow(`
 		INSERT INTO users 

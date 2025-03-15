@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
+// import Header from "@/components/Header";
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
@@ -12,9 +13,8 @@ const HomePage = () => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
-
     const router = useRouter();
-
+    
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
 
@@ -88,17 +88,19 @@ const HomePage = () => {
         });
 
         if (response.ok) {
-            console.log(likeStatus);
+            console.log(likeStatus)
             
-            updatedPosts[postIndex].UserInteraction = likeStatus;
-            updatedPosts[postIndex].Likes += likeStatus ? 1 : -1;
-            setPosts(updatedPosts);
+            updatedPosts[postIndex].UserInteraction = likeStatus
+            updatedPosts[postIndex].Likes += likeStatus ? 1 : -1
+            setPosts(updatedPosts)
         }
     };
     
+    console.log(posts)
     return (
         <div className={styles.container}>
-            <nav className={styles.navbar}></nav>
+            {/* Remove the Header component from here */}
+            
             <main className={styles.main}>
                 <div className={styles.feed}>
                     <PostForm userInfo={userInfo} setPosts={setPosts} setOffset={setOffset} />
@@ -109,7 +111,7 @@ const HomePage = () => {
                 ))}
 
                 {hasMore && <div id="load-more" style={{ height: "10px" }} />}
-                {loading && <p>Loading...</p>}
+                {loading && <p className={styles.loading}>Loading...</p>}
             </main>
         </div>
     );

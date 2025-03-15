@@ -10,7 +10,6 @@ import (
 func main() {
 	db := database.CreateTables()
 	defer db.Close()
-
 	handler := handlers.NewHandler(db)
 
 	http.HandleFunc("/api/login", handleCORS(handler.LoginHandler))
@@ -19,6 +18,7 @@ func main() {
 	http.HandleFunc("/api/posting", handleCORS(handler.Midd(handler.PostCreationHandler)))
 	http.HandleFunc("/api/searchData", handleCORS(handler.HandleSearch))
 	http.HandleFunc("/api/suggestions", handleCORS(handler.Midd(handler.Suggestions)))
+
 	
 	http.HandleFunc("/api/userdata", handleCORS(handler.Midd(handler.UserData)))
 	http.HandleFunc("/api/profile/{userId}", handleCORS(handler.Midd(handler.GetProfile)))
@@ -33,12 +33,15 @@ func main() {
 
 	http.HandleFunc("/api/groups/{groupId}", handleCORS(handler.Midd(handler.GetGroupByIdHandler)))
 	http.HandleFunc("/api/groups", handleCORS(handler.Midd(handler.CreateGroupHandler)))
+	http.HandleFunc("/api/groups/{groupId}/join", handleCORS(handler.Midd(handler.JoinGroupHandler)))
 	http.HandleFunc("/api/groups/{groupId}/events", handleCORS(handler.Midd(handler.GroupEventsHandler)))
 	http.HandleFunc("/api/groups/{groupId}/events/going", handleCORS(handler.Midd(handler.CreateEventResponse)))
+	http.HandleFunc("/api/groups/{groupId}/invite", handleCORS(handler.Midd(handler.InviteUsersGroup)))
 
 	http.HandleFunc("/api/images/", handleCORS(handler.ServeImage))
+	http.HandleFunc("/api/getallusers", handleCORS(handler.Midd(handler.GetAllusers)))
 	http.HandleFunc("/api/getfollowedusers", handleCORS(handler.Midd(handler.GetAllusers)))
-	
+
 	http.ListenAndServe(":8080", nil)
 }
 

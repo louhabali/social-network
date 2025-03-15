@@ -16,7 +16,7 @@ func (h *Handler) GetAllusers(w http.ResponseWriter, r *http.Request) {
 	myId, _ := r.Context().Value("userID").(int)
 	
 	flwrs ,err := getFollowing(h.db,myId)
-	fmt.Println("following is : ",flwrs)
+	//fmt.Println("following is : ",flwrs)
 	if err != nil {
 		fmt.Println("11",err)
 		return

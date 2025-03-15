@@ -5,12 +5,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 export default function Sugg() {
     const [suggs , setSuggs ]= useState([])
-    const [text , settext ]= useState("")
+const [text, settext]= useState("")
     const r = useRouter()
     useEffect(()=>{
         
     fetch("http://localhost:8080/api/suggestions", { credentials: "include" }).then(d=>d.json()).then(dd=>{
         
+        //console.log("dd is  : " ,dd );
         if (dd==null){
             settext("no ")
             return

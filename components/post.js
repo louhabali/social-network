@@ -10,8 +10,8 @@ import Link from 'next/link';
 export default function Post({ post, handleLike }) {
    
     const handleLikeClick = () => {
-        handleLike(Number(post.Pid));
-    };
+        handleLike(Number(post.Pid))
+    }
     
     return (
         <section id={post.Pid} key={post.Pid} className={styles.post}>

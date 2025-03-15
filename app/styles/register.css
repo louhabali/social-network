@@ -1,131 +1,270 @@
-body{
+:root {
+  --primary-color: #3a86ff;
+  --text-color: #f8f9fa;
+  --bg-dark: #121212;
+  --bg-darker: #0a0a0a;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --input-bg: rgba(30, 30, 30, 0.8);
+  --shadow-color: rgba(0, 0, 0, 0.25);
+  --gradient-start: rgba(58, 134, 255, 0.8);
+  --gradient-end: rgba(123, 97, 255, 0.8);
+  --hover-color: #4a95ff;
+  --focus-glow: rgba(58, 134, 255, 0.5);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--bg-dark);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-color);
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(60, 60, 60, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(60, 60, 60, 0.2) 0%, transparent 50%);
 }
-.containereg {
-     width: 500px;
-     border: #1a1919 1px solid;
-     margin: auto;
-     padding: 30px;
-     border-radius: 8px;
-     background-color:transparent;
-     backdrop-filter: blur(10px);
-   }
-   
-   .formreg {
-     display: flex;
-     gap: 10px;
-     flex-wrap: wrap;
-     justify-content: center;
-     align-items: center;
-   }
-   
-   .inputs {
-    width: 216px;
-    padding: 10px;
-    background-color: #000000;
-    color: white;
-    border: 1px solid #292828;
-    border-radius: 5px;
-   }
-   .inputsd {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-   }
-.inputsavatar{
-    width: 100%;
-     display: flex;
-     gap: 10px;
-     flex-direction: column;
-     align-items: center;
-}
-.inp {
-    width: 96%;
-    padding: 10px;
-    background-color: #000000;
-    color: #ffffff;
-    border: 1px solid #2c2b2b;
-    border-radius: 5px;
-   }
-   .inputsbtn{
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    justify-content: center;
-   }
-     .inputs:focus {
-         outline: none;
-         border-color: #c4c1c1;
-     }
-   
-   .submitButtonreg {
-    width: 100%;
 
-     padding: 12px;
-     background-color: #0a0a0a;
-     color: white;
-     border: none;
-     border-radius: 5px;
-     cursor: pointer;
-     font-size: 16px;
-   }
-   
-   .linkreg {
-     text-align: center;
-     margin-top: 15px;
-     color: rgb(255, 255, 255);
-   }
-   .loginregisterlink{
-     color: #222222;
-     font-weight: bold;
-   }
-   @media screen and (max-width:510px) {
-    .containereg {
-        width: 400px;
-        padding: 15px;
-        
-      }
-    .inputs {
-        width: 150px;
-       }
-       .inp{
-        width: 88%;
-        padding: 5px;
-      
-       }
-       .inputsd {
-        display: flex;
-        justify-content: space-evenly;
-        width: 100%;
-       }
-      .inputsbtn{
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-      }
-      .inputsbtn button{
-        width: 90%;
-        justify-content: center;
-        align-items: center;
-      }
-   }
-   @media screen and (max-width:410px) {
-    .containereg {
-        width: 300px;
-       padding: 10px;
-        
-      }
-    .inputs {
-        width: 100px;
-       }
-.inp{
-        width: 84%;
-       
+.containereg {
+  width: 100%;
+  max-width: 500px;
+  border: var(--border-color) 1px solid;
+  margin: auto;
+  padding: 30px;
+  border-radius: 16px;
+  background-color: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 25px var(--shadow-color);
+  transition: all 0.3s ease;
+  height: 50%;
+
 }
-       .inputsd {
-        display: flex;
-        justify-content: space-evenly;
-        width: 100%;
-       }
-   }
+
+.containereg h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 1.75rem;
+}
+
+.formreg {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.inputGroup {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.inputField {
+  position: relative;
+  flex: 1;
+}
+
+.inputs,
+.inp {
+  width: 100%;
+  padding: 14px 16px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.inputs:focus,
+.inp:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--focus-glow);
+}
+
+.inputs::placeholder,
+.inp::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.inputLabel {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background-color: var(--bg-darker);
+  padding: 0 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.inputsd {
+  display: none;
+}
+
+.inputsavatar {
+  width: 100%;
+  display: flex;
+  gap: 16px;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.avatarPreview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--input-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border-color);
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.avatarPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarUpload {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatarUpload input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.avatarUploadBtn {
+  padding: 10px 16px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.avatarUploadBtn:hover {
+  background-color: rgba(40, 40, 40, 0.8);
+}
+
+.inputsbtn {
+  width: 100%;
+}
+
+.submitButtonreg {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  color: white;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
+  margin-top: 10px;
+}
+
+.submitButtonreg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(58, 134, 255, 0.4);
+}
+
+.submitButtonreg:active {
+  transform: translateY(0);
+}
+
+.linkreg {
+  text-align: center;
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.loginregisterlink {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.loginregisterlink:hover {
+  text-decoration: underline;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+@media screen and (max-width: 600px) {
+  .containereg {
+    padding: 20px;
+    max-width: 100%;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .inputGroup {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .submitButtonreg {
+    padding: 14px;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .containereg {
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .containereg h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .inputs,
+  .inp {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .avatarPreview {
+    width: 80px;
+    height: 80px;
+  }
+}

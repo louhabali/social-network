@@ -15,6 +15,7 @@ export default function RegisterPage() {
     nickname: "",
     aboutMe: ""
   })
+  const [avatarPreview, setAvatarPreview] = useState(null)
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter()
 
@@ -25,6 +26,13 @@ export default function RegisterPage() {
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, avatar: e.target.files[0] })
+    if ( e.target.files[0]) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result)
+      }
+      reader.readAsDataURL( e.target.files[0])
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -59,33 +67,127 @@ export default function RegisterPage() {
 
   return (
     <div className="containereg">
+      <h2>Create Your Account</h2>
       <form onSubmit={handleSubmit} className="formreg">
-        <div className="inputsd">
-        <input type="email" name="email" placeholder="Email" required className="inputs" onChange={handleChange} />
-        <input type="password" name="password" placeholder="Password" required className="inputs" onChange={handleChange} />
+        <div className="inputGroup">
+          <div className="inputField">
+            <span className="inputLabel">First Name</span>
+            <input 
+              type="text" 
+              name="firstName" 
+              placeholder="Enter your first name" 
+              required 
+              className="inputs" 
+              onChange={handleChange} 
+              value={formData.firstName}
+            />
+          </div>
+          <div className="inputField">
+            <span className="inputLabel">Last Name</span>
+            <input 
+              type="text" 
+              name="lastName" 
+              placeholder="Enter your last name" 
+              required 
+              className="inputs" 
+              onChange={handleChange}
+              value={formData.lastName}
+            />
+          </div>
         </div>
-        <div className="inputsd">
-        <input type="text" name="firstName" placeholder="First Name" required className="inputs" onChange={handleChange} />
-        <input type="text" name="lastName" placeholder="Last Name" required className="inputs" onChange={handleChange} />
+        
+        <div className="inputField">
+          <span className="inputLabel">Email</span>
+          <input 
+            type="email" 
+            name="email" 
+            placeholder="Enter your email address" 
+            required 
+            className="inp" 
+            onChange={handleChange}
+            value={formData.email}
+          />
         </div>
-        <div className="inputsd">
-        <input type="date" name="dateOfBirth" required className="inputs" onChange={handleChange} /> 
-        <input type="text" name="nickname" placeholder="Nickname (Optional)"className="inputs" onChange={handleChange} />
+        
+        <div className="inputField">
+          <span className="inputLabel">Password</span>
+          <input 
+            type="password" 
+            name="password" 
+            placeholder="Create a password" 
+            required 
+            className="inp" 
+            onChange={handleChange}
+            value={formData.password}
+          />
         </div>
+        
+        <div className="inputGroup">
+          <div className="inputField">
+            <span className="inputLabel">Date of Birth</span>
+            <input 
+              type="date" 
+              name="dateOfBirth" 
+              required 
+              className="inputs" 
+              onChange={handleChange}
+              value={formData.dateOfBirth}
+            />
+          </div>
+          <div className="inputField">
+            <span className="inputLabel">Nickname (Optional)</span>
+            <input 
+              type="text" 
+              name="nickname" 
+              placeholder="Choose a nickname" 
+              className="inputs" 
+              onChange={handleChange}
+              value={formData.nickname}
+            />
+          </div>
+        </div>
+        
         <div className="inputsavatar">
-        <input type="file" name="avatar" accept="image/*" className="inp" onChange={handleFileChange} />
-        <textarea name="aboutMe" placeholder="About Me (Optional)"className="inp" onChange={handleChange}></textarea>
+          <div className="avatarPreview">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar preview" />
+            ) : (
+              <span>No image</span>
+            )}
+          </div>
+          <div className="avatarUpload">
+            <input 
+              type="file" 
+              name="avatar" 
+              accept="image/*" 
+              onChange={handleFileChange} 
+              id="avatarInput"
+            />
+            <label htmlFor="avatarInput" className="avatarUploadBtn">
+              Choose Profile Picture
+            </label>
+          </div>
         </div>
-        <div className="inputsbtn">
-        <button type="submit" className="submitButtonreg">Register</button>
+        
+        <div className="inputField">
+          <span className="inputLabel">About Me (Optional)</span>
+          <textarea 
+            name="aboutMe" 
+            placeholder="Tell us a bit about yourself" 
+            className="inp" 
+            onChange={handleChange}
+            value={formData.aboutMe}
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <button type="submit" className="submitButtonreg">Create Account</button>
         {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
-        <p className="linkreg">
-        already have an acount? <Link href="/login" className='loginregisterlink'>login</Link>
-        </p>
+        
+        <div className="linkreg">
+          Already have an account? <Link href="/login" className="loginregisterlink">Sign In</Link>
         </div>
       </form>
-      
-      
     </div>
   )
 }

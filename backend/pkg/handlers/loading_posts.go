@@ -28,6 +28,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 
 	offset := r.URL.Query().Get("offset")
 	groupId := r.URL.Query().Get("groupId")
+	userId := r.URL.Query().Get("userId")
 
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
@@ -36,7 +37,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := `
-	SELECT posts.id, posts.user_id, posts.created_at, posts.content, posts.image_path, users.first_name, users.last_name, users.avatar
+	SELECT posts.id, posts.user_id, posts.created_at, posts.content, posts.image_path, posts.privacy, users.first_name, users.last_name, users.avatar
 	FROM posts
 	JOIN users ON posts.user_id = users.id
 	`
@@ -45,8 +46,13 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		query += " WHERE group_id = ?"
 		args = append(args, groupId)
 	} else {
-		query += " WHERE group_id IS '0'"
+		query += " WHERE group_id IS 0"
+		if userId != "" {
+			query += " AND user_id = ?"
+			args = append(args, userId)
+		}
 	}
+	fmt.Println(offset, groupId, userId)
 	query += " ORDER BY posts.id DESC LIMIT 4 OFFSET ?"
 	args = append(args, offset)
 
@@ -62,7 +68,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		var post Post
 		var timeCreated time.Time
 		var firstname, lastname string
-		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &firstname, &lastname, &post.Avatar)
+		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &post.Privacy, &firstname, &lastname, &post.Avatar)
 		post.Username = strings.Join([]string{firstname, lastname}, " ")
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 		if post.Avatar != nil {
@@ -71,45 +77,22 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		h.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", post.Pid).Scan(&post.NbComment)
 		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
-		pp := ""
-		err := h.db.QueryRow("SELECT privacy FROM posts WHERE id = ?", post.Pid).Scan(&pp)
-		if err != nil {
-			fmt.Println("eroor pp :", err)
-		}
-		
-		usId := 0
-		err = h.db.QueryRow("SELECT user_id FROM posts WHERE id = ?", post.Pid).Scan(&usId)
-		if err != nil {
-				fmt.Println("rws error :", err)
-				return
-		}
-		if pp == "almost_private" {
-			
+		fmt.Println(post.Uid, post.Privacy)
+		if post.Privacy == "almost_private" {
 			isApproved := ""
-			fmt.Println("hihi : ", userID, usId)
-			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE follower_id = ? AND following_id = ? ", usId, userID).Scan(&isApproved)
-			if err != nil {
-				fmt.Println("not included")
+			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE (follower_id = ? AND following_id = ?) OR (following_id = ? AND follower_id = ?); ", post.Uid, userID,post.Uid,userID).Scan(&isApproved)
 
-			}
-			if isApproved == "approved" || usId == userID {
+			if err == nil && isApproved == "approved" || post.Uid == userID {
 				posts = append(posts, post)
 			}
-		} else if pp == "private" {
-		
+		} else if post.Privacy == "private" {
 			exist := 0
-			err = h.db.QueryRow(`SELECT EXISTS(
-				SELECT 1 FROM post_privacy_users 
-				WHERE post_id = ? AND user_id = ?)`, post.Pid, userID).Scan(&exist)
-			if err != nil {
-				fmt.Println("not found", err)
-			}
-		
-			if exist == 1 || usId == userID {
+			h.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM post_privacy_users WHERE post_id = ? AND user_id = ?)`, post.Pid, userID).Scan(&exist)
+			if exist == 1 || post.Uid == userID {
 				posts = append(posts, post)
 			}
 
-		} else if pp == "public" {
+		} else if post.Privacy == "public" {
 			posts = append(posts, post)
 		}
 	}

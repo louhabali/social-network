@@ -1,16 +1,20 @@
 import Link from "next/link";
 import '../app/styles/menu.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse,faUserPlus,faEnvelope,faBell,faUserGroup,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
+import { faHouse,faUserPlus,faEnvelope,faBell,faUser,faUserGroup,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-export default function NavigationMenu({userID,Avatar,fname,lname}){
+
+export default function NavigationMenu(){
     const r = useRouter()
     function handlelogout() {
         fetch("http://localhost:8080/api/logout",{
             credentials:"include"
         }).then(d =>{
-            if (d.ok){
+            d.text()
+        }).then(dd=>{
+            if (dd=="logged out"){
+                console.log("55");
+                
                 r.push("/login")
             }
         })
@@ -37,14 +41,7 @@ export default function NavigationMenu({userID,Avatar,fname,lname}){
                     <Link className="menulinks" href="/suggestions"><FontAwesomeIcon icon={faUserPlus} /><span>suggestions</span></Link>
                 </li>
                 <li>
-                <Link className="menulinks" href={`/profile/${userID}`}>
-                  {Avatar ? (
-                     <Image src={`data:image/png;base64,${Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={25} height={25} />
-
-                     ) : (
-                     <Image src="/image/no-avatar.png" alt="" width={25} height={25} />
-                     )} <span>{fname} {lname}</span></Link>
-                  
+                    <Link className="menulinks" href="/profile"><FontAwesomeIcon icon={faUser} /><span>profile</span></Link>
                 </li>
                 <li>
                     <Link className="menulinks" onClick={handlelogout} href="/logout"><FontAwesomeIcon icon={faRightFromBracket} /><span>logout</span></Link>
