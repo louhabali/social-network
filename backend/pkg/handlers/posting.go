@@ -83,7 +83,7 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(GetPost(h.db, postID))
+		json.NewEncoder(w).Encode(GetPost(h.db, postID,userID))
 
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
