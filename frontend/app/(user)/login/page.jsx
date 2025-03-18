@@ -73,24 +73,8 @@ export default function LoginPage() {
           />
         </div>
 
-        <div className="forgotPassword">
-          <Link href="/forgot-password" className="forgotPasswordLink">
-            Forgot password?
-          </Link>
-        </div>
-
         <button type="submit" className="submitButton">Sign In</button>
         {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
-
-        <div className="formDivider">
-          <span>or</span>
-        </div>
-
-        <div className="socialLogin">
-          <button type="button" className="socialButton">G</button>
-          <button type="button" className="socialButton">f</button>
-          <button type="button" className="socialButton">in</button>
-        </div>
       </form>
 
       <p className="link">

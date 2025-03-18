@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function ErrorPage({ error }) {
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" , justifyContent: "center", height: "100vh"}}>
       <h1>Error</h1>
       <p>{error.message || "Something went wrong."}</p>
       <Link href="/">

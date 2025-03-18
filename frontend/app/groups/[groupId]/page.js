@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import GroupsClient from './GroupsClient';
+import ErrorPage from "@/components/ErrorPage";
 import './GroupClient.css';
 
 
@@ -14,7 +15,14 @@ async function fetchGroupById(groupId) {
         },
         cache: "no-store",
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+        const error = {
+            error: true,
+            message: res.status === 404 ? "Group not found" : res.status === 500 ? "Internal server error" : `Unexpected error: ${res.status}`,
+            status: res.status
+        };
+        return error;
+    }
     return res.json();
 }
 
@@ -52,7 +60,9 @@ export default async function GroupDetailsPage({ params }) {
     const initialPosts = await getPosts();
     const userInfo = await fetchUserInfo();
 
-    console.log(group, params.groupId);
+    if (group.error) {        
+        return <ErrorPage error={group} />;
+    }
 
     return (
         <div className="groupContainer">
