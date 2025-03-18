@@ -2,17 +2,18 @@ import { useState, useRef, useEffect, useContext } from "react";
 import styles from "./chatSection.module.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faFaceSmile, faRotate } from "@fortawesome/free-solid-svg-icons";
-import EmojiPicker from './emojiPicker';
+// import EmojiPicker from './emojiPicker';
 import { WebSocketContext } from "@/components/websocket";
+import Picker from 'emoji-picker-react';
 
-export default function ChatSection({ selectedChat, closeChat }) {
+export default function ChatSection({ selectedChat, closeChat, updateLastReadMsg }) {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
     const [isHasMore, setIsHasMore] = useState(true);
     const [shouldScroll, setShouldScroll] = useState(false);
     const [showEmojis, setShowEmojis] = useState(false);
     const [newMsg, setNewMsg] = useState(false)
-    const {ws, sendMessage} = useContext(WebSocketContext)
+    const { ws, sendMessage } = useContext(WebSocketContext)
     const msgsContainer = useRef(null);
     const textarea = useRef(null);
     const offset = useRef(0);
@@ -32,14 +33,14 @@ export default function ChatSection({ selectedChat, closeChat }) {
         });
         let data = await response.json();
         data = data ? data.reverse() : []
-        
+
         return data;
     }
 
     function sendMsg() {
         const msg = textarea.current.value
-        
-        if(msg.trim() && msg.length <= 500) {
+
+        if (msg.trim() && msg.length <= 500) {
             sendMessage({
                 type: 'new_message',
                 payload: {
@@ -55,8 +56,6 @@ export default function ChatSection({ selectedChat, closeChat }) {
         //initial msgs
         async function initialFetch() {
             const data = await fetchMsgs();
-            console.log(data);
-            
             setMessages(data);
             setShouldScroll(true);
             if (data.length < 10) {
@@ -64,29 +63,30 @@ export default function ChatSection({ selectedChat, closeChat }) {
             }
             offset.current = data.length;
         }
-        
+
         function handleMessage(msg) {
             const data = JSON.parse(msg.data);
-            if(data.type === "new_message" && data.payload.chat_id == selectedChat.chat_id) {
+            if (data.type === "new_message" && data.payload.chat_id == selectedChat.chat_id) {
                 setMessages((messages) => [...messages, data.payload])
                 setNewMsg((newMsg) => !newMsg)
+                updateLastReadMsg(selectedChat.chat_id)
                 offset.current += 1;
             }
         }
         initialFetch();
 
-        function handleKeyPress(e){
+        function handleKeyPress(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 console.log("comme");
                 e.preventDefault();
                 sendMsg();
             }
         }
-        
-        addEventListener("keypress", handleKeyPress)
-        ws.current.addEventListener("message",handleMessage)
+
+        window.addEventListener("keypress", handleKeyPress)
+        if (ws.current) ws.current.addEventListener("message", handleMessage)
         return () => {
-            ws.current.removeEventListener("message", handleMessage)
+            if (ws.current) ws.current.removeEventListener("message", handleMessage)
             removeEventListener("keypress", handleKeyPress)
         }
     }, []);
@@ -96,6 +96,10 @@ export default function ChatSection({ selectedChat, closeChat }) {
     }
 
     useEffect(scrollDown, [shouldScroll, newMsg]);
+    
+    function emojiClick(emojiObj) {
+        setMessage(message + emojiObj.emoji)
+    }
 
     return (
         <div className={styles.chatSection}>
@@ -111,6 +115,7 @@ export default function ChatSection({ selectedChat, closeChat }) {
                 }
                 {messages.map((msg) => (
                     <span key={msg.id} className={`${styles.message} ${msg.is_sender ? styles.sender : styles.receiver}`} >
+                        {msg.is_group && !msg.is_sender ? <span className={styles.senderName}>{msg.sender_name}</span> : ''}
                         <span>{msg.content}</span>
                         <span className={styles.msgTime}>{formatTime(msg.created_at)}</span>
                     </span>
@@ -121,14 +126,31 @@ export default function ChatSection({ selectedChat, closeChat }) {
                     ref={textarea}
                     className={styles.msgInput}
                     value={message}
-                    onChange={(e) => {setMessage(e.target.value)}}
+                    onChange={(e) => { setMessage(e.target.value) }}
                     placeholder="Type a message..."
                 >
                 </textarea>
+
+                {showEmojis &&
+                    <Picker
+                        theme="dark"
+                        style={
+                            {
+                                position: 'absolute',
+                                boxSizing: 'border-box',
+                                width: '300px',
+                                height: '350px',
+                                top: '-355px',
+                                left: '15%',
+                                overflow: 'auto',
+                                scrollbarWidth: 'none'
+                            }
+                        }
+                        onEmojiClick={emojiClick}
+                    />
+                }
+
                 <button onClick={() => setShowEmojis(!showEmojis)} className={styles.emogisBtn}>
-                    {
-                        showEmojis && <EmojiPicker setMessage={setMessage} setShowEmojis={setShowEmojis}/>
-                    }
                     <FontAwesomeIcon className={styles.icon} icon={faFaceSmile} />
                 </button>
                 <button onClick={sendMsg} className={styles.emogisBtn}>

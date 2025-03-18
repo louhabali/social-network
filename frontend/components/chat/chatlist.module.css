@@ -23,8 +23,11 @@
 .chatItem {
     height: 59px;
     position: relative;
-    border-radius: 12px;
+    top: 2px;
+    /* border-radius: 12px; */
     margin-bottom: 5px 2px;
+    background-color: rgba(61, 57, 57, 0.781);
+    border-bottom: 1px solid #ffffff5e;
 }
 
 .uImage {
@@ -51,28 +54,33 @@
     left: 70px;
     top: 18px;
     font-size: 15px;
+    color: #a8a8a8fd;
 }
 
 .count {
     position: absolute;
-    text-align: center;
-    left: 45px;
-    bottom: 5px;
-    width: 19px;
-    height: 19px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right: 10px;
+    bottom: 15px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     background-color: green;
 }
 
 .plus {
+    position: relative;
     font-size: 12px;
     margin-left: -1.5px;
+    top: 2px;
 }
 
 .unreaded {
-    background-color: rgb(78, 67, 67);
+    /* background-color: rgb(78, 67, 67); */
 }
 
 .readed {
-    background-color: rgb(51, 44, 44);
+    /* background-color: rgb(51, 44, 44); */
 }

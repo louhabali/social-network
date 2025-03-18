@@ -57,6 +57,7 @@ func main() {
 	http.HandleFunc("/api/notifications/count", handleCORS(handler.Midd(handler.GetUnreadCount)))
 	http.HandleFunc("/api/conversations", handleCORS(handler.Midd(handler.GetConversations)))
 	http.HandleFunc("/api/messages", handleCORS(handler.Midd(handler.GetMessages)))
+	http.HandleFunc("/api/messages/read", handleCORS(handler.Midd(handler.UpdateLastReadMessage)))
 	http.HandleFunc("/api/follow/accept", handleCORS(handler.Midd(handler.AcceptFollowReq)))
 	http.HandleFunc("/api/follow/reject", handleCORS(handler.Midd(handler.RejectFollowReq)))
 

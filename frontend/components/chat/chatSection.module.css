@@ -78,14 +78,12 @@
 .msgTime {
     display: block;
     font-size: 12px;
-    /* background-color: blue; */
     width: fit-content;
     margin-left: auto;
-    /* position: relative; */
+    color: #b1b1b1;
 }
 
 .loadMore {
-    /* background-color: rgb(158, 53, 53); */
     text-align: center;
 }
 
@@ -126,3 +124,13 @@
 .msgInput::-webkit-scrollbar {
     display: none;
 }
+
+.senderName {
+    display: block;
+    position: relative;
+    font-size: 14px;
+    top: -7px;
+    left: -7px;  
+    color: rgb(31, 30, 30);
+}
+

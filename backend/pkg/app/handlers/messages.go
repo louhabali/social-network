@@ -13,7 +13,9 @@ type Message struct {
 	ID        int    `json:"id"`
 	ChatID    int    `json:"chat_id"`
 	SenderID  int    `json:"sender_id"`
+	SenderNm  string `json:"sender_name"`
 	IsSender  bool   `json:"is_sender"`
+	IsGroup   bool   `json:"is_group"`
 	Content   string `json:"content"`
 	CreatedAt string `json:"created_at"`
 }
@@ -36,10 +38,19 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 
 	rows, err := h.db.Query(`
-	SELECT id, chat_id, sender_id, content, created_at 
-	FROM messages 
-	WHERE chat_id = ?
-	ORDER BY created_at DESC 
+	SELECT 
+		msgs.id,
+		msgs.chat_id,
+		msgs.sender_id,
+		msgs.content,
+		msgs.created_at,
+		c.is_group,
+		u.first_name || ' ' || u.last_name
+	FROM messages as msgs
+	LEFT JOIN chats as c ON msgs.chat_id = c.id
+	LEFT JOIN users as u ON msgs.sender_id = u.id
+	WHERE msgs.chat_id = ?
+	ORDER BY msgs.created_at DESC
 	LIMIT 10 OFFSET ?`, chatId, offset)
 	if err != nil {
 		http.Error(w, "Failed to fetch messages", http.StatusInternalServerError)
@@ -50,7 +61,7 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	var messages []Message
 	for rows.Next() {
 		var msg Message
-		if err := rows.Scan(&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.CreatedAt); err != nil {
+		if err := rows.Scan(&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.CreatedAt, &msg.IsGroup, &msg.SenderNm); err != nil {
 			http.Error(w, "Error scanning messages", http.StatusInternalServerError)
 			return
 		}

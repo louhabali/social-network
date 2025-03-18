@@ -3,7 +3,6 @@ import { useEffect, useState, useContext } from "react";
 import ChatList from "../../components/chat/chatlist";
 import ChatSection from "../../components/chat/chatSection";
 import styles from "./chatPage.module.css";
-import { WebSocketContext } from "@/components/websocket";
 
 export default function messages() {
   const [conversations, setConversations] = useState([]);
@@ -15,6 +14,15 @@ export default function messages() {
       setSelectedChat(JSON.parse(storedConv))
     }
   },[])
+
+  function updateLastReadMsg(chat_id) {
+    fetch(`http://localhost:8080/api/messages/read`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify({ chat_id }),
+    });
+}
+
   
   useEffect(() => {
     async function fetchConversations() {
@@ -24,14 +32,14 @@ export default function messages() {
         });
         const data = await response.json();
         console.log("vonvs",data);
-        setConversations(data ? data : [] );
+        setConversations(() => data ? data : [] );
       } catch (error) {
         console.error("Failed to fetch conversations", error);
       }
     }
 
     fetchConversations();
-  }, []);
+  }, [selectedChat]);
 
 
 
@@ -51,11 +59,13 @@ export default function messages() {
           <ChatSection
             selectedChat={selectedChat}
             closeChat={closeChat}
+            updateLastReadMsg={updateLastReadMsg}
           /> :
           <ChatList
           setConversations={setConversations}
           conversations={conversations}
           onChatSelect={handleChatSelect}
+          updateLastReadMsg={updateLastReadMsg}
         />
       }
     </div>

@@ -65,6 +65,7 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		notifications = append(notifications, notif)
 	}
 
+	fmt.Println("notifs",notifications)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 

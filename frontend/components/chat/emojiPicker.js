@@ -1,7 +1,7 @@
 import {useRef, useEffect} from "react"
 import styles from "./picker.module.css"
 
-export default function Picker({setMessage}) {
+export default function Picker({setMessage, message}) {
     const emojis = useRef(["😀", "😄", "🤑", "🥵", "🤬", "🤯", "🥶", "🥰",
         "😭","😱","😖","😣","😞","😓","😩","😫","🥱","😤","😡", "🤚", "🤣"
         ,"👽","👾","🤖","😺","😸","😹","😻","😼","😽","🙀","😿"
@@ -14,18 +14,24 @@ export default function Picker({setMessage}) {
     useEffect(() => {
         const handleClick = (e) => {
             if (e.target != emojisContainer.current) {
+                console.log(e.target);
                 setMessage((prevMessage) => prevMessage + e.target.innerText);
             }
         };
 
-        emojisContainer.current.addEventListener("click", handleClick);
+        if (emojisContainer.current) {
+            emojisContainer.current.addEventListener("click", (e) => {
+                e.stopPropagation();
+                handleClick(e);
+            });
+        }
 
         return () => {
             if (emojisContainer.current) {
                 emojisContainer.current.removeEventListener("click", handleClick);
             }
         };
-    })
+    }, [])
 
     return(
         <div className={styles.picker}  ref={emojisContainer}>
