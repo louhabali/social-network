@@ -93,26 +93,6 @@ export default function ProfileClient({ profile, userId }) {
     }
   }
 
-  const handleLike = async (e) => {
-    const pd = e.target.closest("section").id;
-    const postIndex = posts.findIndex((post) => post.Pid.toString() === pd);
-    if (postIndex === -1) return;
-
-    let updatedPosts = [...posts];
-    let newLikeStatus = updatedPosts[postIndex].UserInteraction === 1 ? 0 : 1;
-
-    const response = await fetch(`http://localhost:8080/api/like`, {
-      method: "POST",
-      body: JSON.stringify({ pd, lk: newLikeStatus }),
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      updatedPosts[postIndex].UserInteraction = newLikeStatus;
-      updatedPosts[postIndex].Likes += newLikeStatus ? 1 : -1;
-      setPosts(updatedPosts);
-    }
-  };
   return (
     <div className="profile-container">
       <div className="profile-header">
@@ -203,7 +183,7 @@ export default function ProfileClient({ profile, userId }) {
               {posts.length === 0 ? (
                 <p className="no-content">No posts yet!</p>
               ) : (
-                posts.map((post) => <Post key={post.Pid} post={post} handleLike={handleLike} />)
+                posts.map((post) => <Post key={post.Pid} post={post}/>)
               )}
               {hasMore && <div id="load-more" className="load-more" />}
               {loading && <p className="loading">Loading...</p>}

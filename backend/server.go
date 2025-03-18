@@ -2,13 +2,15 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	database "main/pkg/db/sqlite"
-	"main/pkg/handlers"
+	"main/pkg/app/handlers"
 )
 
 func main() {
 	db := database.CreateTables()
+	createDirectories()
 	defer db.Close()
 	handler := handlers.NewHandler(db)
 
@@ -73,4 +75,17 @@ func handleCORS(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func createDirectories() error {
+	err := os.MkdirAll("uploads/avatars", os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll("uploads/images", os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return nil
 }

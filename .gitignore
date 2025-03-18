@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# db
-/backend/*.db
+/backend/*db
+/backend/uploads
