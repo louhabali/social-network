@@ -19,6 +19,10 @@ type Message struct {
 }
 
 func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 	userID, _ := r.Context().Value("userID").(int)
 	chatID := r.URL.Query().Get("chat_id")
 	fmt.Println(chatID)
@@ -34,7 +38,8 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.Query(`
 	SELECT id, chat_id, sender_id, content, created_at 
 	FROM messages 
-	WHERE chat_id = ? 
+	WHERE chat_id = ?
+	ORDER BY created_at DESC 
 	LIMIT 10 OFFSET ?`, chatId, offset)
 	if err != nil {
 		http.Error(w, "Failed to fetch messages", http.StatusInternalServerError)
@@ -52,7 +57,7 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 		msg.IsSender = msg.SenderID == userID
 		messages = append(messages, msg)
 	}
-	fmt.Println(messages)
+	// fmt.Println(messages)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
 }
@@ -101,10 +106,14 @@ func InsertMessage(sendeId, chatId int, content string, db *sql.DB) (Message, er
 }
 
 func (h *Handler) UpdateLastReadMessage(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("update last read message")
+	if r.Method != http.MethodPost {
+		return
+	}
+	userID, _ := r.Context().Value("userID").(int)
+
 	var ulmr struct {
-		ChatID            int `json:"chat_id"`
-		UserID            int `json:"user_id"`
-		LastReadMessageID int `json:"last_read_message_id"`
+		ChatID int `json:"chat_id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&ulmr); err != nil {
@@ -112,21 +121,43 @@ func (h *Handler) UpdateLastReadMessage(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var exists bool
-	err := h.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM user_lastMsg_read WHERE chat_id = ? AND user_id = ?)`, ulmr.ChatID, ulmr.UserID).Scan(&exists)
+	var lastMessageID int
+	err := h.db.QueryRow(`
+		SELECT id 
+		FROM messages 
+		WHERE chat_id = ? 
+		ORDER BY created_at DESC LIMIT 1`, ulmr.ChatID).Scan(&lastMessageID)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		if err == sql.ErrNoRows {
+			return
+		}
+
+		http.Error(w, "Database error while fetching last message", http.StatusInternalServerError)
+		return
+	}
+
+	var exists bool
+	err = h.db.QueryRow(`
+		SELECT EXISTS(SELECT 1 FROM user_lastMsg_read WHERE chat_id = ? AND user_id = ?)`, ulmr.ChatID, userID).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Database error while checking record existence", http.StatusInternalServerError)
 		return
 	}
 
 	if exists {
-		_, err = h.db.Exec(`UPDATE user_lastMsg_read SET last_read_message_id = ? WHERE chat_id = ? AND user_id = ?`, ulmr.LastReadMessageID, ulmr.ChatID, ulmr.UserID)
+		_, err = h.db.Exec(`
+			UPDATE user_lastMsg_read 
+			SET last_read_message_id = ? 
+			WHERE chat_id = ? AND user_id = ?`, lastMessageID, ulmr.ChatID, userID)
 		if err != nil {
 			http.Error(w, "Failed to update last read message", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		_, err = h.db.Exec(`INSERT INTO user_lastMsg_read (user_id, chat_id, last_read_message_id) VALUES (?, ?, ?)`, ulmr.UserID, ulmr.ChatID, ulmr.LastReadMessageID)
+
+		_, err = h.db.Exec(`
+			INSERT INTO user_lastMsg_read (user_id, chat_id, last_read_message_id) 
+			VALUES (?, ?, ?)`, userID, ulmr.ChatID, lastMessageID)
 		if err != nil {
 			http.Error(w, "Failed to create last read message entry", http.StatusInternalServerError)
 			return

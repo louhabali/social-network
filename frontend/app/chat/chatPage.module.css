@@ -1,0 +1,7 @@
+.chatPage {
+    margin:60px auto 0;
+    background-color: #242526;
+    height: calc(100vh - 60px);
+    width: 40%;
+    min-width: 380px;
+}

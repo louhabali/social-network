@@ -15,7 +15,7 @@ import (
 
 type WebSocketMessage struct {
 	Type    string      `json:"type"`
-	Payload interface{} `json:"payload"`
+	Payload Message `json:"payload"`
 }
 
 type WebSocketManager struct {
@@ -46,21 +46,21 @@ func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	cookie, _ := r.Cookie("Token")
 
 	wsManager.mu.Lock()
-	if existingConns, exists := wsManager.connections[userID]; exists {
-		oldToken := wsManager.tokens[userID]
-		if oldToken != cookie.Value {
-			for _, conn := range existingConns {
-				conn.WriteJSON(WebSocketMessage{
-					Type: "session_expired",
-					Payload: map[string]string{
-						"message": "Session expired due to new login",
-					},
-				})
-				conn.Close()
-			}
-			delete(wsManager.connections, userID)
-		}
-	}
+	// if existingConns, exists := wsManager.connections[userID]; exists {
+	// 	oldToken := wsManager.tokens[userID]
+	// 	if oldToken != cookie.Value {
+	// 		for _, conn := range existingConns {
+	// 			conn.WriteJSON(WebSocketMessage{
+	// 				Type: "session_expired",
+	// 				Payload: map[string]string{
+	// 					"message": "Session expired due to new login",
+	// 				},
+	// 			})
+	// 			conn.Close()
+	// 		}
+	// 		delete(wsManager.connections, userID)
+	// 	}
+	// }
 	wsManager.mu.Unlock()
 
 	// Upgrade connection to WebSocket
@@ -149,9 +149,9 @@ func (wm *WebSocketManager) handleMessages(userID int, conn *websocket.Conn, db 
 		if messageType == websocket.TextMessage {
 
 			// Check token validity before processing
-			// wm.mu.RLock()
+			wm.mu.RLock()
 			// currentToken := wm.tokens[userID]
-			// wm.mu.RUnlock()
+			wm.mu.RUnlock()
 
 			// u, err := data.GetUserIDFromToken(currentToken)
 			// if err != nil {
@@ -235,14 +235,13 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	payloadBytes, _ := json.Marshal(payload)
 	var messageData struct {
 		ChatId    int    `json:"chat_id"`
-		ReciverId int    `json:"reciver_id"`
 		Content   string `json:"content"`
 	}
 	if err := json.Unmarshal(payloadBytes, &messageData); err != nil {
 		log.Printf("Error unmarshaling message payload: %v", err)
 		return
 	}
-
+	fmt.Println(messageData)
 	// Store message in database
 	// var chatID int
 	// var err error
@@ -278,7 +277,7 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 		Payload: msg,
 	}
 
-	fmt.Println("cahtid =>",msg.ChatID, "reciver =>", messageData.ReciverId)
+	// fmt.Println("cahtid =>",msg.ChatID, "reciver =>", messageData.ReciverId)
 	
 	recivers, _ := getUsersInChat(msg.ChatID, db)
 	fmt.Println(notification)
@@ -293,6 +292,7 @@ func (wm *WebSocketManager) sendToUsers(recivers []int, msg WebSocketMessage) {
 		connections, exists := wm.connections[userID]
 		wm.mu.RUnlock()
 		if exists {
+			msg.Payload.IsSender = userID == msg.Payload.SenderID
 			for _, conn := range connections {
 				if err := conn.WriteJSON(msg); err != nil {
 					log.Printf("Error sending message to user %d: %v", userID, err)

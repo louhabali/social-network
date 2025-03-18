@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
-import { websoketProvider } from "./webSocket";
+import { websoketProvider } from "./oldwebSocket";
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);

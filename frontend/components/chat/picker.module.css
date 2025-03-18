@@ -1,0 +1,25 @@
+.picker {
+    position: absolute;
+    /* display: flex; */
+    /* flex-wrap: wrap; */
+    box-sizing: border-box;
+    /* padding: 3px; */
+    width: 250px;
+    height: 150px;
+    top: -160px;
+    left: -225px;
+    border-radius: 10px;
+    border-bottom-right-radius: 0;
+    box-shadow: 0 0 10px 1px rgb(27, 27, 27);
+    background-color: #343435e0;
+    cursor: pointer;
+    /* padding-top: 13px; */
+    overflow: auto;
+    scrollbar-width: none;
+}
+
+.emoji {
+    font-size: 30px;
+    margin: 2px;
+    /* margin-bottom: -5px; */
+}

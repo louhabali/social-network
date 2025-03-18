@@ -1,9 +1,18 @@
 import styles from './chatlist.module.css'
 
-export default function ChatList({ conversations, onChatSelect }) {
-    
+export default function ChatList({ conversations, onChatSelect, setConversations }) {
+    function updateLastReadMsg(chat_id) {
+        // fetch(`http://localhost:8080/api/messages/read`, {
+        //     method: "POST",
+        //     credentials: "include",
+        //     body: JSON.stringify({ chat_id }),
+        // });
+    }
+
+
     return (
         <div className={styles.chatList}>
+            <div className={styles.chatHeader}></div>
             {
                 conversations.map((conversation) => (
                     <div 
@@ -13,7 +22,21 @@ export default function ChatList({ conversations, onChatSelect }) {
                             `${styles.chatItem} ${styles.readed}`
                         }
                         key={conversation.chat_id}
-                        onClick={() => onChatSelect(conversation)}
+                        onClick={() => {
+                            onChatSelect(conversation);
+                            updateLastReadMsg(conversation.chat_id);
+                            setConversations(
+                                conversations.map((conv) => {
+                                    if (conv.chat_id === conversation.chat_id) {
+                                        return {
+                                            ...conv,
+                                            unread_count: 0
+                                        }
+                                    }
+                                    return conv;
+                                })
+                            );
+                        }}
                     >
                         <div className={styles.uImage}></div>
                         <p className={styles.uName}>{conversation.chat_name}</p>
@@ -32,7 +55,7 @@ export default function ChatList({ conversations, onChatSelect }) {
                                 conversation.unread_count > 9 &&
                                 <span className={styles.plus}>+</span>
                             }
-                            <span className={styles.num}>{conversation.unread_count}</span>
+                            <span className={styles.num}>{conversation.unread_count >= 9 ? 9 : conversation.unread_count}</span>
                             </span>
                         }
                         

@@ -1,7 +1,7 @@
 "use client"
 import "./globals.css";
 import { usePathname } from "next/navigation";
-// import NavigationMenu from "@/components/NavigationMenu";
+import { WebSocketProvider } from "@/components/websocket";
 import Header from "@/components/header";
 import { useEffect, useState } from "react";
 const metadata = {
@@ -24,10 +24,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {/* {!hideMenu && <NavigationMenu />} */}
-        {!hideMenu &&  <Header userID={u.ID} Avatar={u.Avatar} fname={u.Firstname} lname={u.Lastname} />}
-        <main>{children}</main>
-        
+        <WebSocketProvider>
+          {!hideMenu &&  <Header userID={u.ID} Avatar={u.Avatar} fname={u.Firstname} lname={u.Lastname} />}
+          <main>{children}</main>
+        </WebSocketProvider>
       </body>
     </html>
   );
