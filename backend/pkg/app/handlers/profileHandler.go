@@ -30,7 +30,9 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	userInfo, err := getUserInfo(h.db, userID)
 	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
 		fmt.Println("Error fetching profile privacy:", err)
+		return
 	}
 
 	followStatus := ""

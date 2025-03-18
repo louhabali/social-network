@@ -60,6 +60,9 @@ func main() {
 	http.HandleFunc("/api/follow/accept", handleCORS(handler.Midd(handler.AcceptFollowReq)))
 	http.HandleFunc("/api/follow/reject", handleCORS(handler.Midd(handler.RejectFollowReq)))
 
+
+	http.HandleFunc("/api/validate-token", handleCORS(handler.ValidateToken))
+	
 	http.ListenAndServe(":8080", nil)
 }
 

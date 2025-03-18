@@ -77,7 +77,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		h.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", post.Pid).Scan(&post.NbComment)
 		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
-		fmt.Println(post.Uid, post.Privacy)
+
 		if post.Privacy == "almost_private" {
 			isApproved := ""
 			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE (follower_id = ? AND following_id = ?) OR (following_id = ? AND follower_id = ?); ", post.Uid, userID,post.Uid,userID).Scan(&isApproved)

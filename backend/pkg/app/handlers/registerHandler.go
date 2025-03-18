@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -64,6 +65,12 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if !isValidDateOfBirth(reg.DateOfBirth) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("You must be at least 5 years old"))
+			return
+		}
+
 		if nickname := r.FormValue("nickname"); nickname != "" {
 			reg.Nickname = &nickname
 		}
@@ -73,7 +80,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("Invalid email format"))
 			return
 		}
-		
+
 		if !isValidPassword(reg.Password) {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Password must be at least 8 characters ,include at least one uppercase letter, one lowercase letter, and one number"))
@@ -83,12 +90,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if !nameRegex.MatchString(reg.Firstname) || !nameRegex.MatchString(reg.Lastname) {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Firstname and Lastname must contain only letters and be at most 10 characters long"))
-			return
-		}
-		dateRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
-		if !dateRegex.MatchString(reg.DateOfBirth) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Date of Birth must be in DD-MM-YYYY format"))
 			return
 		}
 
@@ -113,17 +114,16 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			name := rand + extensions
 			avatarPath := "uploads/avatars/" + name
 			out, err := os.Create(avatarPath)
-			if err != nil {
 
+			if err != nil {
 				http.Error(w, "Failed to save avatar", http.StatusInternalServerError)
-				fmt.Println("66", err)
 				return
 			}
 			defer out.Close()
 			io.Copy(out, file)
 			reg.Avatar = &avatarPath
 		}
-		fmt.Println(reg.Avatar)
+
 		var id int
 		err = h.db.QueryRow(`
 		INSERT INTO users 
@@ -138,7 +138,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println("000")
 		w.Write([]byte("success"))
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -162,4 +161,18 @@ func isValidPassword(password string) bool {
 	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
 	hasDigit := regexp.MustCompile(`\d`).MatchString(password)
 	return hasUpper && hasLower && hasDigit
+}
+
+func isValidDateOfBirth(dateStr string) bool {
+	dob, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return false
+	}
+
+	age := time.Now().Year() - dob.Year()
+	if time.Now().Month() < dob.Month() || (time.Now().Month() == dob.Month() && time.Now().Day() < dob.Day()) {
+		age--
+	}
+
+	return age >= 5
 }
