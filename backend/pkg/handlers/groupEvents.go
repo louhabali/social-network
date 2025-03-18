@@ -2,26 +2,36 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type GroupEvent struct {
-	ID          int    `json:"id"`
-	GroupID     int    `json:"group_id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Date        string `json:"date"`
-	UserID      int    `json:"created_id"`
-	CreatedAt   string `json:"created_at"`
+	ID            int    `json:"id"`
+	GroupID       int    `json:"group_id"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	Date          string `json:"date"`
+	UserID        int    `json:"created_id"`
+	CreatedAt     string `json:"created_at"`
+	GoingCount    int    `json:"going_count"`
+	NotGoingCount int    `json:"not_going_count"`
+	UserResponse  string `json:"user_response"`
 }
 
 func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		groupID, _ := strconv.Atoi(r.PathValue("groupId"))
-
-		rows, err := h.db.Query("SELECT id, group_id, title, description, event_date, created_id, created_at FROM group_events WHERE group_id = ?", groupID)
+		offset := r.URL.Query().Get("offset")
+		userID, ok := r.Context().Value("userID").(int)
+		if !ok {
+			fmt.Println("invalid userId")
+			return
+		}
+		rows, err := h.db.Query("SELECT id, group_id, title, description, event_date, created_id, created_at FROM group_events WHERE group_id = ? ORDER BY id DESC LIMIT 4 OFFSET ?", groupID, offset)
 		if err != nil {
 			http.Error(w, "Failed to fetch events", http.StatusInternalServerError)
 			return
@@ -36,6 +46,10 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Error processing events", http.StatusInternalServerError)
 				return
 			}
+
+			h.db.QueryRow("SELECT COUNT(*) FROM event_responses WHERE event_id = ? AND response = 'going'", e.ID).Scan(&e.GoingCount)
+			h.db.QueryRow("SELECT COUNT(*) FROM event_responses WHERE event_id = ? AND response = 'not_going'", e.ID).Scan(&e.NotGoingCount)
+			h.db.QueryRow("SELECT response FROM event_responses WHERE event_id = ? AND user_id = ?", e.ID, userID).Scan(&e.UserResponse)
 			events = append(events, e)
 		}
 
@@ -54,9 +68,13 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
-
-		_, err := h.db.Exec("INSERT INTO group_events (group_id, title, description, event_date, created_id) VALUES (?, ?, ?, ?, ?)",
-			groupID, e.Title, e.Description, e.Date, userID)
+		formattedDate, err := validateAndFormatDate(e.Date)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, err = h.db.Exec("INSERT INTO group_events (group_id, title, description, event_date, created_id) VALUES (?, ?, ?, ?, ?)",
+			groupID, e.Title, e.Description, formattedDate, userID)
 
 		if err != nil {
 			http.Error(w, "Failed to create event", http.StatusInternalServerError)
@@ -68,15 +86,29 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func validateAndFormatDate(inputDate string) (string, error) {
+	parsedTime, err := time.Parse("2006-01-02T15:04", inputDate)
+	if err != nil {
+		return "", err
+	}
+
+	if parsedTime.Before(time.Now()) {
+		return "", errors.New("the event date cannot be in the past")
+	}
+
+	formattedDate := parsedTime.Format("2006-01-02 15:04:05")
+	return formattedDate, nil
+}
+
 func (h *Handler) CreateEventResponse(w http.ResponseWriter, r *http.Request) {
 	type EventResponse struct {
 		EventID  int64  `json:"eventId"`
-		Response string `json:"status"`
+		Response string `json:"response"`
 	}
-	
+
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
-		fmt.Println("invalid userId")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -86,31 +118,15 @@ func (h *Handler) CreateEventResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exists bool
-	h.db.QueryRow("SELECT 1 FROM event_responses WHERE event_id = ? AND user_id = ?",
-		e.EventID, userID).Scan(&exists)
-
-	if exists {
-		query := `
-			UPDATE event_responses 
-			SET response = ?
-			WHERE event_id = ? AND user_id = ?
-		`
-		_, err := h.db.Exec(query, e.Response, e.EventID, userID)
-		if err != nil {
-			fmt.Println("error updating event response: %w", err)
-			return
-		}
-		return
+	var existingResponse string
+	h.db.QueryRow("SELECT response FROM event_responses WHERE event_id = ? AND user_id = ?", e.EventID, userID).Scan(&existingResponse)
+	fmt.Println(existingResponse, e.Response)
+	if existingResponse == e.Response {
+		h.db.Exec("DELETE FROM event_responses WHERE event_id = ? AND user_id = ?", e.EventID, userID)
+	} else if existingResponse != "" {
+		h.db.Exec("UPDATE event_responses SET response = ? WHERE event_id = ? AND user_id = ?", e.Response, e.EventID, userID)
+	} else {
+		h.db.Exec("INSERT INTO event_responses (event_id, user_id, response) VALUES (?, ?, ?)", e.EventID, userID, e.Response)
 	}
 
-	query := `
-		INSERT INTO event_responses (event_id, user_id, response)
-		VALUES (?, ?, ?)
-	`
-	_, err := h.db.Exec(query, e.EventID, userID, e.Response)
-	if err != nil {
-		fmt.Println("error creating event response: %w", err)
-		return
-	}
 }

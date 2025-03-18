@@ -6,6 +6,7 @@ export default function InviteUsers({ groupId }) {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
+  const [invitedUsers, setInvitedUsers] = useState({});
 
 
   console.log(users);
@@ -37,6 +38,8 @@ export default function InviteUsers({ groupId }) {
       credentials: "include",
       body: JSON.stringify({ userId }),
     });
+    setInvitedUsers((prev) => ({ ...prev, [userId]: true }));
+
   };
 
   return (
@@ -61,7 +64,11 @@ export default function InviteUsers({ groupId }) {
               {users?.map((user) => (
                 <li key={user.id}>
                   {user.name}
-                  <button onClick={() => inviteUser(user.id)}>Invite</button>
+                  {invitedUsers[user.id] ? (
+                    <button disabled>Done</button>
+                  ) : (
+                    <button onClick={() => inviteUser(user.id)}>Invite</button>
+                  )}                
                 </li>
               ))}
             </ul>
@@ -69,22 +76,6 @@ export default function InviteUsers({ groupId }) {
           </div>
         </div>
       )}
-
-      <style>{`
-        .popup {
-          position: fixed;
-          top: 0; left: 0; width: 100%; height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          color: black;
-          display: flex; justify-content: center; align-items: center;
-        }
-        .popup-content {
-          padding: 20px; border-radius: 10px;
-          width: 300px;
-        }
-        .popup-content ul { list-style: none; padding: 0; max-height: 130px; overflow-y: auto; }
-        li { display: flex; justify-content: space-between; padding: 5px 0; }
-      `}</style>
     </div>
   );
 }

@@ -107,7 +107,7 @@ func getPostInteractions(pid, uid int, db *sql.DB) int {
 	return ii
 }
 
-func GetPost(db *sql.DB, postID int) Post {
+func GetPost(db *sql.DB, postID,userID int) Post {
 	var p Post
 	var timeCreated time.Time
 	var fistname, lastname string
@@ -116,7 +116,8 @@ func GetPost(db *sql.DB, postID int) Post {
         JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image, &fistname, &lastname, &p.Avatar)
 	p.Username = strings.Join([]string{fistname, lastname}, " ")
 	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", p.Pid).Scan(&p.NbComment)
-
+	p.Likes = getPostLikeDisLike(p.Pid, 1, db)
+	p.UserInteraction = getPostInteractions(p.Pid, userID, db)
 	if p.Avatar != nil {
 		*p.Avatar, _ = EncodeImg(*p.Avatar)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	database "main/pkg/db/sqlite"
 	"main/pkg/handlers"
@@ -9,6 +10,7 @@ import (
 
 func main() {
 	db := database.CreateTables()
+	createDirectories()
 	defer db.Close()
 	handler := handlers.NewHandler(db)
 
@@ -19,7 +21,6 @@ func main() {
 	http.HandleFunc("/api/searchData", handleCORS(handler.HandleSearch))
 	http.HandleFunc("/api/suggestions", handleCORS(handler.Midd(handler.Suggestions)))
 
-	
 	http.HandleFunc("/api/userdata", handleCORS(handler.Midd(handler.UserData)))
 	http.HandleFunc("/api/profile/{userId}", handleCORS(handler.Midd(handler.GetProfile)))
 	http.HandleFunc("/api/profile/{userId}/privacy", handleCORS(handler.Midd(handler.TogglePrivacy)))
@@ -50,7 +51,7 @@ func handleCORS(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		
+
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
@@ -59,4 +60,15 @@ func handleCORS(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+func createDirectories() error {
+	err := os.MkdirAll("uploads/avatars", os.ModePerm)
+	if err != nil {
+		return err
+	}
 
+	err = os.MkdirAll("uploads/images", os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return nil
+}
