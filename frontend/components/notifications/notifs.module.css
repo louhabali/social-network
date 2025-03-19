@@ -1,0 +1,45 @@
+.notifsPage {
+    width: 80%;
+    height: calc(100vh - 50px);
+    background-color: red;
+}
+
+.notif {
+    position: relative;
+    background-color: rgb(76, 76, 77);
+    padding: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.349);
+    width: 80%;
+    margin: 2px auto;
+}
+
+.link {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    font-weight: 1000;
+}
+
+.btns {
+    position: absolute;
+    right: 0;
+    bottom: 3px;
+}
+
+.btn {
+    font-size: 26px;
+    margin-right: 3px;
+    color: black;
+    cursor: pointer;
+}
+
+.mg {
+    margin-right: 12px;
+}
+
+.btn:hover {
+    color: red;
+}
+
+.mg:hover {
+    color: green;
+}

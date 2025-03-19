@@ -14,7 +14,7 @@ import (
 )
 
 type WebSocketMessage struct {
-	Type    string      `json:"type"`
+	Type    string  `json:"type"`
 	Payload Message `json:"payload"`
 }
 
@@ -84,7 +84,7 @@ func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	// wsManager.broadcastOnlineStatus(userID, true)
 
 	// Handle incoming messages in a goroutine
-	fmt.Println(wsManager.connections)
+	// fmt.Println(wsManager.connections)
 	go wsManager.handleMessages(userID, conn, h.db)
 }
 
@@ -234,8 +234,8 @@ func (wm *WebSocketManager) removeConnection(userID int, conn *websocket.Conn) {
 func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, db *sql.DB) {
 	payloadBytes, _ := json.Marshal(payload)
 	var messageData struct {
-		ChatId    int    `json:"chat_id"`
-		Content   string `json:"content"`
+		ChatId  int    `json:"chat_id"`
+		Content string `json:"content"`
 	}
 	if err := json.Unmarshal(payloadBytes, &messageData); err != nil {
 		log.Printf("Error unmarshaling message payload: %v", err)
@@ -270,17 +270,15 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 
 	// Prepare message notification
 
-	
-
 	notification := WebSocketMessage{
 		Type:    "new_message",
 		Payload: msg,
 	}
 
 	// fmt.Println("cahtid =>",msg.ChatID, "reciver =>", messageData.ReciverId)
-	
+
 	recivers, _ := getUsersInChat(msg.ChatID, db)
-	fmt.Println(notification)
+	// fmt.Println(notification)
 	// recivers = []int{2}
 	wm.sendToUsers(recivers, notification)
 	// wm.sendToUser(senderID, notification)
@@ -298,6 +296,24 @@ func (wm *WebSocketManager) sendToUsers(recivers []int, msg WebSocketMessage) {
 					log.Printf("Error sending message to user %d: %v", userID, err)
 					wm.removeConnection(userID, conn)
 				}
+			}
+		}
+	}
+}
+
+func SendNotif(notif NotifRes) {
+	wsManager.mu.RLock()
+	connections, exists := wsManager.connections[notif.ReceverId]
+	wsManager.mu.RUnlock()
+
+	if exists {
+		for _, conn := range connections {
+			if err := conn.WriteJSON(struct{
+				Type string `json:"type"`
+				Payload any `json:"payload"`
+			}{Type: "notification", Payload: notif}); err != nil {
+				log.Printf("Error sending notif to user %d: %v", notif.ReceverId, err)
+				wsManager.removeConnection(notif.ReceverId, conn)
 			}
 		}
 	}

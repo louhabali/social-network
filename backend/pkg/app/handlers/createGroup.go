@@ -35,12 +35,12 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 		groupId := 0
 		err = h.db.QueryRow("INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?) RETURNING id", g.Title, g.Description, userID).Scan(&groupId)
-		if (err != nil) {
+		if err != nil {
 			http.Error(w, "Error creating group", http.StatusInternalServerError)
 			return
 		}
 		_, err = h.db.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, ?)", groupId, userID, "creator")
-		if (err != nil) {
+		if err != nil {
 			http.Error(w, "Error creating group", http.StatusInternalServerError)
 			return
 		}
@@ -51,8 +51,8 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		g.Status = "creator"
 
 		// create related chate
-		_, err = CreatGroupChat(h.db, userID, g.Title) 
-		if (err != nil) {
+		_, err = CreatGroupChat(h.db, userID, g.Title)
+		if err != nil {
 			http.Error(w, "Error creating group chat", http.StatusInternalServerError)
 			return
 		}
@@ -97,11 +97,11 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 	memberInvitation := true
 	json.NewDecoder(r.Body).Decode(&requestBody)
-	
+
 	if requestBody.UserID == 0 {
 		memberInvitation = false
 		userID = joinSender
-	}else {
+	} else {
 		userID = requestBody.UserID
 	}
 
@@ -112,27 +112,55 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		var groupName, senderNm string
+		// var wm *WebSocketManager
+		h.db.QueryRow("SELECT title FROM groups WHERE id = ?", groupID).Scan(&groupName)
+		h.db.QueryRow("SELECT first_name || ' ' || last_name FROM users WHERE id = ?", joinSender).Scan(&senderNm)
 		joinReqId, _ := res.LastInsertId()
-		if (memberInvitation) {
-			insertNotification(h.db, &notificationToInsert{
+		if memberInvitation {
+			id, _ := insertNotification(h.db, &notificationToInsert{
 				RelatedId: int(joinReqId),
-				SenderId: joinSender,
+				SenderId:  joinSender,
 				ReciverId: userID,
-				Type: "group join invatation",
+				Type:      "group join invatation",
 			})
+			notif := NotifRes{
+				Id:         int(id),
+				RelatedId:  int(joinReqId),
+				Type:       "group join invatation",
+				SenderName: senderNm,
+				SenderId:   joinSender,
+				ReceverId:  userID,
+				GroupId:    &groupID,
+				GroupName:  &groupName,
+			}
+			// send websokets
+			SendNotif(notif)
 		} else {
 			query := `SELECT creator_id FROM groups  WHERE id = ?`
 			var adminId int
-			h.db.QueryRow(query,groupID).Scan(&adminId)
-			insertNotification(h.db, &notificationToInsert{
+			h.db.QueryRow(query, groupID).Scan(&adminId)
+			id, _ := insertNotification(h.db, &notificationToInsert{
 				RelatedId: int(joinReqId),
-				SenderId: joinSender,
+				SenderId:  joinSender,
 				ReciverId: adminId,
-				Type: "group join request",
+				Type:      "group join request",
 			})
+
+			notif := NotifRes{
+				Id:         int(id),
+				RelatedId:  int(joinReqId),
+				Type:       "group join invatation",
+				SenderName: senderNm,
+				SenderId:   joinSender,
+				ReceverId:  userID,
+				GroupId:    &groupID,
+				GroupName:  &groupName,
+			}
+			// send websokets
+			SendNotif(notif)
 		}
 
-		fmt.Println("add user")
 	} else if r.Method == "DELETE" {
 		_, err := h.db.Exec("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID)
 		if err != nil {
@@ -144,35 +172,34 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-
-func getGroupMembers(db *sql.DB, groupId int) ([]int, error){
+func getGroupMembers(db *sql.DB, groupId int) ([]int, error) {
 	var members []int
 
-    query := `
+	query := `
         SELECT user_id 
         FROM group_members 
         WHERE group_id = ? AND (status = 'approved' OR status = 'creator')
     `
 
-    rows, err := db.Query(query, groupId)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	rows, err := db.Query(query, groupId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    for rows.Next() {
-        var userId int
-        if err := rows.Scan(&userId); err != nil {
-            return nil, err
-        }
-        members = append(members, userId)
-    }
+	for rows.Next() {
+		var userId int
+		if err := rows.Scan(&userId); err != nil {
+			return nil, err
+		}
+		members = append(members, userId)
+	}
 
-    if err := rows.Err(); err != nil {
-        return nil, err
-    }
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
-    return members, nil
+	return members, nil
 }
 
 func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
@@ -192,22 +219,22 @@ func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.db.Exec("UPDATE group_members SET status = 'approved' WHERE id = ?", notif.RelatedId)
 	if err != nil {
-		fmt.Println("update join status",err)
+		fmt.Println("update join status", err)
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
 
 	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
 	if err != nil {
-		fmt.Println("delet notif",err)
+		fmt.Println("delet notif", err)
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
 
 	var chatId int
 	joinerId := notif.ReceverId
-	
-	if (notif.Type == "group join request") {
+
+	if notif.Type == "group join request" {
 		joinerId = notif.SenderId
 	}
 	// fmt.Println(notif.RelatedName)
@@ -248,6 +275,6 @@ func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("reject group",notif.Id, notif.RelatedId)
+	fmt.Println("reject group", notif.Id, notif.RelatedId)
 	w.WriteHeader(http.StatusOK)
 }

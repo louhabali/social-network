@@ -25,7 +25,7 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 
 		reqId, err := res.LastInsertId()
 		
-		err = insertNotification(h.db, &notificationToInsert{
+		id, err := insertNotification(h.db, &notificationToInsert{
 			SenderId: followerID,
 			ReciverId: userID,
 			RelatedId: int(reqId),
@@ -36,6 +36,19 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		var senderNm string
+		h.db.QueryRow("SELECT first_name || ' ' || last_name FROM users WHERE id = ?", followerID).Scan(&senderNm)
+		notif := NotifRes{
+			Id: int(id),
+			RelatedId: int(reqId),
+			Type: "group join invatation",
+			SenderName: senderNm,
+			SenderId: followerID,
+			ReceverId: userID,
+		}
+
+		// send websockets
+		SendNotif(notif)
 
 	} else if r.Method == "DELETE" {
 		_, err := h.db.Exec("DELETE FROM follow_requests WHERE follower_id = ? AND following_id = ?", followerID, userID)

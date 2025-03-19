@@ -66,17 +66,18 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 
 		var e GroupEvent
 		if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+			fmt.Println("decoding error")
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
 		formattedDate, err := validateAndFormatDate(e.Date)
 		if err != nil {
+			fmt.Println("date error")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		_, err = h.db.Exec("INSERT INTO group_events (group_id, title, description, event_date, created_id) VALUES (?, ?, ?, ?, ?)",
 			groupID, e.Title, e.Description, formattedDate, userID)
-
 		if err != nil {
 			http.Error(w, "Failed to create event", http.StatusInternalServerError)
 			return
@@ -91,20 +92,36 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
-		
-		for _ , id := range members {
-			if id != userID {
-				err = insertNotification(h.db, &notificationToInsert{
-					SenderId: userID,
-					ReciverId: id,
+
+		var groupName, senderNm string
+		h.db.QueryRow("SELECT title FROM groups WHERE id = ?", groupID).Scan(&groupName)
+		h.db.QueryRow("SELECT first_name || ' ' || last_name FROM users WHERE id = ?", userID).Scan(&senderNm)
+		for _, recId := range members {
+			if recId != userID {
+				id, err := insertNotification(h.db, &notificationToInsert{
+					SenderId:  userID,
+					ReciverId: recId,
 					RelatedId: groupID,
-					Type: "group event",
+					Type:      "group event",
 				})
 				if err != nil {
 					log.Println("notif insert error")
 					http.Error(w, "Database error", http.StatusInternalServerError)
 					return
 				}
+
+				notif := NotifRes{
+					Id:         int(id),
+					RelatedId:  groupID,
+					Type:       "group event",
+					SenderName: senderNm,
+					SenderId:   userID,
+					ReceverId:  recId,
+					GroupId:    &groupID,
+					GroupName:  &groupName,
+				}
+				// send web sock
+				SendNotif(notif)
 			}
 		}
 
@@ -160,5 +177,4 @@ func (h *Handler) CreateEventResponse(w http.ResponseWriter, r *http.Request) {
 	} else {
 		h.db.Exec("INSERT INTO event_responses (event_id, user_id, response) VALUES (?, ?, ?)", e.EventID, userID, e.Response)
 	}
-
 }

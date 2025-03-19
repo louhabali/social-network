@@ -57,6 +57,7 @@ func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 		LEFT JOIN chat_members other_cm ON c.id = other_cm.chat_id AND other_cm.user_id != ?
 		LEFT JOIN users u ON other_cm.user_id = u.id
 		WHERE cm.user_id = ?
+		GROUP BY c.id
 	`
 	rows, err := h.db.Query(query, userID, userID, userID, userID)
 	if err != nil {
@@ -82,6 +83,7 @@ func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println(conversations)
 	w.Header().Set("Content-Type", "application/json")
 	
+	fmt.Println("lenght=> ", len(conversations))
 	err = json.NewEncoder(w).Encode(conversations)
 	if err != nil {
 		// fmt.Println("err in scan =>", err)

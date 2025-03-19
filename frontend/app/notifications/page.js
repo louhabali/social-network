@@ -1,10 +1,21 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import EventNotif from "@/components/notifications/eventNotif.js";
 import AcceptRejectNotif from "@/components/notifications/acceptRejectNotif.js";
+import { WebSocketContext } from "@/components/websocket";
+// import styles from "@/components/notifications/notifs.module.css"
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
+  const {ws} = useContext(WebSocketContext)
+
+  function handleNewNotif(notif) {
+    const data = JSON.parse(notif.data)
+    if (data.type === "notification") {
+      console.log(data.payload);
+      setNotifications(prevNotifs => [data.payload,...prevNotifs])
+    }
+  }
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -19,8 +30,12 @@ export default function NotificationsPage() {
         console.error("Failed to fetch conversations", error);
       }
     }
-    
     fetchNotifications();
+
+    if (ws.current) ws.current.addEventListener("message", handleNewNotif)
+    return (
+      () => ws.current.removeEventListener("message", handleNewNotif)
+    )
   }, []);
 
   const handleAccept = async (notif) => {
@@ -89,8 +104,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="notifications-page">
-      <h3>Notifications</h3>
+    <div style={{marginTop: '55px'}} >
       {notifications.map((notif) => (
         notif.type == "group event" ?
           <EventNotif

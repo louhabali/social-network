@@ -44,8 +44,8 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		    g.title AS group_name
 		FROM notifications AS n
 		JOIN users As u ON n.sender_id = u.id
-		LEFT JOIN group_events AS ge ON ((n.type = 'group event') AND n.related_id = ge.id)
-		LEFT JOIN group_members AS gm ON  ((n.type = 'group join invatation' OR n.type = 'group join request') AND n.related_id = gm.id)
+		LEFT JOIN group_events AS ge ON n.related_id = ge.id
+		LEFT JOIN group_members AS gm ON n.related_id = gm.id
 		LEFT JOIN groups AS g ON g.id = COALESCE(ge.group_id, gm.group_id)
 		WHERE n.recever_id = ? AND n.is_read = 0;
 	`
@@ -65,7 +65,7 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		notifications = append(notifications, notif)
 	}
 
-	fmt.Println("notifs",notifications)
+	fmt.Println("notifs", notifications)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -75,19 +75,21 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func insertNotification(db *sql.DB, notif *notificationToInsert) error {
+func insertNotification(db *sql.DB, notif *notificationToInsert) (int64, error) {
 	query := `
 		INSERT INTO notifications (type, related_id, recever_id, sender_id, is_read, created_at)
 		VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
 	`
 	fmt.Println("notif ->", notif)
-	_, err := db.Exec(query, notif.Type, notif.RelatedId, notif.ReciverId, notif.SenderId)
+	res, err := db.Exec(query, notif.Type, notif.RelatedId, notif.ReciverId, notif.SenderId)
 	if err != nil {
 		fmt.Println("err insert notif", err)
-		return err
+		return 0, err
 	}
 
-	return nil
+	notifId, _ := res.LastInsertId()
+
+	return notifId, nil
 }
 
 func (h *Handler) MarkNotifAsRead(w http.ResponseWriter, r *http.Request) {

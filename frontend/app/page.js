@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Post from "@/components/post";
 import PostForm from "@/components/postForm";
-import { websoketProvider } from "./oldwebSocket";
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
@@ -14,16 +13,6 @@ const HomePage = () => {
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
     const router = useRouter();
-
-    useEffect(() => {
-        websoketProvider.connect().
-            then(res => {
-                console.log(res);
-                window.ws = res
-            }).catch(error => {
-                console.error("WebSocket error:", error);
-            });
-    }, [])
 
     // posts
     const fetchPosts = async () => {

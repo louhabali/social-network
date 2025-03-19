@@ -18,15 +18,20 @@ function WebSocketProvider({ children }) {
     // also rather than use a regular var as variables when component re-render
     //  they re-initialized
     const ws = useRef(null);
-
+    
     const sendMessage = (msg) => {
         ws.current.send(JSON.stringify(msg))
     }
 
     useEffect(() => {
         // the current property of ref obj is what actually hold the referenced thing
-        ws.current = new WebSocket(`ws://localhost:8080/api/ws`);
+        function connect() {
+            if (ws.current) return
+            ws.current = new WebSocket(`ws://localhost:8080/api/ws`);
+        }
         
+        connect();
+
         ws.current.onopen = () => {
             console.log("ws connected");   
         }

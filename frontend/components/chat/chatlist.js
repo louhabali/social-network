@@ -5,7 +5,8 @@ import { WebSocketContext } from "@/components/websocket";
 
 export default function ChatList({ conversations, onChatSelect, setConversations, updateLastReadMsg }) {
     const {ws} = useContext(WebSocketContext);
-
+    console.log(conversations);
+    
     function newMsg(msg) {
         const data = JSON.parse(msg.data);
         if (data.type === "new_message") {
