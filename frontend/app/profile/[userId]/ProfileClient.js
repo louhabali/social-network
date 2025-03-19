@@ -196,9 +196,9 @@ export default function ProfileClient({ profile, userId }) {
               {profile.followers?.length > 0 ? (
                 <div className="user-list">
                   {profile.followers.map((follower) => (
-                    <div key={follower.ID} className="follower-item user-item">
-                      <a href={`/profile/${follower.ID}`} className="user-link">
-                        {follower.Firstname} {follower.Lastname}
+                    <div key={follower.id} className="follower-item user-item">
+                      <a href={`/profile/${follower.id}`} className="user-link">
+                        {follower.fname} {follower.lname}
                       </a>
                     </div>
                   ))}
@@ -215,9 +215,9 @@ export default function ProfileClient({ profile, userId }) {
               {profile.following?.length > 0 ? (
                 <div className="user-list">
                   {profile.following.map((followingUser) => (
-                    <div key={followingUser.ID} className="following-item user-item">
-                      <a href={`/profile/${followingUser.ID}`} className="user-link">
-                        {followingUser.Firstname} {followingUser.Lastname}
+                    <div key={followingUser.id } className="following-item user-item">
+                      <a href={`/profile/${followingUser.id}`} className="user-link">
+                        {followingUser.fname} {followingUser.lname}
                       </a>
                     </div>
                   ))}

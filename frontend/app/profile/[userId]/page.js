@@ -29,6 +29,8 @@ export default async function ProfilePage({ params }) {
 
   try {
     profile = await getProfile(params.userId);
+    
+
   } catch (error) {
     return <ErrorPage error={error} />; 
   }

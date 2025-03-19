@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 	"strings"
 	"time"
@@ -69,6 +70,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		var timeCreated time.Time
 		var firstname, lastname string
 		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &post.Privacy, &firstname, &lastname, &post.Avatar)
+		post.Content = html.UnescapeString(post.Content)
 		post.Username = strings.Join([]string{firstname, lastname}, " ")
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 		if post.Avatar != nil {
@@ -80,7 +82,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 
 		if post.Privacy == "almost_private" {
 			isApproved := ""
-			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE (follower_id = ? AND following_id = ?) OR (following_id = ? AND follower_id = ?); ", post.Uid, userID,post.Uid,userID).Scan(&isApproved)
+			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE (follower_id = ? AND following_id = ?) OR (following_id = ? AND follower_id = ?); ", post.Uid, userID, post.Uid, userID).Scan(&isApproved)
 
 			if err == nil && isApproved == "approved" || post.Uid == userID {
 				posts = append(posts, post)
@@ -107,13 +109,14 @@ func getPostInteractions(pid, uid int, db *sql.DB) int {
 	return ii
 }
 
-func GetPost(db *sql.DB, postID,userID int) Post {
+func GetPost(db *sql.DB, postID, userID int) Post {
 	var p Post
 	var timeCreated time.Time
 	var fistname, lastname string
 	db.QueryRow(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar
         FROM posts
         JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image, &fistname, &lastname, &p.Avatar)
+	p.Content = html.UnescapeString(p.Content)
 	p.Username = strings.Join([]string{fistname, lastname}, " ")
 	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", p.Pid).Scan(&p.NbComment)
 	p.Likes = getPostLikeDisLike(p.Pid, 1, db)
