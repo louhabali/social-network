@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faFaceSmile, faRotate } from "@fortawesome/free-solid-svg-icons";
 // import EmojiPicker from './emojiPicker';
 import { WebSocketContext } from "@/components/websocket";
-import Picker from 'emoji-picker-react';
+import Picker from "./emojiPicker";
 
 export default function ChatSection({ selectedChat, closeChat, updateLastReadMsg }) {
     const [message, setMessage] = useState("");
@@ -97,8 +97,8 @@ export default function ChatSection({ selectedChat, closeChat, updateLastReadMsg
 
     useEffect(scrollDown, [shouldScroll, newMsg]);
     
-    function emojiClick(emojiObj) {
-        setMessage(message + emojiObj.emoji)
+    function emojiClick(emoji) {
+        setMessage(message => message + emoji)
     }
 
     return (
@@ -133,19 +133,6 @@ export default function ChatSection({ selectedChat, closeChat, updateLastReadMsg
 
                 {showEmojis &&
                     <Picker
-                        theme="dark"
-                        style={
-                            {
-                                position: 'absolute',
-                                boxSizing: 'border-box',
-                                width: '300px',
-                                height: '350px',
-                                top: '-355px',
-                                left: '15%',
-                                overflow: 'auto',
-                                scrollbarWidth: 'none'
-                            }
-                        }
                         onEmojiClick={emojiClick}
                     />
                 }
