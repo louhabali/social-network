@@ -68,6 +68,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Name:     "Token",
 			Value:    uuid.String(),
 			HttpOnly: true,
+			Secure:  true,
 			Path: "/",
 			Expires:  time.Now().Add(200 * 365 * 24 * time.Hour),
 		})

@@ -95,7 +95,7 @@ func (h *Handler) CommentCreationHandler(w http.ResponseWriter, r *http.Request)
 			var timeCreated time.Time
 			var fistname, lastname string
 			rows.Scan(&comment.Id, &comment.Content, &comment.Image, &fistname, &lastname, &timeCreated, &comment.Avatar)
-
+			comment.Content = html.UnescapeString(comment.Content)
 			comment.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 			comment.Username = strings.Join([]string{fistname, lastname}, " ")
 			if comment.Avatar != nil {
@@ -121,6 +121,7 @@ func GetComment(db *sql.DB, commentID int) Comment {
 	db.QueryRow(`SELECT comments.id ,comments.content, comments.image_path, users.first_name, users.last_name, comments.created_at,users.avatar FROM comments
 			JOIN users ON comments.user_id = users.id WHERE comments.id = ? `, commentID).Scan(&c.Id, &c.Content, &c.Image, &fistname, &lastname, &timeCreated, &c.Avatar)
 	c.Username = strings.Join([]string{fistname, lastname}, " ")
+	c.Content = html.UnescapeString(c.Content)
 	if c.Avatar != nil {
 		*c.Avatar, _ = EncodeImg(*c.Avatar)
 	}

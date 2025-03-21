@@ -20,6 +20,7 @@ const Header = ({userID,Avatar,fname,lname }) => {
             });
 
             if (response.ok) {
+               
                 router.push('/login');
             }
         } catch (error) {

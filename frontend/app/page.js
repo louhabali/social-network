@@ -7,6 +7,7 @@ import PostForm from "@/components/postForm";
 import { websoketProvider } from "./oldwebSocket";
 
 const HomePage = () => {
+    
     const [posts, setPosts] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
     const [offset, setOffset] = useState(0);
@@ -14,7 +15,6 @@ const HomePage = () => {
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
     const router = useRouter();
-
     useEffect(() => {
         websoketProvider.connect().
             then(res => {
@@ -52,6 +52,7 @@ const HomePage = () => {
             setPosts((prevPosts) => [...prevPosts, ...data]);
             setOffset((prevOffset) => prevOffset + data?.length);
         } catch (error) {
+            
             router.push("/login");
         } finally {
             setLoading(false);

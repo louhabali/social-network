@@ -81,7 +81,6 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 				h.db.Exec(`INSERT INTO post_privacy_users (user_id, post_id, created_at) VALUES (?, ?, ?)`, i, postID, time.Now())
 			}
 		}
-
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(GetPost(h.db, postID,userID))
 

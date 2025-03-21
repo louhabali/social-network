@@ -34,9 +34,9 @@ export default function LoginPage() {
       const result = await response.text()
 
       if (response.ok) {
-        router.push("/")
+        router.push("/");
       } else {
-        setErrorMessage(result)
+        setErrorMessage(result);
       }
     } catch (error) {
       console.error('Error', error)
