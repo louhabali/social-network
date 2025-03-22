@@ -3,12 +3,14 @@ import React from 'react';
 import Link from 'next/link';
 import styles from './Header.module.css';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+// import { WebSocketContext } from './websocket';
+// import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 
-const Header = ({userID,Avatar,fname,lname }) => {
-    
+const Header = ({ userID, Avatar, fname, lname }) => {
+
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -26,17 +28,17 @@ const Header = ({userID,Avatar,fname,lname }) => {
             console.error('Logout error:', error);
         }
     };
-  
+
     const [searchData, setSearchData] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-  
+
     function handleSearch(e) {
         setSearchData(e.target.value);
     }
     function handleKeyDown(e) {
         if (e.key === "Enter" && searchData.trim()) {
             setSearchData("");
-            setSearchResults([]); 
+            setSearchResults([]);
             router.push(`/search?q=${encodeURIComponent(searchData)}`);
         }
     }
@@ -53,22 +55,22 @@ const Header = ({userID,Avatar,fname,lname }) => {
             body: formDataToSend,
         })
             .then(response => {
-               return response.json();
-                
+                return response.json();
+
             })
             .then(data => {
-                if (data){
+                if (data) {
                     if (data) {
                         setSearchResults(Object.values(data));
                     }
                 }
-           
-                 //console.log(users);
-                 
+
+                //console.log(users);
+
             }
             )
             .catch(error => console.error('error', error));
-}, [searchData])
+    }, [searchData])
     return (
         <>
             {/* Desktop Header */}
@@ -84,21 +86,23 @@ const Header = ({userID,Avatar,fname,lname }) => {
                             className={styles.searchInput}
                             value={searchData}
                             onChange={handleSearch}
-                            onKeyDown={handleKeyDown} 
+                            onKeyDown={handleKeyDown}
                         />
-                         {searchResults.length > 0 && (
-                            <div style={{marginTop:"45px",top:"0" ,
-                             width: "206px",
-                              background:"rgb(0, 0, 0)", 
-                              paddingLeft:"5px",
-                               position:"absolute" ,
-                               color:"white"}}>
+                        {searchResults.length > 0 && (
+                            <div style={{
+                                marginTop: "45px", top: "0",
+                                width: "206px",
+                                background: "rgb(0, 0, 0)",
+                                paddingLeft: "5px",
+                                position: "absolute",
+                                color: "white"
+                            }}>
                                 {searchResults.map((user, index) => (
                                     <p key={index}>{user.Fname} {user.Lname}</p>
-                                 ))}
-                         </div>
-        )}
-                         <div id="s" style={{marginTop:"45px",top:"0" , width: "206px", background:"rgb(0, 0, 0)", paddingLeft:"5px", position:"absolute" ,color:"white"}}></div>
+                                ))}
+                            </div>
+                        )}
+                        <div id="s" style={{ marginTop: "45px", top: "0", width: "206px", background: "rgb(0, 0, 0)", paddingLeft: "5px", position: "absolute", color: "white" }}></div>
 
                         <button className={styles.searchButton}>
                             {/* <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.searchIcon}>
@@ -122,14 +126,10 @@ const Header = ({userID,Avatar,fname,lname }) => {
                             </svg>
                         </Link>
                         <Link href="/chat" className={styles.navItem}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
+                            <ChatIcon />
                         </Link>
                         <Link href="/notifications" className={styles.navItem}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
+                            <NotifIcon />
                         </Link>
                     </nav>
                 </div>
@@ -138,7 +138,7 @@ const Header = ({userID,Avatar,fname,lname }) => {
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                         {Avatar ? (
                             <img
-                                 src={`data:image/png;base64,${Avatar}`} alt="user"
+                                src={`data:image/png;base64,${Avatar}`} alt="user"
                                 className={styles.userAvatar}
                                 width={20} height={20}
                             />
@@ -146,7 +146,7 @@ const Header = ({userID,Avatar,fname,lname }) => {
                             <Image src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
 
                         )}<span>{fname} {lname}</span>
-                     
+
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -215,7 +215,7 @@ const Header = ({userID,Avatar,fname,lname }) => {
                                     width={20} height={20}
                                 />
                             ) : (
-                                <Image src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20}/>
+                                <Image src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20} />
 
                             )}
                         </div>
@@ -227,5 +227,105 @@ const Header = ({userID,Avatar,fname,lname }) => {
     );
 };
 
+function NotifIcon() {
+    const [notifsCount, setNotifsCount] = useState(0)
+    // const { ws } = useContext(WebSocketContext);
+    // const path = usePathname();
+
+    // function handleNewNotif(notif) {
+    //     const data = JSON.parse(notif.data)
+    //     if (data.type === "notification" && path !== "/notifications") {
+    //         setNotifsCount(notifsCount => notifsCount + 1);
+    //     }
+    // }
+
+    useEffect(() => {
+        async function getNotifsCount() {
+            const res = await fetch("http://localhost:8080/api/notifications/count", {
+                credentials: "include"
+            })
+            if (res.ok) {
+                const jsonRes = await res.json();
+                setNotifsCount(jsonRes.unread_count);
+            } else {
+                console.log("ERROR GETTING NOTIFS UNREAD COUNT");
+            }
+        }
+
+        getNotifsCount()
+
+        // setTimeout(() => {
+        //     ws.current.addEventListener("message", handleNewNotif)
+        // }, 500)
+        // return (
+        //     () => { if (ws.current) ws.current.removeEventListener("message", handleNewNotif) }
+        // )
+    }, [])
+
+    return (
+        <span onClick={() => { setNotifsCount(0) }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {notifsCount > 0 && <span style={{ color: '#05ff9f', fontSize: '18px', textDecoration: 'none' }}>
+                {notifsCount}
+            </span>}
+        </span>
+    )
+}
+
+function ChatIcon() {
+    const [msgsCount, setMsgsCount] = useState(0);
+    // const { ws } = useContext(WebSocketContext);
+    // const path = usePathname();
+
+    // function handleNewMessage(msg) {
+    //     console.log("new !!!!!!!!!");
+    //     console.log(path);
+        
+        
+    //     const data = JSON.parse(msg.data)
+    //     if (data.type === "new_message" && path != "/chat") {
+    //         setMsgsCount(msgsCount => msgsCount + 1);
+    //     }
+    // }
+
+    useEffect(() => {
+        async function getConvs() {
+            const res = await fetch("http://localhost:8080/api/conversations", {
+                credentials: "include"
+            })
+            if (res.ok) {
+                let jsonRes = await res.json();
+                jsonRes = jsonRes ? jsonRes : []
+                setMsgsCount(jsonRes.reduce((sum ,conv) => sum + conv.unread_count, 0));
+            } else {
+                console.log("ERROR GETTING NOTIFS UNREAD COUNT");
+            }
+        }
+
+        getConvs()
+
+        // setTimeout(() => {
+        //     ws.current.addEventListener("message", handleNewMessage)
+        // }, 500)
+        // return (
+        //     () => { if (ws.current) ws.current.removeEventListener("message", handleNewMessage) }
+        // )
+    }, [])
+
+    return (
+        <span onClick={() => { setMsgsCount(0) }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            {
+                msgsCount > 0 && <span style={{ color: '#05ff9f', fontSize: '18px', textDecoration: 'none' }}>
+                    { msgsCount }
+                </span>
+            }
+        </span>
+    )
+}
 
 export default Header;

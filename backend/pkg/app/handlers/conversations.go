@@ -83,7 +83,7 @@ func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println(conversations)
 	w.Header().Set("Content-Type", "application/json")
 	
-	fmt.Println("lenght=> ", len(conversations))
+	// fmt.Println("lenght=> ", len(conversations))
 	err = json.NewEncoder(w).Encode(conversations)
 	if err != nil {
 		// fmt.Println("err in scan =>", err)

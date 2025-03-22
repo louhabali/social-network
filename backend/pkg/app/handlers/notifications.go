@@ -65,7 +65,7 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		notifications = append(notifications, notif)
 	}
 
-	fmt.Println("notifs", notifications)
+	// fmt.Println("notifs", notifications)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -125,7 +125,7 @@ func (h *Handler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
 	var notifsNum int
 	err := h.db.QueryRow("SELECT COUNT(*) FROM notifications WHERE recever_id = ? and is_read = 0;", userId).Scan(&notifsNum)
 	if err != nil {
-		fmt.Println("notifs numb ->", err)
+		// fmt.Println("notifs numb ->", err)
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 		return
 	}
