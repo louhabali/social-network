@@ -134,7 +134,13 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("add user")
 	} else if r.Method == "DELETE" {
-		_, err := h.db.Exec("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID)
+		_, err := h.db.Exec("DELETE FROM notifications WHERE related_id IN (SELECT id FROM group_members WHERE group_id = ? AND user_id = ?)", groupID, userID)
+		if err != nil {
+			http.Error(w, "Failed to delete notifications", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = h.db.Exec("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return

@@ -3,31 +3,23 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 import { WebSocketProvider } from "@/components/websocket";
 import Header from "@/components/header";
-import { useEffect, useState } from "react";
 const metadata = {
   title: "My App",
   description: "A Next.js app",
 };
 
 export default function RootLayout({ children }) {
-  const [u , setUser] = useState([])
-  useEffect(() => {
-             fetch('http://localhost:8080/api/userdata', {
-                 credentials: "include",
-             }).then(data => data.json()).then(d => {
-                 setUser(d)
-             })
-     }, []);
   const pathname = usePathname()
   const hideMenu = pathname === "/login" || pathname === "/register"
-
+  
   return (
     <html lang="en">
       <body>
-        <WebSocketProvider>
-          {!hideMenu &&  <Header userID={u.ID} Avatar={u.Avatar} fname={u.Firstname} lname={u.Lastname} />}
+        {!hideMenu ? <WebSocketProvider>
+           <Header/>
           <main>{children}</main>
-        </WebSocketProvider>
+        </WebSocketProvider>:
+        <main>{children}</main>}
       </body>
     </html>
   );

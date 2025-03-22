@@ -1,9 +1,10 @@
 'use client'
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import '../../styles/register.css'
+import styles from "./register.module.css"
 import Link from "next/link"
 import InvalidCredentials from '@/components/invalidCredentials'
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: "",
@@ -66,142 +67,72 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="containereg">
-      <h2>Create Your Account</h2>
-      <form onSubmit={handleSubmit} className="formreg">
-        <div className="inputGroup">
-          <div className="inputField">
-            <span className="inputLabel">First Name</span>
-            <input
-              type="text"
-              name="firstName"
-              placeholder="Enter your first name"
-              required
-              className="inputs"
-              onChange={handleChange}
-              value={formData.firstName}
-            />
+    <div className={styles.pageContainer}>
+      <div className={styles.containereg}>
+        <h2>Create Your Account</h2>
+        <form onSubmit={handleSubmit} className={styles.formreg}>
+          <div className={styles.inputGroup}>
+            <div className={styles.inputField}>
+              <span className={styles.inputLabel}>First Name</span>
+              <input type="text" name="firstName" placeholder="Enter your first name" required className={styles.inputs} onChange={handleChange} value={formData.firstName} />
+            </div>
+            <div className={styles.inputField}>
+              <span className={styles.inputLabel}>Last Name</span>
+              <input type="text" name="lastName" placeholder="Enter your last name" required className={styles.inputs} onChange={handleChange} value={formData.lastName} />
+            </div>
           </div>
-          <div className="inputField">
-            <span className="inputLabel">Last Name</span>
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Enter your last name"
-              required
-              className="inputs"
-              onChange={handleChange}
-              value={formData.lastName}
-            />
+
+          <div className={styles.inputField}>
+            <span className={styles.inputLabel}>Email</span>
+            <input type="email" name="email" placeholder="Enter your email address" required className={styles.inp} onChange={handleChange} value={formData.email} />
           </div>
-        </div>
 
-        <div className="inputField">
-          <span className="inputLabel">Email</span>
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter your email address"
-            required
-            className="inp"
-            onChange={handleChange}
-            value={formData.email}
-          />
-        </div>
-
-        <div className="inputField">
-          <span className="inputLabel">Password</span>
-          <input
-            type="password"
-            name="password"
-            placeholder="Create a password"
-            required
-            className="inp"
-            onChange={handleChange}
-            value={formData.password}
-          />
-        </div>
-
-        <div className="inputGroup">
-          <div className="inputField">
-            <span className="inputLabel">Date of Birth</span>
-            <input
-              type="date"
-              name="dateOfBirth"
-              required
-              className="inputs"
-              onChange={handleChange}
-              value={formData.dateOfBirth}
-            />
+          <div className={styles.inputField}>
+            <span className={styles.inputLabel}>Password</span>
+            <input type="password" name="password" placeholder="Create a password" required className={styles.inp} onChange={handleChange} value={formData.password} />
           </div>
-          <div className="inputField">
-            <span className="inputLabel">Nickname (Optional)</span>
-            <input
-              type="text"
-              name="nickname"
-              placeholder="Choose a nickname"
-              className="inputs"
-              onChange={handleChange}
-              value={formData.nickname}
-            />
+
+          <div className={styles.inputGroup}>
+            <div className={styles.inputField}>
+              <span className={styles.inputLabel}>Date of Birth</span>
+              <input type="date" name="dateOfBirth" required className={styles.inputs} onChange={handleChange} value={formData.dateOfBirth} />
+            </div>
+            <div className={styles.inputField}>
+              <span className={styles.inputLabel}>Nickname (Optional)</span>
+              <input type="text" name="nickname" placeholder="Choose a nickname" className={styles.inputs} onChange={handleChange} value={formData.nickname} />
+            </div>
           </div>
-        </div>
 
-        <div className="inputsavatar">
-          <div className="avatarPreview">
-            {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar preview" />
-            ) : (
-              <span>No image</span>
-            )}
+          <div className={styles.inputsavatar}>
+            <div className={styles.avatarPreview}>
+              {avatarPreview ? <img src={avatarPreview} alt="Avatar preview" /> : <span>No image</span>}
+            </div>
+            <div className={styles.avatarUpload}>
+              <input type="file" name="avatar" accept="image/*" onChange={handleFileChange} id="avatarInput" style={{ display: "none" }} />
+              <label htmlFor="avatarInput" className={styles.avatarUploadBtn}>
+                {avatarPreview ? "Change Image" : "Choose Profile Picture"}
+              </label>
+              {avatarPreview && (
+                <button type="button" className={styles.avatarUploadBtn} style={{ backgroundColor: "red" }} onClick={() => { setAvatarPreview(null); setFormData({ ...formData, avatar: null }); }}>
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
-          <div className="avatarUpload">
-            <input
-              type="file"
-              name="avatar"
-              accept="image/*"
-              onChange={handleFileChange}
-              id="avatarInput"
-              style={{ display: "none" }}
-            />
-            <label htmlFor="avatarInput" className="avatarUploadBtn">
-              {avatarPreview ? "Change Image" : "Choose Profile Picture"}
-            </label>
-            {avatarPreview && (
-              <button
-                type="button"
-                className="avatarUploadBtn"
-                style={{ backgroundColor: "red" }}
-                onClick={() => {
-                  setAvatarPreview(null);
-                  setFormData({ ...formData, avatar: null });
-                }}
-              >
-                Cancel
-              </button>
-            )}
+
+          <div className={styles.inputField}>
+            <span className={styles.inputLabel}>About Me (Optional)</span>
+            <textarea name="aboutMe" placeholder="Tell us a bit about yourself" className={styles.inp} onChange={handleChange} value={formData.aboutMe} rows="3"></textarea>
           </div>
-        </div>
 
-        <div className="inputField">
-          <span className="inputLabel">About Me (Optional)</span>
-          <textarea
-            name="aboutMe"
-            placeholder="Tell us a bit about yourself"
-            className="inp"
-            onChange={handleChange}
-            value={formData.aboutMe}
-            rows="3"
-          ></textarea>
-        </div>
+          <button type="submit" className={styles.submitButtonreg}>Create Account</button>
+          {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
 
-        <button type="submit" className="submitButtonreg">Create Account</button>
-        {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
-
-        <div className="linkreg">
-          Already have an account? <Link href="/login" className="loginregisterlink">Sign In</Link>
-        </div>
-      </form>
+          <div className={styles.linkreg}>
+            Already have an account? <Link href="/login" className={styles.loginregisterlink}>Sign In</Link>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

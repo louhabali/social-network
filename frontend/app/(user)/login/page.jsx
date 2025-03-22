@@ -1,5 +1,5 @@
 'use client';
-import '../../styles/login.css'
+import styles from './login.module.css'
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Link from "next/link"
@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (formData.email.trim().length==0 || formData.password.trim().length==0) {
+    if (formData.email.trim().length == 0 || formData.password.trim().length == 0) {
       setErrorMessage("Please fill all the required fields")
       return
     }
@@ -44,42 +44,44 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container">
-      <h2>Welcome Back</h2>
-      <form onSubmit={handleSubmit} className="form">
-        <div className="inputField">
-          <span className="inputLabel">Email</span>
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter your email"
-            required
-            className="input"
-            onChange={handleChange}
-            value={formData.email}
-          />
-        </div>
+    <div className={styles.pageContainer}>
+      <div className={styles.container}>
+        <h2>Welcome Back</h2>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputField}>
+            <span className={styles.inputLabel}>Email</span>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+              className={styles.input}
+              onChange={handleChange}
+              value={formData.email}
+            />
+          </div>
 
-        <div className="inputField">
-          <span className="inputLabel">Password</span>
-          <input
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-            className="input"
-            required
-            onChange={handleChange}
-            value={formData.password}
-          />
-        </div>
+          <div className={styles.inputField}>
+            <span className={styles.inputLabel}>Password</span>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              className={styles.input}
+              required
+              onChange={handleChange}
+              value={formData.password}
+            />
+          </div>
 
-        <button type="submit" className="submitButton">Sign In</button>
-        {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
-      </form>
+          <button type="submit" className={styles.submitButton}>Sign In</button>
+          {errorMessage && <InvalidCredentials message={errorMessage} color="red" />}
+        </form>
 
-      <p className="link">
-        Don't have an account? <Link href="/register" className="registerLink">Create Account</Link>
-      </p>
+        <p className={styles.link}>
+          Don't have an account? <Link href="/register" className={styles.registerLink}>Create Account</Link>
+        </p>
+      </div>
     </div>
   )
 }
