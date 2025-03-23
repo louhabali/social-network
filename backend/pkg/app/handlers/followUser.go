@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -24,14 +25,13 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		reqId, err := res.LastInsertId()
-		
+
 		id, err := insertNotification(h.db, &notificationToInsert{
-			SenderId: followerID,
+			SenderId:  followerID,
 			ReciverId: userID,
 			RelatedId: int(reqId),
-			Type: "follow reqeust",
+			Type:      "follow reqeust",
 		})
-
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
@@ -39,12 +39,12 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		var senderNm string
 		h.db.QueryRow("SELECT first_name || ' ' || last_name FROM users WHERE id = ?", followerID).Scan(&senderNm)
 		notif := NotifRes{
-			Id: int(id),
-			RelatedId: int(reqId),
-			Type: "group join invatation",
+			Id:         int(id),
+			RelatedId:  int(reqId),
+			Type:       "group join invatation",
 			SenderName: senderNm,
-			SenderId: followerID,
-			ReceverId: userID,
+			SenderId:   followerID,
+			ReceverId:  userID,
 		}
 
 		// send websockets
@@ -57,9 +57,11 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err = h.db.Exec("DELETE FROM notifications WHERE sender_id = ? AND recever_id = ?", followerID, userID) 
+		_, err = h.db.Exec("DELETE FROM notifications WHERE sender_id = ? AND recever_id = ?", followerID, userID)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
 		}
 	}
 	w.WriteHeader(http.StatusOK)
@@ -110,7 +112,6 @@ func (h *Handler) RejectFollowReq(w http.ResponseWriter, r *http.Request) {
 
 	var notif NotifRes
 	err := json.NewDecoder(r.Body).Decode(&notif)
-
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return

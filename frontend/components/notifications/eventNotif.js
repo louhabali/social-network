@@ -1,7 +1,7 @@
 import Link from "next/link"
 import styles from "./notifs.module.css";
 
-export default function EventNotif({ notification, markRead }) {
+export default function EventNotif({ notification, deleteNotif }) {
   return (
     <div className={styles.notif}>
       <p>
@@ -14,7 +14,7 @@ export default function EventNotif({ notification, markRead }) {
         <Link
           className={styles.link}
           href={`/groups/${notification.related_id}`}
-          onClick={() => markRead(notification)}
+          onClick={() => deleteNotif(notification)}
         >
           {notification.group_name}
         </Link>

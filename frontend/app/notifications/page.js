@@ -47,9 +47,6 @@ export default function NotificationsPage() {
       default:
         url = 'http://localhost:8080/api/group-join/accept'
     }
-
-    console.log(notif);
-    console.log("url ->", url);
     
       const response = await fetch(url, {
         credentials: "include",
@@ -89,13 +86,15 @@ export default function NotificationsPage() {
     }
   };
 
-  async function visit(notif) {
-    const response = await fetch('http://localhost:8080/api/notification/read', {
+  async function deleteNotif(notif) {
+    const response = await fetch('http://localhost:8080/api/notification/delete', {
       credentials: "include",
-      method: "POST",
+      method: "DELETE",
       body: JSON.stringify(notif),
     });
 
+    console.log("delete RES ->: ", response);
+    
     if(response.status == 200) {
       setNotifications(notifications.filter(notification => notification.id !== notif.id));
     } else {
@@ -110,7 +109,7 @@ export default function NotificationsPage() {
           <EventNotif
             key={notif.id}
             notification={notif}
-            markRead={visit}
+            deleteNotif={deleteNotif}
           /> :
           <AcceptRejectNotif
             key={notif.id}

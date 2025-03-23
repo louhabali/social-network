@@ -74,36 +74,18 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertMessage(sendeId, chatId int, content string, db *sql.DB) (Message, error) {
-	// var newMsg struct {
-	// 	ChatID   int    `json:"chat_id"`
-	// 	SenderID int    `json:"sender_id"`
-	// 	Content  string `json:"content"`
-	// }
-
-	// if err := json.NewDecoder(r.Body).Decode(&newMsg); err != nil {
-	// 	http.Error(w, "Invalid JSON", http.StatusBadRequest)
-	// 	return
-	// }
+	// check for private chats if at least one of the member follow the other
+	if !canInsert(db, chatId, sendeId) {
+		return Message{}, fmt.Errorf("At least one follow the other constraint")
+	}
 
 	query := `INSERT INTO messages (chat_id, sender_id, content, created_at) VALUES (?, ?, ?, ?)`
 	time := time.Now().Format("2006-01-02 15:04:05")
 	result, err := db.Exec(query, chatId, sendeId, content, time)
 	if err != nil {
-		// http.Error(w, "Failed to insert message", http.StatusInternalServerError)
 		return Message{}, err
 	}
 
-	// messageID, _ := result.LastInsertId()
-	// msgResponse := Message{
-	// 	ID:        int(messageID),
-	// 	ChatID:    newMsg.ChatID,
-	// 	SenderID:  newMsg.SenderID,
-	// 	Content:   newMsg.Content,
-	// 	CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
-	// }
-
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(msgResponse)
 	msgId, _ := result.LastInsertId()
 	msg := Message{
 		ID:        int(msgId),
@@ -262,4 +244,37 @@ func CreatGroupChat(db *sql.DB, adminId int, name string) (int, error) {
 func addChatMember(db *sql.DB, chatID int, userID int) error {
 	_, err := db.Exec("INSERT INTO chat_members (chat_id, user_id) VALUES (?, ?)", chatID, userID)
 	return err
+}
+
+func canInsert(db *sql.DB, chatId, senderId int) bool {
+	query := `
+		SELECT 1
+		FROM chats c
+		JOIN chat_members cm1 ON c.id = cm1.chat_id
+		WHERE c.id = ?
+		AND cm1.user_id = ?
+		AND (
+		    c.is_group = 1
+		    OR EXISTS (
+		        SELECT 1
+		        FROM follow_requests f
+		        JOIN chat_members cm2 ON cm2.chat_id = c.id
+		        WHERE f.status = 'approved'
+		        AND cm2.user_id != cm1.user_id
+		        AND (
+		            (f.follower_id = cm1.user_id AND f.following_id = cm2.user_id)
+		            OR
+		            (f.follower_id = cm2.user_id AND f.following_id = cm1.user_id)
+		        )
+		    )
+		);
+	`
+
+	var exists int
+	err := db.QueryRow(query, chatId, senderId).Scan(&exists)
+	if err != nil {
+		return false
+	}
+
+	return true
 }

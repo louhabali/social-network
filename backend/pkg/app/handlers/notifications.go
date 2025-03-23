@@ -47,7 +47,7 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		LEFT JOIN group_events AS ge ON n.related_id = ge.id
 		LEFT JOIN group_members AS gm ON n.related_id = gm.id
 		LEFT JOIN groups AS g ON g.id = COALESCE(ge.group_id, gm.group_id)
-		WHERE n.recever_id = ? AND n.is_read = 0;
+		WHERE n.recever_id = ?;
 	`
 	rows, err := h.db.Query(query, userId)
 	// followReqs, err := getFolowReq(h.db, userId)
@@ -92,23 +92,16 @@ func insertNotification(db *sql.DB, notif *notificationToInsert) (int64, error) 
 	return notifId, nil
 }
 
-func (h *Handler) MarkNotifAsRead(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) MarkNotifsAsRead(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-	var notif NotifRes
-	err := json.NewDecoder(r.Body).Decode(&notif)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-	r.Body.Close()
+	userId, _ := r.Context().Value("userID").(int)
 
-	_, err = h.db.Exec("UPDATE notifications SET is_read = 1 WHERE id = ?", notif.Id)
+	_, err := h.db.Exec("UPDATE notifications SET is_read = 1 WHERE recever_id = ?", userId)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
@@ -139,4 +132,30 @@ func (h *Handler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return
 	}
+}
+
+
+func (h *Handler) DeleteNotif(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var notif NotifRes
+	err := json.NewDecoder(r.Body).Decode(&notif)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+	
+	_, err = h.db.Exec("DELETE FROM notifications WHERE id = ?", notif.Id)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

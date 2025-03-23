@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -137,13 +138,11 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 			// send websokets
 			SendNotif(notif)
 		} else {
-			query := `SELECT creator_id FROM groups  WHERE id = ?`
-			var adminId int
-			h.db.QueryRow(query, groupID).Scan(&adminId)
+			h.db.QueryRow(`SELECT creator_id FROM groups  WHERE id = ?`, groupID).Scan(&userID)
 			id, _ := insertNotification(h.db, &notificationToInsert{
 				RelatedId: int(joinReqId),
 				SenderId:  joinSender,
-				ReciverId: adminId,
+				ReciverId: userID,
 				Type:      "group join request",
 			})
 
@@ -164,6 +163,14 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "DELETE" {
 		_, err := h.db.Exec("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID)
 		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+
+		log.Println(joinSender, userID)
+		_, err = h.db.Exec("DELETE FROM notifications WHERE sender_id = ?", joinSender)
+		if err != nil {
+			log.Println(err)
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
