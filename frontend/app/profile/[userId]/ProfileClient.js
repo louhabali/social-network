@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import Post from "@/components/post";
 import Image from "next/image";
 import "../../styles/profile.css";
@@ -82,14 +82,34 @@ export default function ProfileClient({ profile, userId }) {
   }, [fetchPosts, loading, hasMore]);
 
   async function onFollowToggle() {
-    const method = followStatus !== "" ? "DELETE" : "POST";
+    const method = followStatus ? "DELETE" : "POST";
     const res = await fetch(`http://localhost:8080/api/profile/${userId}/follow`, {
       method,
       credentials: "include",
     });
 
     if (res.ok) {
-      setFollowStatus(followStatus !== "" ? "" : "pending");
+
+      if (method === "DELETE") {
+        if (followStatus === 'approved') {
+          profile.followers = profile.followers.filter(f => f.id !== profile.userid);
+        }
+        setFollowStatus("");
+      } else if (method === "POST") {
+        const p = await res.json().catch(() => null);
+        if (p) {
+          profile.followers = profile.followers ? [...profile.followers, {
+            id: p.ID,
+            fname: p.Firstname,
+            lname: p.Lastname
+          }] : [{
+            id: p.ID,
+            fname: p.Firstname,
+            lname: p.Lastname
+          }];
+        }        
+        setFollowStatus(p ? "approved" : "pending");
+      }
     }
   }
 
@@ -183,7 +203,7 @@ export default function ProfileClient({ profile, userId }) {
               {posts.length === 0 ? (
                 <p className="no-content">No posts yet!</p>
               ) : (
-                posts.map((post) => <Post key={post.Pid} post={post}/>)
+                posts.map((post) => <Post key={post.Pid} post={post} />)
               )}
               {hasMore && <div id="load-more" className="load-more" />}
               {loading && <p className="loading">Loading...</p>}
@@ -215,7 +235,7 @@ export default function ProfileClient({ profile, userId }) {
               {profile.following?.length > 0 ? (
                 <div className="user-list">
                   {profile.following.map((followingUser) => (
-                    <div key={followingUser.id } className="following-item user-item">
+                    <div key={followingUser.id} className="following-item user-item">
                       <a href={`/profile/${followingUser.id}`} className="user-link">
                         {followingUser.fname} {followingUser.lname}
                       </a>

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 )
 
 type Follower struct {
@@ -43,9 +42,11 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching followers:", err)
 	}
 
-	posts, totalPosts,err := getPostsByUserID(h.db, userID)
+	whereClause := " WHERE user_id = ? AND group_id = 0"
+	posts, err := h.getPostsWithPrivacy(fid, whereClause, []interface{}{userID},0)
 	if err != nil {
-		fmt.Println("Error fetching posts:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	following, err := getFollowing(h.db, userID)
@@ -53,6 +54,10 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching following:", err)
 	}
 
+	totalPosts, err := getUserPostCount(h.db,userID)
+	if err != nil {
+		fmt.Println("Error fetching total posts:", err)
+	}
 	response := struct {
 		User         User       `json:"user"`
 		Posts        []Post     `json:"posts"`
@@ -75,35 +80,13 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func getPostsByUserID(db *sql.DB, userID int) ([]Post, int,error) {
-	var totalPosts int
-	err := db.QueryRow("SELECT COUNT(*) FROM posts WHERE user_id = ? AND group_id = 0", userID).Scan(&totalPosts)
+func getUserPostCount(db *sql.DB, userID int) (int, error) {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM posts WHERE user_id = ? AND group_id = 0", userID).Scan(&count)
 	if err != nil {
-		return nil, 0, err
+		return 0, err
 	}
-
-	rows, _ := db.Query(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar
-        FROM posts
-        JOIN users ON posts.user_id = users.id  WHERE posts.user_id = ? AND group_id = 0 ORDER BY posts.id DESC LIMIT ? OFFSET ?`, userID, 4, 0)
-
-	var posts []Post
-	for rows.Next() {
-		var post Post
-		var timeCreated time.Time
-		var firstName, lastName string
-		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &firstName, &lastName, &post.Avatar)
-		post.Username = firstName + " " + lastName
-		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
-		if post.Avatar != nil {
-			*post.Avatar, _ = EncodeImg(*post.Avatar)
-		}
-		db.QueryRow("SELECT COUNT(*) FROM Comments WHERE PostID = ?", post.Pid).Scan(&post.NbComment)
-		post.Likes = getPostLikeDisLike(post.Pid, 1, db)
-		post.Dislikes = getPostLikeDisLike(post.Pid, -1, db)
-		post.UserInteraction = getPostInteractions(post.Pid, userID, db)
-		posts = append(posts, post)
-	}
-	return posts, totalPosts,nil
+	return count, nil
 }
 
 func getUserInfo(db *sql.DB, userID int) (User, error) {
@@ -140,13 +123,10 @@ func getFollowers(db *sql.DB, userID int) ([]Follower, error) {
 
 func getFollowing(db *sql.DB, userID int) ([]Follower, error) {
 	rows, _ := db.Query(`
-		SELECT 
-    users.id, users.first_name, users.last_name, users.nickname 
-	FROM users
-	JOIN follow_requests ON (users.id = follow_requests.following_id AND follow_requests.follower_id = ?)
-    OR (users.id = follow_requests.follower_id AND follow_requests.following_id = ?)
-	WHERE follow_requests.status = 'approved';
-	`, userID,userID)
+		SELECT users.id, users.first_name, users.last_name, users.nickname FROM users
+		JOIN follow_requests ON users.id = follow_requests.following_id
+		WHERE follow_requests.follower_id = ? AND follow_requests.status = 'approved';
+	`, userID, userID)
 
 	var following []Follower
 	for rows.Next() {

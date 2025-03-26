@@ -3,9 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"html"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -25,42 +25,36 @@ type Post struct {
 	UserInteraction int
 }
 
-func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getPostsWithPrivacy(userID int, baseWhere string, args []interface{},offset int) ([]Post, error) {
+	privacyWhere := `
+        AND (
+            posts.privacy = 'public' 
+            OR posts.user_id = ? 
+            OR (posts.privacy = 'almost_private' AND EXISTS (
+                SELECT 1 FROM follow_requests 
+                WHERE follower_id = ? AND following_id = posts.user_id AND status = 'approved'
+            )) 
+            OR (posts.privacy = 'private' AND EXISTS (
+                SELECT 1 FROM post_privacy_users 
+                WHERE post_id = posts.id AND user_id = ?
+            ))
+        )`
 
-	offset := r.URL.Query().Get("offset")
-	groupId := r.URL.Query().Get("groupId")
-	userId := r.URL.Query().Get("userId")
-
-	userID, ok := r.Context().Value("userID").(int)
-	if !ok {
-		fmt.Println("invalid userId")
-		return
-	}
+	args = append(args, userID, userID, userID)
 
 	query := `
-	SELECT posts.id, posts.user_id, posts.created_at, posts.content, posts.image_path, posts.privacy, users.first_name, users.last_name, users.avatar
-	FROM posts
-	JOIN users ON posts.user_id = users.id
-	`
-	var args []interface{}
-	if groupId != "" {
-		query += " WHERE group_id = ?"
-		args = append(args, groupId)
-	} else {
-		query += " WHERE group_id IS 0"
-		if userId != "" {
-			query += " AND user_id = ?"
-			args = append(args, userId)
-		}
-	}
-	fmt.Println(offset, groupId, userId)
-	query += " ORDER BY posts.id DESC LIMIT 4 OFFSET ?"
+        SELECT posts.id, posts.user_id, posts.created_at, posts.content, 
+               posts.image_path, posts.privacy, 
+               users.first_name, users.last_name, users.avatar,
+               (SELECT COUNT(*) FROM comments WHERE post_id = posts.id) AS comment_count
+        FROM posts
+        JOIN users ON posts.user_id = users.id
+        ` + baseWhere + privacyWhere + `
+        ORDER BY posts.id DESC LIMIT 4 OFFSET ?`
 	args = append(args, offset)
-
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -68,35 +62,60 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var post Post
 		var timeCreated time.Time
-		var firstname, lastname string
-		rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content, &post.Image, &post.Privacy, &firstname, &lastname, &post.Avatar)
+		var firstName, lastName string
+
+		err := rows.Scan(&post.Pid, &post.Uid, &timeCreated, &post.Content,
+			&post.Image, &post.Privacy, &firstName, &lastName, &post.Avatar, &post.NbComment)
+		if err != nil {
+			return nil, err
+		}
+
 		post.Content = html.UnescapeString(post.Content)
-		post.Username = strings.Join([]string{firstname, lastname}, " ")
+		post.Username = firstName + " " + lastName
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
+
 		if post.Avatar != nil {
 			*post.Avatar, _ = EncodeImg(*post.Avatar)
 		}
-		h.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", post.Pid).Scan(&post.NbComment)
+
 		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
 
-		if post.Privacy == "almost_private" {
-			isApproved := ""
-			err = h.db.QueryRow("SELECT status FROM follow_requests WHERE (follower_id = ? AND following_id = ?) OR (following_id = ? AND follower_id = ?); ", post.Uid, userID, post.Uid, userID).Scan(&isApproved)
+		posts = append(posts, post)
+	}
 
-			if err == nil && isApproved == "approved" || post.Uid == userID {
-				posts = append(posts, post)
-			}
-		} else if post.Privacy == "private" {
-			exist := 0
-			h.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM post_privacy_users WHERE post_id = ? AND user_id = ?)`, post.Pid, userID).Scan(&exist)
-			if exist == 1 || post.Uid == userID {
-				posts = append(posts, post)
-			}
+	return posts, nil
+}
 
-		} else if post.Privacy == "public" {
-			posts = append(posts, post)
+func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	groupId := r.URL.Query().Get("groupId")
+	userId := r.URL.Query().Get("userId")
+
+	var baseWhere string
+	var args []interface{}
+
+	if groupId != "" {
+		baseWhere = " WHERE posts.group_id = ?"
+		args = append(args, groupId)
+	} else {
+		baseWhere = " WHERE posts.group_id = 0"
+		if userId != "" {
+			baseWhere += " AND posts.user_id = ?"
+			args = append(args, userId)
 		}
+	}
+
+	posts, err := h.getPostsWithPrivacy(userID, baseWhere, args,offset)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

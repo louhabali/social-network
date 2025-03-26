@@ -17,24 +17,38 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
-		res, err := h.db.Exec("INSERT INTO follow_requests (follower_id, following_id) VALUES (?, ?)", followerID, userID)
-		if err != nil {
-			http.Error(w, "Database error", http.StatusInternalServerError)
-			return
-		}
 
-		reqId, err := res.LastInsertId()
-		
-		err = insertNotification(h.db, &notificationToInsert{
-			SenderId: followerID,
-			ReciverId: userID,
-			RelatedId: int(reqId),
-			Type: "follow reqeust",
-		})
+		var isPublic bool
+		h.db.QueryRow("SELECT is_public FROM users WHERE id = ?", userID).Scan(&isPublic)
 
-		if err != nil {
-			http.Error(w, "Database error", http.StatusInternalServerError)
-			return
+		if !isPublic {
+			res, err := h.db.Exec("INSERT INTO follow_requests (follower_id, following_id) VALUES (?, ?)", followerID, userID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			reqId, err := res.LastInsertId()
+
+			err = insertNotification(h.db, &notificationToInsert{
+				SenderId:  followerID,
+				ReciverId: userID,
+				RelatedId: int(reqId),
+				Type:      "follow reqeust",
+			})
+
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			_, err := h.db.Exec("INSERT INTO follow_requests (follower_id, following_id,status) VALUES (?, ?, 'approved')", followerID, userID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			user, _ := getUserInfo(h.db, followerID)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(user)
 		}
 
 	} else if r.Method == "DELETE" {
@@ -44,7 +58,7 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err = h.db.Exec("DELETE FROM notifications WHERE sender_id = ? AND recever_id = ?", followerID, userID) 
+		_, err = h.db.Exec("DELETE FROM notifications WHERE sender_id = ? AND recever_id = ?", followerID, userID)
 		if err != nil {
 			fmt.Println(err)
 		}

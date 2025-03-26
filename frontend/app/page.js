@@ -26,7 +26,7 @@ const HomePage = () => {
     }, [])
 
     // posts
-    const fetchPosts = async () => {
+    const fetchPosts = async () => {        
         if (loading || !hasMore) return;
 
         setLoading(true);
@@ -38,7 +38,6 @@ const HomePage = () => {
             if (!response.ok) {
                 setHasMore(false);
                 throw Error("gg")
-                return;
             }
 
             const data = await response.json();
