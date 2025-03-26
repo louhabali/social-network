@@ -2,12 +2,9 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -43,7 +40,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	whereClause := " WHERE user_id = ? AND group_id = 0"
-	posts, err := h.getPostsWithPrivacy(fid, whereClause, []interface{}{userID},0)
+	posts, err := h.getPostsWithPrivacy(fid, whereClause, []interface{}{userID}, 0)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -54,7 +51,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error fetching following:", err)
 	}
 
-	totalPosts, err := getUserPostCount(h.db,userID)
+	totalPosts, err := getUserPostCount(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching total posts:", err)
 	}
@@ -96,9 +93,10 @@ func getUserInfo(db *sql.DB, userID int) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
-	if user.Avatar != nil {
-		*user.Avatar, _ = EncodeImg(*user.Avatar)
-	}
+	fmt.Println(*user.Avatar)
+	// if user.Avatar != nil {
+	// 	*user.Avatar, _ = EncodeImg(*user.Avatar)
+	// }
 	return user, nil
 }
 
@@ -137,22 +135,22 @@ func getFollowing(db *sql.DB, userID int) ([]Follower, error) {
 	return following, nil
 }
 
-func EncodeImg(imagePath string) (string, error) {
-	file, err := os.Open(imagePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open image: %w", err)
-	}
-	defer file.Close()
+// func EncodeImg(imagePath string) (string, error) {
+// 	file, err := os.Open(imagePath)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to open image: %w", err)
+// 	}
+// 	defer file.Close()
 
-	imageBytes, err := io.ReadAll(file)
-	if err != nil {
-		return "", fmt.Errorf("failed to read image file: %w", err)
-	}
+// 	imageBytes, err := io.ReadAll(file)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to read image file: %w", err)
+// 	}
 
-	if len(imageBytes) == 0 {
-		return "", fmt.Errorf("image file is empty")
-	}
+// 	if len(imageBytes) == 0 {
+// 		return "", fmt.Errorf("image file is empty")
+// 	}
 
-	encodedImage := base64.StdEncoding.EncodeToString(imageBytes)
-	return encodedImage, nil
-}
+// 	encodedImage := base64.StdEncoding.EncodeToString(imageBytes)
+// 	return encodedImage, nil
+// }

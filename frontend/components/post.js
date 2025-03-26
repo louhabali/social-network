@@ -30,7 +30,7 @@ export default function Post({ post }) {
             <div className={styles.postHeader}>
                 <Link href={`/profile/${post.Uid}`}>
                     {post.Avatar ? (
-                        <Image style={{ cursor: "pointer", borderRadius: "50%" }} src={`data:image/png;base64,${post.Avatar}`} alt="" width={32} height={32} />
+                        <Image style={{ cursor: "pointer", borderRadius: "50%" }} src={`http://localhost:8080/api/images/${post.Avatar}`} alt="" width={32} height={32} />
                     ) : (
                         <Image style={{ cursor: "pointer", borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
                     )}

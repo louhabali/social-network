@@ -120,7 +120,7 @@ export default function ProfileClient({ profile, userId }) {
         <div className="profile-info">
           <div className="profile-avatar">
             {profile.user.Avatar ? (
-              <Image src={`data:image/png;base64,${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
+              <Image src={`http://localhost:8080/api/images/${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
             ) : (
               <Image src="/image/no-avatar.png" alt="No Avatar" width={120} height={120} />
             )}

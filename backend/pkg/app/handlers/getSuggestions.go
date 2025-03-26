@@ -23,9 +23,9 @@ func (h Handler) Suggestions(w http.ResponseWriter, r *http.Request) {
     for rows.Next() {
         var nf Follower
         rows.Scan(&nf.ID, &nf.Firstname, &nf.Lastname, &nf.Avatar)
-        if nf.Avatar != nil {
-            *nf.Avatar, _ = EncodeImg(*nf.Avatar)
-        }
+        // if nf.Avatar != nil {
+        //     *nf.Avatar, _ = EncodeImg(*nf.Avatar)
+        // }
         notFollowing = append(notFollowing, nf)
     }
     fmt.Println("nf: ", notFollowing)

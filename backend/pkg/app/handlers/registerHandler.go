@@ -101,10 +101,16 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		file, header, err := r.FormFile("avatar")
+
+		if header.Size > 1024 * 1024 {
+			http.Error(w, "File too large. Max size is 1MB", http.StatusBadRequest)
+			return
+		}
+		
 		if err == nil {
 			defer file.Close()
 			extensions := path.Ext(header.Filename)
-			if !IsValidImageExtension(extensions) {
+			if !IsValidImageExtensionR(extensions) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
 				json.NewEncoder(w).Encode("Invalid image type. Supported formats: JPEG, PNG, GIF")

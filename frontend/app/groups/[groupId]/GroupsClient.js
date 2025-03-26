@@ -2,14 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Post from "@/components/post";
-import PostForm from "@/components/postForm";
+import PostForm from "@/components/groupsPostForm";
 import InviteUsers from "./InviteUsers";
 import './GroupClient.css';
 
 export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
     const [posts, setPosts] = useState(initialPosts || []);
     const [events, setEvents] = useState([]);
-    const [offset, setOffset] = useState(0);
+    const [offset, setOffset] = useState(initialPosts.length);
     const [loading, setLoading] = useState(false);
     const [loadingEvents, setLoadingEvents] = useState(false);
     const [hasMore, setHasMore] = useState(true);

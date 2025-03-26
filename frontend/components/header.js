@@ -147,7 +147,7 @@ const Header = () => {
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                         {u.Avatar ? (
                             <img
-                                 src={`data:image/png;base64,${u.Avatar}`} alt="user"
+                                 src={`http://localhost:8080/api/images/${u.Avatar}`} alt="user"
                                 className={styles.userAvatar}
                                 width={20} height={20}
                             />
@@ -218,7 +218,7 @@ const Header = () => {
                         <div className={styles.userMenuIcon}>
                             {u.Avatar ? (
                                 <img
-                                    src={u.Avatar}
+                                    src={`http://localhost:8080/api/images/${u.Avatar}`}
                                     alt={u.Firstname}
                                     className={styles.mobileUserAvatar}
                                     width={20} height={20}

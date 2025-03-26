@@ -40,7 +40,7 @@ export default function SearchResults() {
                         <li style={{ listStyle:"none",marginBottom:"10px"}} key={index}>
                             <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/profile/${user.Uid}`}>
                              {user.Avatar ? (
-                                <Image src={`data:image/png;base64,${user.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
+                                <Image src={`http://localhost:8080/api/images/${user.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
                                
                                 ) : (
                                 <Image src="/image/no-avatar.png" alt="" width={32} height={32} />

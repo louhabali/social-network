@@ -74,9 +74,9 @@ func (h *Handler) getPostsWithPrivacy(userID int, baseWhere string, args []inter
 		post.Username = firstName + " " + lastName
 		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 
-		if post.Avatar != nil {
-			*post.Avatar, _ = EncodeImg(*post.Avatar)
-		}
+		// if post.Avatar != nil {
+		// 	*post.Avatar, _ = EncodeImg(*post.Avatar)
+		// }
 
 		post.Likes = getPostLikeDisLike(post.Pid, 1, h.db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, h.db)
@@ -140,9 +140,9 @@ func GetPost(db *sql.DB, postID, userID int) Post {
 	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", p.Pid).Scan(&p.NbComment)
 	p.Likes = getPostLikeDisLike(p.Pid, 1, db)
 	p.UserInteraction = getPostInteractions(p.Pid, userID, db)
-	if p.Avatar != nil {
-		*p.Avatar, _ = EncodeImg(*p.Avatar)
-	}
+	// if p.Avatar != nil {
+	// 	*p.Avatar, _ = EncodeImg(*p.Avatar)
+	// }
 	p.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 	return p
 }

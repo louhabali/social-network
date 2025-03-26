@@ -26,9 +26,9 @@ func (h *Handler) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	for rws.Next() {
 		var U searchusers
 		rws.Scan(&U.Uid ,&U.Fname, &U.Lname, &U.Avatar)
-		if U.Avatar != nil {
-			*U.Avatar,_  = EncodeImg(*U.Avatar)
-		}
+		// if U.Avatar != nil {
+		// 	*U.Avatar,_  = EncodeImg(*U.Avatar)
+		// }
 		
 		Us = append(Us, U)
 	}

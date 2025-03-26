@@ -18,6 +18,15 @@ export default function ClientSideComments({ postId, lenComments, initialComment
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
+            if (file.size > 4 * 1024 * 1024) {
+                // setErrorMessage("Profile image must be less than 2MB");
+                return;
+              }
+              const allowedTypes = ['image/jpeg', 'image/png'];
+              if (!allowedTypes.includes(file.type)) {
+                // setErrorMessage("Only JPG or PNG images are allowed");
+                return;
+              }
             setSelectedImage(URL.createObjectURL(file));
             setSendImage(file);
         }
@@ -109,7 +118,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                     <div key={comment.Id} className="comment-item">
                         <div className="comment-avatar">
                             {comment.Avatar ? (
-                                <Image src={`data:image/png;base64,${comment.Avatar}`} alt="" width={32} height={32} />
+                                <Image src={`http://localhost:8080/api/images/${comment.Avatar}`} alt="" width={32} height={32} />
                             ) : (
                                 <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
                             )}

@@ -44,6 +44,15 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
+            if (file.size > 4*1024 * 1024) {
+                // setErrorMessage("Profile image must be less than 2MB");
+                return;
+              }
+              const allowedTypes = ['image/jpeg', 'image/png'];
+              if (!allowedTypes.includes(file.type)) {
+                // setErrorMessage("Only JPG or PNG images are allowed");
+                return;
+              }
             setSelectedImage(URL.createObjectURL(file));
             setSendImage(file);
         }
@@ -98,7 +107,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             <div className="create-post">
                 <div className="user-avatar">
                     {userInfo && userInfo.Avatar ? (
-                        <Image src={`data:image/png;base64,${userInfo.Avatar}`} alt="User Avatar" width={40} height={40} />
+                        <Image src={`http://localhost:8080/api/images/${userInfo.Avatar}`} alt="User Avatar" width={40} height={40} />
                     ) : (
                         <Image src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} />
                     )}

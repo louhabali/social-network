@@ -26,13 +26,19 @@ export default function RegisterPage() {
   }
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, avatar: e.target.files[0] })
-    if (e.target.files[0]) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result)
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        setErrorMessage("Profile image must be less than 2MB");
+        return;
       }
-      reader.readAsDataURL(e.target.files[0])
+      const allowedTypes = ['image/jpeg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        setErrorMessage("Only JPG or PNG images are allowed");
+        return;
+      }
+      setAvatarPreview(URL.createObjectURL(file));
+      setFormData({ ...formData, avatar: e.target.files[0] })
     }
   }
 
@@ -113,7 +119,7 @@ export default function RegisterPage() {
                 {avatarPreview ? "Change Image" : "Choose Profile Picture"}
               </label>
               {avatarPreview && (
-                <button type="button" className={styles.avatarUploadBtn} style={{ backgroundColor: "red" }} onClick={() => { setAvatarPreview(null); setFormData({ ...formData, avatar: null }); }}>
+                <button type="button" className={styles.avatarUploadBtn} style={{ backgroundColor: "red" }} onClick={() => { setAvatarPreview(null); setFormData({ ...formData, avatar: null });document.getElementById("avatarInput").value = "";}}>
                   Cancel
                 </button>
               )}

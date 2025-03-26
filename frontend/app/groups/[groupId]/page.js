@@ -41,11 +41,11 @@ async function fetchUserInfo() {
     return res.json();
 }
 
-async function getPosts() {
+async function getPosts(groupId) {
     const cookieStore = cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
-    const res = await fetch(`http://localhost:8080/api/posts`, {
+    const res = await fetch(`http://localhost:8080/api/posts?groupId=${groupId}`, {
         headers: {
             Cookie: sessionToken ? `Token=${sessionToken}` : "",
         },
@@ -57,7 +57,7 @@ async function getPosts() {
 
 export default async function GroupDetailsPage({ params }) {
     const group = await fetchGroupById(params.groupId);
-    const initialPosts = await getPosts();
+    const initialPosts = await getPosts(params.groupId);
     const userInfo = await fetchUserInfo();
 
     if (group.error) {        

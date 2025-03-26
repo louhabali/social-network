@@ -41,6 +41,11 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if header.Size > 4 * 1024 * 1024 {
+			http.Error(w, "File too large. Max size is 2MB", http.StatusBadRequest)
+			return
+		}
+
 		if err == nil {
 			defer file.Close()
 			extensions := path.Ext(header.Filename)
@@ -92,6 +97,17 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 func IsValidImageExtension(fileExt string) bool {
 	allowedExtensions := []string{".jpg", ".jpeg", ".png", ".gif"}
+	lowerFileExt := strings.ToLower(fileExt)
+	for _, ext := range allowedExtensions {
+		if ext == lowerFileExt {
+			return true
+		}
+	}
+	return false
+}
+
+func IsValidImageExtensionR(fileExt string) bool {
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 	lowerFileExt := strings.ToLower(fileExt)
 	for _, ext := range allowedExtensions {
 		if ext == lowerFileExt {

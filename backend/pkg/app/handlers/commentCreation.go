@@ -98,9 +98,9 @@ func (h *Handler) CommentCreationHandler(w http.ResponseWriter, r *http.Request)
 			comment.Content = html.UnescapeString(comment.Content)
 			comment.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 			comment.Username = strings.Join([]string{fistname, lastname}, " ")
-			if comment.Avatar != nil {
-				*comment.Avatar, _ = EncodeImg(*comment.Avatar)
-			}
+			// if comment.Avatar != nil {
+			// 	*comment.Avatar, _ = EncodeImg(*comment.Avatar)
+			// }
 			comments = append(comments, comment)
 		}
 
@@ -122,9 +122,9 @@ func GetComment(db *sql.DB, commentID int) Comment {
 			JOIN users ON comments.user_id = users.id WHERE comments.id = ? `, commentID).Scan(&c.Id, &c.Content, &c.Image, &fistname, &lastname, &timeCreated, &c.Avatar)
 	c.Username = strings.Join([]string{fistname, lastname}, " ")
 	c.Content = html.UnescapeString(c.Content)
-	if c.Avatar != nil {
-		*c.Avatar, _ = EncodeImg(*c.Avatar)
-	}
+	// if c.Avatar != nil {
+	// 	*c.Avatar, _ = EncodeImg(*c.Avatar)
+	// }
 	c.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
 	return c
 }
