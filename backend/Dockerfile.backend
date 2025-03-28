@@ -1,0 +1,28 @@
+FROM golang:1.22.6-alpine
+
+
+RUN apk add --no-cache gcc musl-dev bash sqlite sqlite-dev
+
+
+WORKDIR /app
+
+
+COPY go.mod go.sum ./
+
+
+RUN go mod download && go mod tidy
+
+
+COPY . .
+
+
+RUN go build -o main .
+
+
+LABEL project="sociale network"
+LABEL version = "1"
+LABEL team = ""
+
+
+CMD ["./main"]
+
