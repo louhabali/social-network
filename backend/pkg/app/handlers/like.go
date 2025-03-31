@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+
+	"main/pkg/app/models"
 )
 
 func (h *Handler) LikeHandler(w http.ResponseWriter, r *http.Request) {
@@ -11,25 +12,21 @@ func (h *Handler) LikeHandler(w http.ResponseWriter, r *http.Request) {
 		Pid      int `json:"postId"`
 		Interact int `json:"likeStatus"`
 	}
-	json.NewDecoder(r.Body).Decode(&data)
-	userID, ok := r.Context().Value("userID").(int)
 
-	fmt.Println(data.Pid, userID, data.Interact)
-	if !ok {
-		fmt.Println("invalid userId")
-		return
-	}
-
-	query := `
-		INSERT INTO post_interactions (user_id, post_id, interaction)
-		VALUES (?, ?, ?)
-		ON CONFLICT(user_id, post_id) DO UPDATE SET interaction=excluded.interaction
-	`
-
-	_, err := h.db.Exec(query, userID, data.Pid, data.Interact)
+	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+	r.Body.Close()
+
+	userID := r.Context().Value("userID").(int)
+
+	err = models.InsertOrUpdateLike(h.db, userID, data.Pid, data.Interact)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }

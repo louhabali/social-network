@@ -2,117 +2,87 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"html"
 	"io"
+	"main/pkg/app/models"
+	"main/pkg/app/utils"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
-	"strings"
-	"time"
 )
 
+// Handle post creation
 func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		err := r.ParseMultipartForm(10 << 20)
-		if err != nil {
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			return
-		}
-		userID, ok := r.Context().Value("userID").(int)
-		if !ok {
-			fmt.Println("invalid userId")
-			return
-		}
-		p := Post{
-			Content: r.FormValue("content"),
-			Privacy: r.FormValue("privacy"),
-		}
-
-		groupID, _ := strconv.Atoi(r.FormValue("groupId"))
-
-		file, header, err := r.FormFile("image")
-
-		if p.Content == "" && file == nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode("all fields are required")
-			return
-		}
-
-		if header.Size > 4 * 1024 * 1024 {
-			http.Error(w, "File too large. Max size is 2MB", http.StatusBadRequest)
-			return
-		}
-
-		if err == nil {
-			defer file.Close()
-			extensions := path.Ext(header.Filename)
-			if !IsValidImageExtension(extensions) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode("Invalid image type. Supported formats: JPEG, PNG, GIF")
-				return
-			}
-			rand, _ := GenereteTocken()
-			name := rand + extensions
-			imagePath := "uploads/images/" + name
-			out, err := os.Create(imagePath)
-			if err != nil {
-				http.Error(w, "Failed to save image", http.StatusInternalServerError)
-				return
-			}
-			defer out.Close()
-			io.Copy(out, file)
-			p.Image = &imagePath
-		}
-
-		postID := 0
-
-		err = h.db.QueryRow(`INSERT INTO posts (user_id, content,privacy, image_path, group_id) VALUES (?, ?, ?, ?, ?) RETURNING id`, userID, html.EscapeString(p.Content), p.Privacy, p.Image, groupID).Scan(&postID)
-		if err != nil {
-			fmt.Println("err01 ", err)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode("failed to insert the post")
-			return
-		}
-		selectUsers := r.Form["selectedUsers"]
-		fmt.Println("selectUsers", selectUsers)
-		if len(selectUsers) > 0 {
-			for _, sID := range selectUsers {
-				i, _ := strconv.Atoi(sID)
-				h.db.Exec(`INSERT INTO post_privacy_users (user_id, post_id, created_at) VALUES (?, ?, ?)`, i, postID, time.Now())
-			}
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(GetPost(h.db, postID,userID))
-
-	} else {
+	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-}
 
-func IsValidImageExtension(fileExt string) bool {
-	allowedExtensions := []string{".jpg", ".jpeg", ".png", ".gif"}
-	lowerFileExt := strings.ToLower(fileExt)
-	for _, ext := range allowedExtensions {
-		if ext == lowerFileExt {
-			return true
-		}
+	err := r.ParseMultipartForm(10 << 20) // 10MB limit
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
 	}
-	return false
-}
 
-func IsValidImageExtensionR(fileExt string) bool {
-	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
-	lowerFileExt := strings.ToLower(fileExt)
-	for _, ext := range allowedExtensions {
-		if ext == lowerFileExt {
-			return true
-		}
+	userID := r.Context().Value("userID").(int)
+
+	content := r.FormValue("content")
+	privacy := r.FormValue("privacy")
+	groupID, _ := strconv.Atoi(r.FormValue("groupId"))
+	file, header, err := r.FormFile("image")
+
+	if content == "" && file == nil {
+		http.Error(w, "Content or image is required", http.StatusBadRequest)
+		return
 	}
-	return false
+
+	var imagePath *string
+	if err == nil { // If an image is uploaded
+		defer file.Close()
+		fileExt := path.Ext(header.Filename)
+
+		// Validate image format and size
+		if err := utils.ValidatePostImage(fileExt, header.Size); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Generate unique file name
+		rand, _ := utils.GenerateToken()
+		imageName := rand + fileExt
+		fullPath := "uploads/images/" + imageName
+
+		// Save image to disk
+		out, err := os.Create(fullPath)
+		if err != nil {
+			http.Error(w, "Failed to save image", http.StatusInternalServerError)
+			return
+		}
+		defer out.Close()
+		io.Copy(out, file)
+
+		imagePath = &fullPath
+	}
+
+	// Create post in database
+	postID, err := models.CreatePost(h.db, userID, content, privacy, imagePath, groupID)
+	if err != nil {
+		http.Error(w, "Failed to insert post", http.StatusInternalServerError)
+		return
+	}
+
+	// Process selected users for privacy settings
+	var selectedUsers []int
+	for _, sID := range r.Form["selectedUsers"] {
+		i, _ := strconv.Atoi(sID)
+		selectedUsers = append(selectedUsers, i)
+	}
+	if err := models.AddPostPrivacy(h.db, postID, selectedUsers); err != nil {
+		http.Error(w, "Failed to set post privacy", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with created post
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(models.GetPost(h.db, postID, userID))
 }

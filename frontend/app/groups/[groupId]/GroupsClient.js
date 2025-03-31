@@ -9,7 +9,7 @@ import './GroupClient.css';
 export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
     const [posts, setPosts] = useState(initialPosts || []);
     const [events, setEvents] = useState([]);
-    const [offset, setOffset] = useState(initialPosts.length);
+    const [offset, setOffset] = useState(initialPosts?.length);
     const [loading, setLoading] = useState(false);
     const [loadingEvents, setLoadingEvents] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -20,6 +20,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
         title: "",
         description: "",
         date: "",
+        user_response: "",
     });
     const [memberStatus, setMemberStatus] = useState(status)
     const [eventOffset, setEventOffset] = useState(0);
@@ -54,7 +55,6 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             setLoading(false);
         }
     };
-    console.log(eventOffset);
 
     const fetchEvents = async () => {
         if (loadingEvents || !hasMoreEvents) return;
@@ -66,8 +66,8 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             });
             if (response.ok) {
                 const data = await response.json();
-                console.log(eventOffset, data);
-
+                console.log(data);
+                
                 if (data === null) {
                     setHasMoreEvents(false);
                     setLoadingEvents(false)
@@ -131,10 +131,11 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
             if (response.ok) {
                 const createdEvent = await response.json();
+                
                 setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents] : [createdEvent]);
                 setEventOffset(prevOffset => prevOffset + 1);
                 setShowEventForm(false);
-                setNewEvent({ title: "", description: "", date: "" });
+                setNewEvent({ title: "" , description: "", date: "", user_response: "" });
 
             } else {
                 console.log("Failed to create event");
@@ -155,12 +156,12 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
         setEvents((prevEvents) => {
             return prevEvents.map((event) => {
                 if (event.id === eventId) {
-                    
+
                     let user_response = event.user_response === response ? null : response;
-                    
+
                     let going_count = event.going_count;
                     let not_going_count = event.not_going_count;
-                    
+
                     if (event.user_response === "going") {
                         going_count -= 1;
                     } else if (event.user_response === "not_going") {
@@ -183,8 +184,8 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
                 return event;
             });
         });
-        
-        
+
+
     };
 
     async function handleJoinGroup() {
@@ -215,7 +216,6 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             </div>
         );
     }
-    console.log(events);
 
     return (
         <div className="group-container">
@@ -313,6 +313,15 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
                         <input type="text" placeholder="Title" value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
                         <textarea placeholder="Description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
                         <input type="datetime-local" value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
+                        <div className="radio-group">
+
+                            <input type="radio" id="going" value="going" checked={newEvent.user_response === "going"} onChange={() => setNewEvent({ ...newEvent, user_response: "going" })} />
+                            <label htmlFor="going">Going</label>
+
+                            <input type="radio" id="not-going" value="not_going" checked={newEvent.user_response === "not_going"} onChange={() => setNewEvent({ ...newEvent, user_response: "not_going" })} />
+                            <label htmlFor="not-going">Not Going</label>
+                        </div>
+
                         <div className="popup-actions">
                             <button onClick={handleCreateEvent}>Create</button>
                             <button onClick={() => setShowEventForm(false)}>Cancel</button>

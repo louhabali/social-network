@@ -8,8 +8,18 @@ export default function InviteUsers({ groupId }) {
   const [offset, setOffset] = useState(0);
   const [invitedUsers, setInvitedUsers] = useState({});
 
+    useEffect(() => {
+        if (showPopup) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+        
+        return () => {
+            document.body.style.overflow = "auto"; 
+        };
+    }, [showPopup]);
 
-  console.log(users);
   
   const fetchUsers = async (reset = false) => {
     const res = await fetch(
@@ -17,12 +27,13 @@ export default function InviteUsers({ groupId }) {
       { credentials: "include" }
     );
     const data = await res.json();
+    
     if (reset) {
       setUsers(data);
-      setOffset(4);
+      setOffset(6);
     } else {
       setUsers((prev) => data ? [...prev, ...data]:[...prev]);
-      setOffset((prev) => prev + 4);
+      setOffset((prev) => prev + 6);
     }
   };
   
@@ -38,6 +49,8 @@ export default function InviteUsers({ groupId }) {
       credentials: "include",
       body: JSON.stringify({ userId }),
     });
+    console.log(userId);
+    
     setInvitedUsers((prev) => ({ ...prev, [userId]: true }));
 
   };
@@ -62,12 +75,12 @@ export default function InviteUsers({ groupId }) {
             }
           }}>
               {users?.map((user) => (
-                <li key={user.id}>
-                  {user.name}
-                  {invitedUsers[user.id] ? (
+                <li key={user.ID}>
+                  {user.Firstname} {user.Lastname}
+                  {invitedUsers[user.ID] ? (
                     <button disabled>Done</button>
                   ) : (
-                    <button onClick={() => inviteUser(user.id)}>Invite</button>
+                    <button onClick={() => inviteUser(user.ID)}>Invite</button>
                   )}                
                 </li>
               ))}

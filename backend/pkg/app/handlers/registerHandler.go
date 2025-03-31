@@ -2,32 +2,15 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path"
-	"regexp"
-	"time"
 
-	"github.com/gofrs/uuid"
-	"golang.org/x/crypto/bcrypt"
+	"main/pkg/app/models"
+	"main/pkg/app/utils"
 )
-
-type User struct {
-	ID          int
-	Nickname    *string
-	Firstname   string
-	Lastname    string
-	Email       string
-	Password    string
-	DateOfBirth string
-	AboutMe     string
-	Avatar      *string
-	IsPublic    bool
-}
 
 type Handler struct {
 	db *sql.DB
@@ -38,147 +21,91 @@ func NewHandler(db *sql.DB) *Handler {
 }
 
 func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		// decode the request body
-		err := r.ParseMultipartForm(10 << 20)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("failed to decode the request body"))
-
-			fmt.Println("failed to decode the request body", err)
-			return
-		}
-
-		reg := User{
-			Firstname:   r.FormValue("firstName"),
-			Lastname:    r.FormValue("lastName"),
-			Email:       r.FormValue("email"),
-			Password:    r.FormValue("password"),
-			DateOfBirth: r.FormValue("dateOfBirth"),
-			AboutMe:     r.FormValue("aboutMe"),
-		}
-
-		// check if the informations are not empty
-		if reg.DateOfBirth == "" || reg.Firstname == "" || reg.Lastname == "" || reg.Email == "" || reg.Password == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Please fill all the fields"))
-			return
-		}
-
-		if !isValidDateOfBirth(reg.DateOfBirth) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("You must be at least 5 years old"))
-			return
-		}
-
-		if nickname := r.FormValue("nickname"); nickname != "" {
-			reg.Nickname = &nickname
-		}
-		emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-		if !emailRegex.MatchString(reg.Email) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Invalid email format"))
-			return
-		}
-
-		if !isValidPassword(reg.Password) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Password must be at least 8 characters ,include at least one uppercase letter, one lowercase letter, and one number"))
-			return
-		}
-		nameRegex := regexp.MustCompile(`^[a-zA-Z]{1,10}$`)
-		if !nameRegex.MatchString(reg.Firstname) || !nameRegex.MatchString(reg.Lastname) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Firstname and Lastname must contain only letters and be at most 10 characters long"))
-			return
-		}
-
-		// hash the password first
-		hashedPass, err := bcrypt.GenerateFromPassword([]byte(reg.Password), bcrypt.DefaultCost)
-		if err != nil {
-			fmt.Println("failed to hash the password", err)
-			return
-		}
-
-		file, header, err := r.FormFile("avatar")
-
-		if header.Size > 1024 * 1024 {
-			http.Error(w, "File too large. Max size is 1MB", http.StatusBadRequest)
-			return
-		}
-		
-		if err == nil {
-			defer file.Close()
-			extensions := path.Ext(header.Filename)
-			if !IsValidImageExtensionR(extensions) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode("Invalid image type. Supported formats: JPEG, PNG, GIF")
-				return
-			}
-			rand, _ := GenereteTocken()
-			name := rand + extensions
-			avatarPath := "uploads/avatars/" + name
-			out, err := os.Create(avatarPath)
-
-			if err != nil {
-				http.Error(w, "Failed to save avatar", http.StatusInternalServerError)
-				return
-			}
-			defer out.Close()
-			io.Copy(out, file)
-			reg.Avatar = &avatarPath
-		}
-
-		var id int
-		err = h.db.QueryRow(`
-		INSERT INTO users 
-		(nickname,date_of_birth,about_me,first_name,last_name,email,password_hash,avatar) 
-		VALUES 
-		(?,?,?,?,?,?,?,?) RETURNING id`, reg.Nickname, reg.DateOfBirth, reg.AboutMe, reg.Firstname, reg.Lastname, reg.Email, hashedPass, reg.Avatar).Scan(&id)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("failed to insert the user"))
-
-			fmt.Println("failed to insert the user", err)
-			return
-		}
-
-		w.Write([]byte("success"))
-	} else {
+	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-}
 
-func GenereteTocken() (string, error) {
-	u2, err := uuid.NewV4()
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		log.Fatalf("failed to generate UUID: %v", err)
-		return "", err
+		http.Error(w, "Failed to decode the request body", http.StatusBadRequest)
+		return
 	}
-	return u2.String(), nil
-}
-func isValidPassword(password string) bool {
-	if len(password) < 8 {
-		return false
-	}
-	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
-	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
-	hasDigit := regexp.MustCompile(`\d`).MatchString(password)
-	return hasUpper && hasLower && hasDigit
-}
 
-func isValidDateOfBirth(dateStr string) bool {
-	dob, err := time.Parse("2006-01-02", dateStr)
+	user := models.User{
+		Firstname:   r.FormValue("firstName"),
+		Lastname:    r.FormValue("lastName"),
+		Email:       r.FormValue("email"),
+		Password:    r.FormValue("password"),
+		DateOfBirth: r.FormValue("dateOfBirth"),
+		AboutMe:     r.FormValue("aboutMe"),
+	}
+
+	user.Nickname = utils.GetOptionalString(r.FormValue("nickname"))
+
+	// Validate input
+	if user.DateOfBirth == "" || user.Firstname == "" || user.Lastname == "" || user.Email == "" || user.Password == "" {
+		http.Error(w, "Please fill all the fields", http.StatusBadRequest)
+		return
+	}
+
+	if !utils.IsValidDateOfBirth(user.DateOfBirth) {
+		http.Error(w, "You must be at least 5 years old", http.StatusBadRequest)
+		return
+	}
+
+	if !utils.IsValidEmail(user.Email) {
+		http.Error(w, "Invalid email format", http.StatusBadRequest)
+		return
+	}
+
+	if !utils.IsValidPassword(user.Password) {
+		http.Error(w, "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, and one number", http.StatusBadRequest)
+		return
+	}
+
+	if !utils.IsValidName(user.Firstname) || !utils.IsValidName(user.Lastname) {
+		http.Error(w, "Firstname and Lastname must contain only letters and be at most 10 characters long", http.StatusBadRequest)
+		return
+	}
+
+	// Handle avatar upload
+	file, header, err := r.FormFile("avatar")
+	if err == nil {
+		defer file.Close()
+		extension := path.Ext(header.Filename)
+
+		if header.Size > 1024*1024 {
+			http.Error(w, "File too large. Max size is 1MB", http.StatusBadRequest)
+			return
+		}
+
+		if !utils.IsValidAvatarExtension(extension) {
+			http.Error(w, "Invalid avatar type. Allowed: JPEG, PNG", http.StatusBadRequest)
+			return
+		}
+
+		rand, _ := utils.GenerateToken()
+		name := rand + extension
+		path := "uploads/avatars/" + name
+		out, err := os.Create(path)
+
+		if err != nil {
+			http.Error(w, "Failed to save avatar", http.StatusInternalServerError)
+			return
+		}
+		defer out.Close()
+		io.Copy(out, file)
+		user.Avatar = &path
+	}
+
+	// Insert user using models
+	userID, err := user.Insert(h.db)
 	if err != nil {
-		return false
+		http.Error(w, "Failed to insert the user", http.StatusInternalServerError)
+		fmt.Println("Failed to insert user:", err)
+		return
 	}
 
-	age := time.Now().Year() - dob.Year()
-	if time.Now().Month() < dob.Month() || (time.Now().Month() == dob.Month() && time.Now().Day() < dob.Day()) {
-		age--
-	}
-
-	return age >= 5
+	w.Write([]byte(fmt.Sprintf("Success, User ID: %d", userID)))
 }

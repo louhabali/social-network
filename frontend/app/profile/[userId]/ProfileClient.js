@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Post from "@/components/post";
 import Image from "next/image";
+import Link from "next/link"
 import "../../styles/profile.css";
 
 export default function ProfileClient({ profile, userId }) {
@@ -217,9 +218,9 @@ export default function ProfileClient({ profile, userId }) {
                 <div className="user-list">
                   {profile.followers.map((follower) => (
                     <div key={follower.id} className="follower-item user-item">
-                      <a href={`/profile/${follower.id}`} className="user-link">
+                      <Link href={`/profile/${follower.id}`} className="user-link">
                         {follower.fname} {follower.lname}
-                      </a>
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -236,9 +237,9 @@ export default function ProfileClient({ profile, userId }) {
                 <div className="user-list">
                   {profile.following.map((followingUser) => (
                     <div key={followingUser.id} className="following-item user-item">
-                      <a href={`/profile/${followingUser.id}`} className="user-link">
+                      <Link href={`/profile/${followingUser.id}`} className="user-link">
                         {followingUser.fname} {followingUser.lname}
-                      </a>
+                      </Link>
                     </div>
                   ))}
                 </div>

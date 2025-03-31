@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"main/pkg/app/models"
 	"net/http"
 )
 
@@ -12,7 +13,7 @@ func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	var res Response
 	json.NewDecoder(r.Body).Decode(&res)
 	
-	_, err := GetUserIDFromToken(res.Token, h.db)
+	_, err := models.GetUserIDFromToken(res.Token, h.db)
 
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)

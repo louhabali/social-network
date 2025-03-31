@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"main/pkg/app/models"
 )
 
 func (h *Handler) UserData(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,7 @@ func (h *Handler) UserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userInfo, err := getUserInfo(h.db, userID)
+	userInfo, err := models.GetUserInfo(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching profile privacy:", err)
 	}

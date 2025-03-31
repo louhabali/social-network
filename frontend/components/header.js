@@ -8,17 +8,17 @@ import Image from 'next/image';
 
 
 const Header = () => {
-    
+
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [u , setUser] = useState([])
+    const [u, setUser] = useState([])
 
     useEffect(() => {
-                fetch('http://localhost:8080/api/userdata', {
-                credentials: "include",
-            }).then(data => data.json()).then(d => {
-                setUser(d)
-            })
+        fetch('http://localhost:8080/api/userdata', {
+            credentials: "include",
+        }).then(data => data.json()).then(d => {
+            setUser(d)
+        })
     }, []);
 
     const handleLogout = async () => {
@@ -35,17 +35,17 @@ const Header = () => {
             console.error('Logout error:', error);
         }
     };
-  
+
     const [searchData, setSearchData] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-  
+
     function handleSearch(e) {
         setSearchData(e.target.value);
     }
     function handleKeyDown(e) {
         if (e.key === "Enter" && searchData.trim()) {
             setSearchData("");
-            setSearchResults([]); 
+            setSearchResults([]);
             router.push(`/search?q=${encodeURIComponent(searchData)}`);
         }
     }
@@ -62,22 +62,22 @@ const Header = () => {
             body: formDataToSend,
         })
             .then(response => {
-               return response.json();
-                
+                return response.json();
+
             })
             .then(data => {
-                if (data){
+                if (data) {
                     if (data) {
                         setSearchResults(Object.values(data));
                     }
+                    console.log(data);
                 }
-           
-                 //console.log(users);
-                 
+
+
             }
             )
             .catch(error => console.error('error', error));
-}, [searchData])
+    }, [searchData])
     return (
         <>
             {/* Desktop Header */}
@@ -93,21 +93,30 @@ const Header = () => {
                             className={styles.searchInput}
                             value={searchData}
                             onChange={handleSearch}
-                            onKeyDown={handleKeyDown} 
+                            onKeyDown={handleKeyDown}
                         />
-                         {searchResults.length > 0 && (
-                            <div style={{marginTop:"45px",top:"0" ,
-                             width: "206px",
-                              background:"rgb(0, 0, 0)", 
-                              paddingLeft:"5px",
-                               position:"absolute" ,
-                               color:"white"}}>
+                        {searchResults.length > 0 && (
+                            <div style={{
+                                marginTop: "45px", top: "0",
+                                width: "206px",
+                                background: "rgb(0, 0, 0)",
+                                paddingLeft: "5px",
+                                position: "absolute",
+                                color: "white"
+                            }}>
                                 {searchResults.map((user, index) => (
-                                    <p key={index}>{user.Fname} {user.Lname}</p>
-                                 ))}
-                         </div>
-        )}
-                         <div id="s" style={{marginTop:"45px",top:"0" , width: "206px", background:"rgb(0, 0, 0)", paddingLeft:"5px", position:"absolute" ,color:"white"}}></div>
+                                    <p key={index}>
+                                        <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/profile/${user.Uid}`}>
+                                        {user.Avatar ? (
+                                        <Image src={`http://localhost:8080/api/images/${user.Avatar}`} alt="user" style={{ borderRadius: "50%" }} width={32} height={32} />
+
+                                    ) : (
+                                        <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
+                                    )} {user.Fname} {user.Lname}</Link></p>
+                                ))}
+                            </div>
+                        )}
+                        <div id="s" style={{ marginTop: "45px", top: "0", width: "206px", background: "rgb(0, 0, 0)", paddingLeft: "5px", position: "absolute", color: "white" }}></div>
 
                         <button className={styles.searchButton}>
                             {/* <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.searchIcon}>
@@ -147,7 +156,7 @@ const Header = () => {
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                         {u.Avatar ? (
                             <img
-                                 src={`http://localhost:8080/api/images/${u.Avatar}`} alt="user"
+                                src={`http://localhost:8080/api/images/${u.Avatar}`} alt="user"
                                 className={styles.userAvatar}
                                 width={20} height={20}
                             />
@@ -155,7 +164,7 @@ const Header = () => {
                             <Image src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
 
                         )}<span>{u.Firstname} {u.Lastname}</span>
-                     
+
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -224,7 +233,7 @@ const Header = () => {
                                     width={20} height={20}
                                 />
                             ) : (
-                                <Image src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20}/>
+                                <Image src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20} />
 
                             )}
                         </div>

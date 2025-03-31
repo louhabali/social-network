@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"main/pkg/app/models"
 	"net/http"
 	"sync"
 
@@ -14,8 +15,8 @@ import (
 )
 
 type WebSocketMessage struct {
-	Type    string      `json:"type"`
-	Payload Message `json:"payload"`
+	Type    string         `json:"type"`
+	Payload models.Message `json:"payload"`
 }
 
 type WebSocketManager struct {
@@ -234,8 +235,8 @@ func (wm *WebSocketManager) removeConnection(userID int, conn *websocket.Conn) {
 func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, db *sql.DB) {
 	payloadBytes, _ := json.Marshal(payload)
 	var messageData struct {
-		ChatId    int    `json:"chat_id"`
-		Content   string `json:"content"`
+		ChatId  int    `json:"chat_id"`
+		Content string `json:"content"`
 	}
 	if err := json.Unmarshal(payloadBytes, &messageData); err != nil {
 		log.Printf("Error unmarshaling message payload: %v", err)
@@ -255,7 +256,7 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	// 	messageData.ChatId = chatID
 	// }
 
-	msg, err := InsertMessage(senderID, messageData.ChatId, messageData.Content, db)
+	msg, err := models.InsertMessage(db,senderID, messageData.ChatId, messageData.Content)
 	if err != nil {
 		log.Printf("Error inserting message: %v", err)
 		return
@@ -270,16 +271,14 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 
 	// Prepare message notification
 
-	
-
 	notification := WebSocketMessage{
 		Type:    "new_message",
 		Payload: msg,
 	}
 
 	// fmt.Println("cahtid =>",msg.ChatID, "reciver =>", messageData.ReciverId)
-	
-	recivers, _ := getUsersInChat(msg.ChatID, db)
+
+	recivers, _ := models.GetUsersInChat(db,msg.ChatID)
 	fmt.Println(notification)
 	// recivers = []int{2}
 	wm.sendToUsers(recivers, notification)

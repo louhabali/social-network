@@ -19,12 +19,12 @@ export default function ClientSideComments({ postId, lenComments, initialComment
         const file = event.target.files[0];
         if (file) {
             if (file.size > 4 * 1024 * 1024) {
-                // setErrorMessage("Profile image must be less than 2MB");
+                // setErrorMessage("Profile image must be less than 4MB");
                 return;
               }
-              const allowedTypes = ['image/jpeg', 'image/png'];
+              const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
               if (!allowedTypes.includes(file.type)) {
-                // setErrorMessage("Only JPG or PNG images are allowed");
+                // setErrorMessage("Only JPG, PNG, or GIF images are allowed");
                 return;
               }
             setSelectedImage(URL.createObjectURL(file));

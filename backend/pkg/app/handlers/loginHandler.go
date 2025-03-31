@@ -1,81 +1,73 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/gofrs/uuid"
-
-	"golang.org/x/crypto/bcrypt"
+	"main/pkg/app/models"
+	"main/pkg/app/utils"
 )
 
+// Login struct for request body
 type Login struct {
 	Email string `json:"email"`
 	Pass  string `json:"password"`
 }
 
+// Handle user login
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		var log Login
-
-		json.NewDecoder(r.Body).Decode(&log)
-		if log.Email == "" || log.Pass == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("please fill all the fields"))
-			return
-		}
-		var passScanned string
-		var UserID int
-		err := h.db.QueryRow(`select password_hash,id from users where email = ?`, log.Email).Scan(&passScanned, &UserID)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write([]byte("user not found"))
-				return
-			}
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("database error"))
-			return
-		}
-
-		err = bcrypt.CompareHashAndPassword([]byte(passScanned), []byte(log.Pass))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("incorrect password"))
-
-			fmt.Println("failed to compare the db password with db password")
-			return
-		}
-		uuid, err := uuid.NewV4()
-		if err != nil {
-			fmt.Println("failed to generate a uuid")
-			return
-		}
-
-		_, err = h.db.Exec(`INSERT INTO tokens(user_id,token) VALUES (?,?)`, UserID,uuid.String())
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("failed to insert the user"))
-
-			fmt.Println("failed to insert the user", err)
-			return
-		}
-
-		http.SetCookie(w, &http.Cookie{
-			Name:     "Token",
-			Value:    uuid.String(),
-			HttpOnly: true,
-			Secure:  true,
-			Path: "/",
-			Expires:  time.Now().Add(200 * 365 * 24 * time.Hour),
-		})
-
-		w.Write([]byte("connected successfully"))
-	} else {
+	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+
+	var log Login
+	if err := json.NewDecoder(r.Body).Decode(&log); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if log.Email == "" || log.Pass == "" {
+		http.Error(w, "Please fill all the fields", http.StatusBadRequest)
+		return
+	}
+
+	// Fetch user from database
+	user, err := models.GetUserByEmail(h.db, log.Email)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusBadRequest)
+		return
+	}
+
+	// Check password
+	if !user.ComparePassword(log.Pass) {
+		http.Error(w, "Incorrect password", http.StatusBadRequest)
+		return
+	}
+
+	// Generate token
+	uuid, err := utils.GenerateToken()
+	if err != nil {
+		http.Error(w, "Failed to generate session token", http.StatusInternalServerError)
+		return
+	}
+
+	// Store token in database
+	if err := models.StoreToken(h.db, user.ID, uuid); err != nil {
+		http.Error(w, "Failed to create session", http.StatusInternalServerError)
+		return
+	}
+
+	// Set HTTP cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Token",
+		Value:    uuid,
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+		Expires:  time.Now().Add(200 * 365 * 24 * time.Hour), // Long-lived token
+	})
+
+	w.Write([]byte("Connected successfully"))
 }

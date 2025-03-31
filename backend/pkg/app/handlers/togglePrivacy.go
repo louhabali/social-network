@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"main/pkg/app/models"
 )
 
 func (h *Handler) TogglePrivacy(w http.ResponseWriter, r *http.Request) {
@@ -12,12 +14,19 @@ func (h *Handler) TogglePrivacy(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		IsPublic bool `json:"isPublic"`
 	}
-	json.NewDecoder(r.Body).Decode(&req)
 
-	_, err := h.db.Exec("UPDATE users SET is_public = ? WHERE id = ?", req.IsPublic, userID)
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	err = models.ToggleUserPrivacy(h.db, userID, req.IsPublic)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 }

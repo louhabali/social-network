@@ -1,26 +1,30 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+	"main/pkg/app/models"
+)
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("Token")
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("no token found"))
+		http.Error(w, "No token found", http.StatusBadRequest)
 		return
 	}
+
+	// Delete cookie1
 	http.SetCookie(w, &http.Cookie{
 		Name:   "Token",
-		Value:  "",     
-		Path:   "/", 
+		Value:  "",
+		Path:   "/",
 		MaxAge: -1,
 	})
 
-	_, err = h.db.Exec(`UPDATE tokens SET token=NULL WHERE token=?`, cookie.Value)
+	err = models.RemoveToken(h.db, cookie.Value)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("failed to update the token"))
+		http.Error(w, "Failed to update the token", http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 }
