@@ -15,14 +15,11 @@ async function fetchGroupById(groupId) {
         },
         cache: "no-store",
     });
+    
     if (!res.ok) {
-        const error = {
-            error: true,
-            message: res.status === 404 ? "Group not found" : res.status === 500 ? "Internal server error" : `Unexpected error: ${res.status}`,
-            status: res.status
-        };
-        return error;
+        throw new Error(res.status === 404 ? "Group not found" : res.status === 500 ? "Internal server error" : `Unexpected error: ${res.status}`);
     }
+
     return res.json();
 }
 
@@ -37,7 +34,9 @@ async function fetchUserInfo() {
         },
         cache: "no-store",
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+        throw new Error("Internal server error");
+    }
     return res.json();
 }
 
@@ -51,31 +50,34 @@ async function getPosts(groupId) {
         },
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+        throw new Error("Internal server error");
+    }
     return res.json();
 }
 
 export default async function GroupDetailsPage({ params }) {
-    const group = await fetchGroupById(params.groupId);
-    const initialPosts = await getPosts(params.groupId);
-    const userInfo = await fetchUserInfo();
+    try {
+        const group = await fetchGroupById(params.groupId);
+        const initialPosts = await getPosts(params.groupId);
+        const userInfo = await fetchUserInfo();
 
-    if (group.error) {        
-        return <ErrorPage error={group} />;
+        return (
+            <div className="groupContainer">
+                <div className="groupHeader">
+                    <h1 className="groupTitle">{group.title}</h1>
+                    <p className="groupDescription">{group.description}</p>
+                </div>
+
+                <GroupsClient
+                    groupId={params.groupId}
+                    status={group.status}
+                    initialPosts={initialPosts}
+                    userInfo={userInfo}
+                />
+            </div>);
+    } catch (error) {
+        return <ErrorPage error={error} />;
     }
 
-    return (
-        <div className="groupContainer">
-            <div className="groupHeader">
-                <h1 className="groupTitle">{group.title}</h1>
-                <p className="groupDescription">{group.description}</p>
-            </div>
-
-            <GroupsClient
-                groupId={params.groupId}
-                status={group.status}
-                initialPosts={initialPosts}
-                userInfo={userInfo}
-            />
-        </div>);
 }

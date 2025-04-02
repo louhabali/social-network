@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileArrowUp, faShare } from "@fortawesome/free-solid-svg-icons";
@@ -47,7 +47,7 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
         }
 
         if (sendImage) formData.append("image", sendImage);
-
+        formData.append("privacy", "public");
         try {
             const response = await fetch("http://localhost:8080/api/posting", {
                 method: "POST",
@@ -65,6 +65,7 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             setSelectedImage(null);
             setSendImage(null);
             document.getElementById("fileInput").value = "";
+            showNotification("Post created successfully!", "info");
         } catch (error) {
             showNotification("Failed to post", "error");
         }

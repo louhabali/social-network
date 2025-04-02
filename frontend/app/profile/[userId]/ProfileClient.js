@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import Post from "@/components/post";
 import Image from "next/image";
 import Link from "next/link"
 import "../../styles/profile.css";
+import { WebSocketContext } from "@/context/WebSocketContext";
 
 export default function ProfileClient({ profile, userId }) {
   const [isPublic, setIsPublic] = useState(profile.user.IsPublic);
@@ -15,6 +16,7 @@ export default function ProfileClient({ profile, userId }) {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef(null);
+  const { showNotification } = useContext(WebSocketContext);
 
   const isOwnProfile = profile.user.ID === profile.userid;
   const canViewProfile = isPublic || followStatus === "approved" || isOwnProfile;
@@ -27,9 +29,12 @@ export default function ProfileClient({ profile, userId }) {
       body: JSON.stringify({ isPublic: newStatus }),
     });
 
-    if (res.ok) {
-      setIsPublic(newStatus);
+    if (!res.ok) {
+      showNotification("Error updating privacy settings", "error");
+      return;
     }
+    setIsPublic(newStatus);
+
   }
 
   const fetchPosts = async () => {
@@ -42,13 +47,14 @@ export default function ProfileClient({ profile, userId }) {
       });
 
       if (!response.ok) {
-        setHasMore(false);
+        showNotification("Error loading posts", "error");
         return;
       }
 
       const data = await response.json();
       if (!data || data.length === 0) {
         setHasMore(false);
+        setLoading(false);
         return;
       }
 
@@ -89,29 +95,31 @@ export default function ProfileClient({ profile, userId }) {
       credentials: "include",
     });
 
-    if (res.ok) {
-
-      if (method === "DELETE") {
-        if (followStatus === 'approved') {
-          profile.followers = profile.followers.filter(f => f.id !== profile.userid);
-        }
-        setFollowStatus("");
-      } else if (method === "POST") {
-        const p = await res.json().catch(() => null);
-        if (p) {
-          profile.followers = profile.followers ? [...profile.followers, {
-            id: p.ID,
-            fname: p.Firstname,
-            lname: p.Lastname
-          }] : [{
-            id: p.ID,
-            fname: p.Firstname,
-            lname: p.Lastname
-          }];
-        }        
-        setFollowStatus(p ? "approved" : "pending");
-      }
+    if (!res.ok) {
+      showNotification("Error updating follow status", "error");
+      return;
     }
+    if (method === "DELETE") {
+      if (followStatus === 'approved') {
+        profile.followers = profile.followers.filter(f => f.id !== profile.userid);
+      }
+      setFollowStatus("");
+    } else if (method === "POST") {
+      const p = await res.json().catch(() => null);
+      if (p) {
+        profile.followers = profile.followers ? [...profile.followers, {
+          id: p.ID,
+          fname: p.Firstname,
+          lname: p.Lastname
+        }] : [{
+          id: p.ID,
+          fname: p.Firstname,
+          lname: p.Lastname
+        }];
+      }
+      setFollowStatus(p ? "approved" : "pending");
+    }
+
   }
 
   return (

@@ -90,6 +90,10 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             showNotification("You can't select users when the post is almost private or public.", "error");
             return;
         }
+        if (ops !== "public" && ops !== "private" && ops !== "almost_private") {
+            showNotification("Invalid privacy option selected.", "error");
+            return;
+        }
         
         const formData = new FormData();
         formData.append("content", newPost);

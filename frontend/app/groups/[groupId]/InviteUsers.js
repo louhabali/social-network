@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { WebSocketContext } from "@/context/WebSocketContext";
 import "./invite-users.css"
 
 export default function InviteUsers({ groupId }) {
@@ -7,36 +8,43 @@ export default function InviteUsers({ groupId }) {
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
   const [invitedUsers, setInvitedUsers] = useState({});
+  const { showNotification } = useContext(WebSocketContext);
 
-    useEffect(() => {
-        if (showPopup) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "auto";
-        }
-        
-        return () => {
-            document.body.style.overflow = "auto"; 
-        };
-    }, [showPopup]);
 
-  
+  useEffect(() => {
+    if (showPopup) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showPopup]);
+
+
   const fetchUsers = async (reset = false) => {
     const res = await fetch(
       `http://localhost:8080/api/groups/${groupId}/invite?search=${search}&offset=${reset ? 0 : offset}`,
       { credentials: "include" }
     );
+
+    if (!res.ok) {
+      showNotification("Error updating event response", "error");
+      return;
+    }
+
     const data = await res.json();
-    
     if (reset) {
       setUsers(data);
       setOffset(6);
     } else {
-      setUsers((prev) => data ? [...prev, ...data]:[...prev]);
+      setUsers((prev) => data ? [...prev, ...data] : [...prev]);
       setOffset((prev) => prev + 6);
     }
   };
-  
+
   useEffect(() => {
     if (showPopup) {
       fetchUsers(true);
@@ -44,15 +52,16 @@ export default function InviteUsers({ groupId }) {
   }, [showPopup, groupId, search]);
 
   const inviteUser = async (userId) => {
-    await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
+    const res = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({ userId }),
     });
-    console.log(userId);
-    
+    if (!res.ok) {
+      showNotification("Error inviting user", "error");
+      return;
+    }
     setInvitedUsers((prev) => ({ ...prev, [userId]: true }));
-
   };
 
   return (
@@ -70,10 +79,10 @@ export default function InviteUsers({ groupId }) {
               onChange={(e) => setSearch(e.target.value)}
             />
             <ul onScroll={(e) => {
-            if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
-              fetchUsers();
-            }
-          }}>
+              if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
+                fetchUsers();
+              }
+            }}>
               {users?.map((user) => (
                 <li key={user.ID}>
                   {user.Firstname} {user.Lastname}
@@ -81,7 +90,7 @@ export default function InviteUsers({ groupId }) {
                     <button disabled>Done</button>
                   ) : (
                     <button onClick={() => inviteUser(user.ID)}>Invite</button>
-                  )}                
+                  )}
                 </li>
               ))}
             </ul>

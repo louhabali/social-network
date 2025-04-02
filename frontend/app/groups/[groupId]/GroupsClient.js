@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import Post from "@/components/post";
 import PostForm from "@/components/groupsPostForm";
 import InviteUsers from "./InviteUsers";
+import { WebSocketContext } from "@/context/WebSocketContext";
 import './GroupClient.css';
 
 export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
@@ -25,35 +26,36 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
     const [memberStatus, setMemberStatus] = useState(status)
     const [eventOffset, setEventOffset] = useState(0);
     const [hasMoreEvents, setHasMoreEvents] = useState(true);
+    const { showNotification } = useContext(WebSocketContext);
+
 
     const fetchPosts = async () => {
         if (loading || !hasMore) return;
 
         setLoading(true);
-        try {
-            const response = await fetch(`http://localhost:8080/api/posts?offset=${offset}&groupId=${groupId}`, {
-                credentials: "include",
-            });
-            if (!response.ok) {
-                router.push("/login");
-                return;
-            }
-            const data = await response.json();
-            if (data === null) {
-                setHasMore(false);
-                return
-            }
-            if (data.length < 4) {
-                setHasMore(false);
-            };
-            setPosts((prevPosts) => [...prevPosts, ...data]);
-            setOffset((prevOffset) => prevOffset + data.length);
-
-        } catch (error) {
-            console.log("Error fetching posts:", error);
-        } finally {
+        const response = await fetch(`http://localhost:8080/api/posts?offset=${offset}&groupId=${groupId}`, {
+            credentials: "include",
+        });
+        if (!response.ok) {
+            showNotification("Error fetching posts", "error");
             setLoading(false);
+            return;
         }
+        const data = await response.json();
+
+        if (data === null) {
+            setHasMore(false);
+            setLoading(false);
+            return
+        }
+
+        if (data.length < 4) {
+            setHasMore(false);
+        };
+        setPosts((prevPosts) => [...prevPosts, ...data]);
+        setOffset((prevOffset) => prevOffset + data.length);
+        setLoading(false);
+
     };
 
     const fetchEvents = async () => {
@@ -64,22 +66,24 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events?offset=${eventOffset}`, {
                 credentials: "include",
             });
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data);
-
-                if (data === null) {
-                    setHasMoreEvents(false);
-                    setLoadingEvents(false)
-                    return
-                }
-                if (data.length < 4) {
-                    setHasMoreEvents(false);
-                };
-                setEvents((prevEvents) => [...prevEvents, ...data]);
-                setEventOffset((prevOffset) => prevOffset + data.length);
-
+            if (!response.ok) {
+                showNotification("Error fetching events", "error");
+                setLoadingEvents(false);
+                return;
             }
+            const data = await response.json();
+
+            if (data === null) {
+                setHasMoreEvents(false);
+                setLoadingEvents(false);
+                return
+            }
+
+            if (data.length < 4) {
+                setHasMoreEvents(false);
+            };
+            setEvents((prevEvents) => [...prevEvents, ...data]);
+            setEventOffset((prevOffset) => prevOffset + data.length);
         } catch (error) {
             console.log("Error fetching events:", error);
         } finally {
@@ -123,17 +127,31 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
     const handleCreateEvent = async () => {
 
-        if (!newEvent.title || !newEvent.description || !newEvent.date || !newEvent.user_response) return;
-        if (newEvent.title.length < 3 || newEvent.title.length > 50) return alert("Title must be between 3 and 50 characters.");
-        if (newEvent.description.length < 10 || newEvent.description.length > 200) return alert("Description must be between 10 and 200 characters.");
-        if (newEvent.user_response !== "going" && newEvent.user_response !== "not_going") return alert("Invalid user response. Must be 'going' or 'not_going'.");
+        if (!newEvent.title || !newEvent.description || !newEvent.date || !newEvent.user_response) {
+            showNotification("Please fill in all fields", "error");
+            return;
+        };
+        if (newEvent.title.length < 3 || newEvent.title.length > 50) {
+            showNotification("Title must be between 3 and 50 characters.");
+            return
+        }
+        if (newEvent.description.length < 10 || newEvent.description.length > 200) {
+            showNotification("Description must be between 10 and 200 characters.");
+            return
+        }
+        if (newEvent.user_response !== "going" && newEvent.user_response !== "not_going") {
+            showNotification("Invalid user response. Must be 'going' or 'not_going'.");
+            return
+        }
 
         const eventDate = new Date(newEvent.date);
         if (isNaN(eventDate.getTime())) {
-            return alert("Invalid date format. Use YYYY-MM-DDTHH:MM.");
+            showNotification("Invalid date format. Use YYYY-MM-DDTHH:MM.");
+            return
         }
         if (eventDate < new Date()) {
-            return alert("The event date cannot be in the past.");
+            showNotification("The event date cannot be in the past.");
+            return
         }
 
         const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events`, {
@@ -142,18 +160,17 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             credentials: "include",
         });
 
-        if (response.ok) {
-            const createdEvent = await response.json();
-
-            setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents] : [createdEvent]);
-            setEventOffset(prevOffset => prevOffset + 1);
-            setShowEventForm(false);
-            setNewEvent({ title: "", description: "", date: "", user_response: "" });
-
-        } else {
-            console.log("Failed to create event");
+        if (!response.ok) {
+            showNotification("Error creating event", "error");
+            return;
         }
+        const createdEvent = await response.json();
+        setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents] : [createdEvent]);
+        setEventOffset(prevOffset => prevOffset + 1);
+        setShowEventForm(false);
+        setNewEvent({ title: "", description: "", date: "", user_response: "" });
 
+        showNotification("Event created successfully", "info");
     };
 
     const handleGoing = async (eventId, response) => {
@@ -163,6 +180,11 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             body: JSON.stringify({ eventId, response }),
             credentials: "include",
         });
+
+        if (!res.ok) {
+            showNotification("Error updating event response", "error");
+            return;
+        }
 
         setEvents((prevEvents) => {
             return prevEvents.map((event) => {
@@ -196,7 +218,6 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             });
         });
 
-
     };
 
     async function handleJoinGroup() {
@@ -207,9 +228,12 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             credentials: "include",
         });
 
-        if (response.ok) {
-            setMemberStatus(memberStatus === "pending" ? "" : "pending");
+        if (!response.ok) {
+            showNotification("Error join group", "error");
+            return;
         }
+        setMemberStatus(memberStatus === "pending" ? "" : "pending");
+
     }
 
     if (memberStatus != "approved" && memberStatus != "creator") {

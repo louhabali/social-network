@@ -13,12 +13,7 @@ func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userID := r.Context().Value("userID").(int)
-	
-	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
-	if err != nil {
-		http.Error(w, "Invalid offset", http.StatusBadRequest)
-		return
-	}
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 	groupId := r.URL.Query().Get("groupId")
 	userId := r.URL.Query().Get("userId")
 

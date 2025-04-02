@@ -47,6 +47,11 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if groupID != 0 && privacy != "public" {
+		http.Error(w, "Group posts must be public", http.StatusBadRequest)
+		return
+	}
+
 	var imagePath *string
 	if err == nil { // If an image is uploaded
 		defer file.Close()

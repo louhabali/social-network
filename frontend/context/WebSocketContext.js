@@ -1,4 +1,5 @@
 import { createContext, useRef, useEffect, useState } from "react";
+import "./notification.css";
 
 //+ create the context return an object to manage the values u wanna pass aroun
 //+ the most importent properties of the obj returned by creatContext are:
@@ -59,33 +60,6 @@ function WebSocketProvider({ children }) {
                     {notification.message}
                 </div>
             )}
-            <style>
-                {`
-                    .notification {
-                        position: fixed;
-                        bottom: 20px;
-                        right: 20px;
-                        padding: 10px 15px;
-                        border-radius: 5px;
-                        color: white;
-                        font-size: 14px;
-                        font-family: Arial, sans-serif;
-                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                        animation: fadeIn 0.3s ease-in-out;
-                        z-index: 1000;
-                    }
-                    .notification.info {
-                        background-color: #3498db;
-                    }
-                    .notification.error {
-                        background-color: #e74c3c;
-                    }
-                    @keyframes fadeIn {
-                        from { opacity: 0; transform: translateY(10px); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
-                `}
-            </style>
         </WebSocketContext.Provider>
     )
 }

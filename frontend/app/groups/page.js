@@ -83,6 +83,8 @@ export default function GroupsPage() {
         const newGroup = await response.json();
         setGroups((prevGroups) => (prevGroups ? [newGroup, ...prevGroups] : [newGroup]));
         setOffset((prevOffset) => prevOffset + 1);
+        setDescription("");
+        setTitle("")
         setIsOpen(false);
     }
 

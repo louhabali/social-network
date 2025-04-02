@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowUp, faShare } from '@fortawesome/free-solid-svg-icons';
+import { WebSocketContext } from "@/context/WebSocketContext";
 import Image from "next/image";
 import './comments.css'
 
@@ -14,19 +15,21 @@ export default function ClientSideComments({ postId, lenComments, initialComment
     const [hasMore, setHasMore] = useState(lenComments > initialComments?.length);
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
+    const { showNotification } = useContext(WebSocketContext);
+
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
             if (file.size > 4 * 1024 * 1024) {
-                // setErrorMessage("Profile image must be less than 4MB");
+                showNotification("Profile image must be less than 4MB", "error");
                 return;
-              }
-              const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-              if (!allowedTypes.includes(file.type)) {
-                // setErrorMessage("Only JPG, PNG, or GIF images are allowed");
+            }
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                showNotification("Only JPG, PNG, or GIF images are allowed", "error");
                 return;
-              }
+            }
             setSelectedImage(URL.createObjectURL(file));
             setSendImage(file);
         }
@@ -41,7 +44,10 @@ export default function ClientSideComments({ postId, lenComments, initialComment
             credentials: "include",
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+            showNotification("Error loading more comments", "error");
+            return;
+        }
 
         const newComments = await response.json();
 
@@ -49,8 +55,6 @@ export default function ClientSideComments({ postId, lenComments, initialComment
             setComments(prev => [...prev, ...newComments]);
             setOffset(newOffset);
             setHasMore(lenC > newOffset)
-            console.log(lenC, newOffset);
-
         } else {
             setHasMore(false)
         }
@@ -58,7 +62,10 @@ export default function ClientSideComments({ postId, lenComments, initialComment
 
     const handleCommentSubmit = async () => {
         if (!content.trim() && !selectedImage) return;
-        if (content.length > 200) return alert("Comment must be less than 200 characters");
+        if (content.length > 200) {
+            showNotification("Comment must be less than 200 characters", "error");
+            return;
+        }
 
         const formData = new FormData();
         formData.append('content', content);
@@ -69,7 +76,10 @@ export default function ClientSideComments({ postId, lenComments, initialComment
             credentials: "include",
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+            showNotification("Error posting comment", "error");
+            return;
+        }
 
         const newComment = await response.json();
         setComments(prev => prev ? [newComment, ...prev] : [newComment]);

@@ -1,12 +1,14 @@
 import { cookies } from 'next/headers';
 import Post from "@/components/post";
 import CommentsClient from "./CommentsClient";
+import ErrorPage from "@/components/ErrorPage";
+
 // import "./post.css"
 
 async function getPost(postId) {
   const cookieStore = cookies();
   const sessionToken = cookieStore.get('Token')?.value;
-  
+
   const res = await fetch(`http://localhost:8080/api/posts/${postId}`, {
     method: "GET",
     headers: {
@@ -15,14 +17,16 @@ async function getPost(postId) {
     },
     cache: "no-store",
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    throw new Error("Internal server error");
+  }
   return res.json();
 }
 
 async function getComments(postId, offset = 0) {
   const cookieStore = cookies();
   const sessionToken = cookieStore.get('Token')?.value;
-  
+
   const res = await fetch(`http://localhost:8080/api/posts/${postId}/comments?offset=${offset}`, {
     headers: {
       "Content-Type": "application/json",
@@ -30,24 +34,28 @@ async function getComments(postId, offset = 0) {
     },
   });
 
-  if (!res.ok) return [];
+  if (!res.ok) {
+    throw new Error("Internal server error");
+  }
   return res.json();
 }
 
 export default async function PostPage({ params }) {
+  try {
+    const post = await getPost(params.postId);
+    const initialComments = await getComments(params.postId);
 
-  const post = await getPost(params.postId);
-  const initialComments = await getComments(params.postId);
+    // console.log(post);
 
-  // console.log(post);
-  
-  return (
-    
-    <div className='comment-div'>
-      {/* <div className='margin'></div> */}
-      <Post post={post} />
-      
-      <CommentsClient postId={params.postId} lenComments={post.NbComment} initialComments={initialComments} />
-    </div>
-  );
+    return (
+
+      <div className='comment-div'>
+        <Post post={post} />
+        <CommentsClient postId={params.postId} lenComments={post.NbComment} initialComments={initialComments} />
+      </div>
+    );
+  } catch (error) {
+    return <ErrorPage error={error} />;
+
+  }
 }

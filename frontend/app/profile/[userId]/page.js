@@ -33,8 +33,6 @@ export default async function ProfilePage({ params }) {
 
   } catch (error) {
     return <ErrorPage error={error} />; 
-  }
-  console.log(profile);
-  
+  }  
   return <ProfileClient profile={profile} userId={params.userId} />;
 }
