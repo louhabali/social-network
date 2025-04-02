@@ -8,13 +8,17 @@ import (
 )
 
 func (h *Handler) ShowPosts(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(int)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
-	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	userID := r.Context().Value("userID").(int)
+	
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		http.Error(w, "Invalid offset", http.StatusBadRequest)
+		return
+	}
 	groupId := r.URL.Query().Get("groupId")
 	userId := r.URL.Query().Get("userId")
 

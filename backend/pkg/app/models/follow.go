@@ -77,20 +77,25 @@ func CreateFollowRequest(db *sql.DB, followerID, followingID int) error {
 	return err
 }
 
-func NotFollowing(db *sql.DB, userID int) []Follower {
-	rows, _ := db.Query(`SELECT users.id, users.first_name, users.last_name ,users.avatar FROM users
+func NotFollowing(db *sql.DB, userID int) ([]Follower,error) {
+	rows, err := db.Query(`SELECT users.id, users.first_name, users.last_name ,users.avatar FROM users
     LEFT JOIN follow_requests ON users.id = follow_requests.follower_id
     WHERE follow_requests.follower_id != ? or users.id !=?`, userID, userID)
-
+	if err != nil {
+		return nil , err
+	}
 	defer rows.Close()
 
 	var notFollowing []Follower
 	for rows.Next() {
 		var nf Follower
-		rows.Scan(&nf.ID, &nf.Firstname, &nf.Lastname, &nf.Avatar)
+		err := rows.Scan(&nf.ID, &nf.Firstname, &nf.Lastname, &nf.Avatar)
+		if err != nil {
+			return nil, err
+		}
 		notFollowing = append(notFollowing, nf)
 	}
-	return notFollowing
+	return notFollowing , nil
 }
 
 // InsertFollowRequest inserts a new follow request (Pending or Approved)

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"main/pkg/app/models"
 	"net/http"
 	"strconv"
@@ -17,6 +16,14 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&g)
 		if err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
+			return
+		}
+		if g.Title == "" || g.Description == "" {
+			http.Error(w, "All fields are required", http.StatusBadRequest)
+			return
+		}
+		if len(g.Title) > 50 || len(g.Description) > 200 || len(g.Title) < 3 || len(g.Description) < 3 {
+			http.Error(w, "Title must be 3-50 characters and description must be 3-200 characters", http.StatusBadRequest)
 			return
 		}
 
@@ -47,7 +54,11 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(g)
 
 	} else if r.Method == http.MethodGet {
-		offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+		offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil {
+			http.Error(w, "Invalid offset", http.StatusBadRequest)
+			return
+		}
 		userID := r.Context().Value("userID").(int)
 
 		groups, err := models.GetGroups(h.db, userID, offset)
@@ -57,25 +68,30 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(groups)
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
 }
 
 func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	joinSender := r.Context().Value("userID").(int)
-	groupID, _ := strconv.Atoi(r.PathValue("groupId"))
-	var userID int
+	groupID, err := strconv.Atoi(r.PathValue("groupId"))
+	if err != nil {
+		http.Error(w, "Invalid group ID", http.StatusBadRequest)
+		return
+	}
+
 	var requestBody struct {
 		UserID int `json:"userId"`
 	}
 
-	memberInvitation := true
 	json.NewDecoder(r.Body).Decode(&requestBody)
 
-	if requestBody.UserID == 0 {
-		memberInvitation = false
+	memberInvitation := requestBody.UserID != 0
+	userID := requestBody.UserID
+	if !memberInvitation {
 		userID = joinSender
-	} else {
-		userID = requestBody.UserID
 	}
 
 	if r.Method == "POST" {
@@ -86,25 +102,34 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if memberInvitation {
-			models.InsertNotification(h.db, &models.Notification{
+			err = models.InsertNotification(h.db, &models.Notification{
 				RelatedId: int(joinReqId),
 				SenderId:  joinSender,
 				ReceverId: userID,
 				Type:      "group join invatation",
 			})
+			if err != nil {
+				http.Error(w, "Error inserting notification", http.StatusInternalServerError)
+				return
+			}
 		} else {
-			query := `SELECT creator_id FROM groups  WHERE id = ?`
-			var adminId int
-			h.db.QueryRow(query, groupID).Scan(&adminId)
-			models.InsertNotification(h.db, &models.Notification{
+			adminId, err := models.GetGroupCreator(h.db, groupID)
+			if err != nil {
+				http.Error(w, "Error retrieving group creator", http.StatusInternalServerError)
+				return
+			}
+			err = models.InsertNotification(h.db, &models.Notification{
 				RelatedId: int(joinReqId),
 				SenderId:  joinSender,
 				ReceverId: adminId,
 				Type:      "group join request",
 			})
+			if err != nil {
+				http.Error(w, "Error inserting notification", http.StatusInternalServerError)
+				return
+			}
 		}
 
-		fmt.Println("add user")
 	} else if r.Method == "DELETE" {
 		err := models.DeleteGroupMemberNotifications(h.db, groupID, userID)
 		if err != nil {
@@ -117,6 +142,9 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error removing user from group", http.StatusInternalServerError)
 			return
 		}
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -128,35 +156,36 @@ func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var notif models.Notification
-	err := json.NewDecoder(r.Body).Decode(&notif)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&notif); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	r.Body.Close()
 
-	err = models.ApproveJoinRequest(h.db, notif.RelatedId)
-	if err != nil {
+	if err := models.ApproveJoinRequest(h.db, notif.RelatedId); err != nil {
 		http.Error(w, "Error approving join request", http.StatusInternalServerError)
 		return
 	}
 
-	err = models.DeleteNotification(h.db, notif.Id)
-	if err != nil {
+	if err := models.DeleteNotification(h.db, notif.Id); err != nil {
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
 
-	var chatId int
 	joinerId := notif.ReceverId
-
 	if notif.Type == "group join request" {
 		joinerId = notif.SenderId
 	}
-	h.db.QueryRow("SELECT id FROM chats WHERE name = ?", notif.GroupName).Scan(&chatId)
-	fmt.Println(chatId)
 
-	models.AddChatMember(h.db, chatId, joinerId)
+	chatId, err := models.GetChatIDByGroupName(h.db, *notif.GroupName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := models.AddChatMember(h.db, chatId, joinerId); err != nil {
+		http.Error(w, "Failed to add user to chat", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -172,7 +201,6 @@ func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	r.Body.Close()
 
 	err = models.RemoveGroupMember(h.db, *notif.GroupId, notif.SenderId)
 	if err != nil {
@@ -186,6 +214,5 @@ func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("reject group", notif.Id, notif.RelatedId)
 	w.WriteHeader(http.StatusOK)
 }

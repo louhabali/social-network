@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"html"
-	"strings"
 	"time"
 )
 
@@ -118,20 +117,25 @@ func GetPostsWithPrivacy(userID int, baseWhere string, args []interface{}, offse
 	return posts, nil
 }
 
-func GetPost(db *sql.DB, postID, userID int) Post {
+func GetPost(db *sql.DB, postID, userID int) (Post, error) {
 	var p Post
 	var timeCreated time.Time
 	var fistname, lastname string
-	db.QueryRow(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar
-        FROM posts
+	err := db.QueryRow(`SELECT posts.id, posts.user_id, posts.created_at, posts.content,posts.image_path,users.first_name, users.last_name, users.avatar FROM posts
         JOIN users ON posts.user_id = users.id WHERE posts.id = ? `, postID).Scan(&p.Pid, &p.Uid, &timeCreated, &p.Content, &p.Image, &fistname, &lastname, &p.Avatar)
+	if err != nil {
+		return Post{}, err
+	}
 	p.Content = html.UnescapeString(p.Content)
-	p.Username = strings.Join([]string{fistname, lastname}, " ")
-	db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", p.Pid).Scan(&p.NbComment)
+	p.Username = fistname + " " + lastname
+	err = db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", p.Pid).Scan(&p.NbComment)
+	if err != nil {
+		return Post{}, err
+	}
 	p.Likes = getPostLikeDisLike(p.Pid, db)
 	p.UserInteraction = getPostInteractions(p.Pid, userID, db)
 	p.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
-	return p
+	return p, nil
 }
 
 func getPostLikeDisLike(post_id int, db *sql.DB) int {

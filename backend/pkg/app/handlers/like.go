@@ -8,6 +8,10 @@ import (
 )
 
 func (h *Handler) LikeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	var data struct {
 		Pid      int `json:"postId"`
 		Interact int `json:"likeStatus"`

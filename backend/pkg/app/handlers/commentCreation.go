@@ -29,6 +29,10 @@ func (h *Handler) CommentCreationHandler(w http.ResponseWriter, r *http.Request)
 			http.Error(w, "All fields are required", http.StatusBadRequest)
 			return
 		}
+		if len(content) > 200 {
+			http.Error(w, "Content exceeds maximum length", http.StatusBadRequest)
+			return
+		}
 
 		var imagePath *string
 		if err == nil { // If an image is uploaded

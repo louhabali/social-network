@@ -1,7 +1,7 @@
 "use client"
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import { WebSocketProvider } from "@/components/websocket";
+import { WebSocketProvider } from "@/context/WebSocketContext";
 import Header from "@/components/header";
 const metadata = {
   title: "My App",

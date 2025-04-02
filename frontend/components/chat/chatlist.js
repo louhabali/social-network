@@ -43,7 +43,7 @@ export default function ChatList({ conversations, onChatSelect, setConversations
                         <p className={styles.lastMsg}>
                             {conversation.last_message ?
                              conversation.last_message.length > 20 ?
-                             conversation.last_message.slice(0, 19) + '...' :
+                             conversation.last_message.slice(0, 20) + '...' :
                              conversation.last_message :
                              '' 
                             }

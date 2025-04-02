@@ -8,13 +8,12 @@ import (
 )
 
 func (h *Handler) UserData(w http.ResponseWriter, r *http.Request) {
-
-	userID, ok := r.Context().Value("userID").(int)
-	if !ok {
-		fmt.Println("invalid userId")
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-
+	userID := r.Context().Value("userID").(int)
+	
 	userInfo, err := models.GetUserInfo(h.db, userID)
 	if err != nil {
 		fmt.Println("Error fetching profile privacy:", err)

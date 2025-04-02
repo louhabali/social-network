@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileArrowUp, faShare } from "@fortawesome/free-solid-svg-icons";
-import styles from "../app/page.module.css";
+import { WebSocketContext } from "@/context/WebSocketContext";
 import "./postform.css";
 
 const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
@@ -14,6 +14,9 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     const [ops, setOp] = useState("public")
     const [privateUsers, setPrivateUsers] = useState([])
     const [selectedOptions, setSelectedOptions] = useState([]);
+
+    const { showNotification } = useContext(WebSocketContext);
+
     // select 
     const handleToggle = (option) => {
         setSelectedOptions((prev) =>
@@ -26,12 +29,20 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
 
             fetch('http://localhost:8080/api/getfollowedusers', {
                 credentials: "include",
-            }).then(data => data.json()).then(d => {
-                setPrivateUsers(d)
             })
-
-
-
+            .then(res => {
+                if (!res.ok) {
+                    showNotification("Error fetching followed users", "error");
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                setPrivateUsers(data);
+            })
+            .catch(() => {
+                showNotification("Network error while fetching followed users", "error");
+            });
 
         } else {
             if (document.getElementById("popup")) document.getElementById("popup").style.display = "none"
@@ -45,12 +56,12 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
         const file = event.target.files[0];
         if (file) {
             if (file.size > 4*1024 * 1024) {
-                // setErrorMessage("Profile image must be less than 4MB");
+                showNotification("Image size must be under 4MB", "error");
                 return;
               }
               const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
               if (!allowedTypes.includes(file.type)) {
-                // setErrorMessage("Only JPG, PNG, or GIF images are allowed");
+                showNotification("Only JPG, PNG, or GIF images are allowed", "error");
                 return;
               }
             setSelectedImage(URL.createObjectURL(file));
@@ -63,8 +74,23 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     };
 
     const handlePostSubmit = async () => {
-        if (!newPost.trim() && !selectedImage) return;
-
+        if (!newPost.trim() && !selectedImage) {
+            showNotification("Post cannot be empty!", "error");
+            return;
+        }
+        if (newPost.length > 200 || newPost.length < 3) {
+            showNotification("Post must be between 3 and 200 characters.", "error");
+            return;
+        }
+        if (ops === "private" && selectedOptions.length === 0) {
+            showNotification("Please select at least one user for a private post.", "error");
+            return;
+        }
+        if ((ops === "almost_private" || ops === "public") && selectedOptions.length > 0) {
+            showNotification("You can't select users when the post is almost private or public.", "error");
+            return;
+        }
+        
         const formData = new FormData();
         formData.append("content", newPost);
         formData.append("groupId", groupId);
@@ -94,11 +120,11 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             setSelectedImage(null);
             setSendImage(null);
             document.getElementById("fileInput").value = "";
-            //document.getElementById("popup").style.display="none"
 
+            showNotification("Post created successfully!", "info");
 
         } catch (error) {
-            console.error("Error posting:", error);
+            showNotification("Error creating post. Try again!", "error");
         }
     };
 
@@ -120,6 +146,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
                             className="post-input"
                             placeholder="What's on your mind?"
                             value={newPost}
+                            maxLength={200}
                             onChange={(e) => setNewPost(e.target.value)}
                         />
                         <div className="post-icon-btn" onClick={handlePostSubmit}>

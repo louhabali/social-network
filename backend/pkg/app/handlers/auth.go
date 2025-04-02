@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"main/pkg/app/models"
-
-	// "fmt"
 	"net/http"
 )
 

@@ -2,18 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"main/pkg/app/models"
 	"net/http"
 )
 
 func (h *Handler) GetAllusers(w http.ResponseWriter, r *http.Request) {
-	myId, _ := r.Context().Value("userID").(int)
-	
-	followers ,err := models.GetFollowing(h.db,myId)
+	myId := r.Context().Value("userID").(int)
 
+	followers, err := models.GetFollowing(h.db, myId)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 

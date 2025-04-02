@@ -2,14 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"main/pkg/app/models"
 	"net/http"
 	"strconv"
 )
 
 func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
-	userID, _ := strconv.Atoi(r.PathValue("userId"))
+	userID, err := strconv.Atoi(r.PathValue("userId"))
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
 	followerID := r.Context().Value("userID").(int)
 
 	if r.Method == "POST" {
@@ -32,7 +35,7 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if isPublic {
-			_,err = models.CreatePrivateChat(h.db, followerID, userID)
+			_, err = models.CreatePrivateChat(h.db, followerID, userID)
 			if err != nil {
 				http.Error(w, "Error creating chat", http.StatusInternalServerError)
 				return
@@ -61,8 +64,12 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 
 		err = models.DeleteNotification(h.db, userID)
 		if err != nil {
-			fmt.Println(err)
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
 		}
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
@@ -74,28 +81,22 @@ func (h *Handler) AcceptFollowReq(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var notif models.Notification
-	err := json.NewDecoder(r.Body).Decode(&notif)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&notif); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	r.Body.Close()
 
-	err = models.ApproveFollowRequest(h.db, notif.RelatedId)
-	if err != nil {
+	if err := models.ApproveFollowRequest(h.db, notif.RelatedId); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
 
-	err = models.DeleteNotification(h.db, notif.Id)
-	if err != nil {
+	if err := models.DeleteNotification(h.db, notif.Id); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
 
-	err = models.CreateChatAfterApproval(h.db, notif.RelatedId)
-	if err != nil {
-		fmt.Println(err)
+	if err := models.CreateChatAfterApproval(h.db, notif.RelatedId); err != nil {
 		http.Error(w, "Error creating chat", http.StatusInternalServerError)
 		return
 	}
@@ -110,21 +111,17 @@ func (h *Handler) RejectFollowReq(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var notif models.Notification
-	err := json.NewDecoder(r.Body).Decode(&notif)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&notif); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	r.Body.Close()
 
-	err = models.DeleteFollowRequest(h.db, notif.RelatedId, 0)
-	if err != nil {
+	if err := models.DeleteFollowRequest(h.db, notif.RelatedId, 0); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
 
-	err = models.DeleteNotification(h.db, notif.Id)
-	if err != nil {
+	if err := models.DeleteNotification(h.db, notif.Id); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}

@@ -67,7 +67,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             if (response.ok) {
                 const data = await response.json();
                 console.log(data);
-                
+
                 if (data === null) {
                     setHasMoreEvents(false);
                     setLoadingEvents(false)
@@ -122,27 +122,38 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
     }, [activeTab, loading, loadingEvents, hasMore, hasMoreEvents, fetchPosts, fetchEvents]);
 
     const handleCreateEvent = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events`, {
-                method: "POST",
-                body: JSON.stringify(newEvent),
-                credentials: "include",
-            });
 
-            if (response.ok) {
-                const createdEvent = await response.json();
-                
-                setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents] : [createdEvent]);
-                setEventOffset(prevOffset => prevOffset + 1);
-                setShowEventForm(false);
-                setNewEvent({ title: "" , description: "", date: "", user_response: "" });
+        if (!newEvent.title || !newEvent.description || !newEvent.date || !newEvent.user_response) return;
+        if (newEvent.title.length < 3 || newEvent.title.length > 50) return alert("Title must be between 3 and 50 characters.");
+        if (newEvent.description.length < 10 || newEvent.description.length > 200) return alert("Description must be between 10 and 200 characters.");
+        if (newEvent.user_response !== "going" && newEvent.user_response !== "not_going") return alert("Invalid user response. Must be 'going' or 'not_going'.");
 
-            } else {
-                console.log("Failed to create event");
-            }
-        } catch (error) {
-            console.log("Error creating event:", error);
+        const eventDate = new Date(newEvent.date);
+        if (isNaN(eventDate.getTime())) {
+            return alert("Invalid date format. Use YYYY-MM-DDTHH:MM.");
         }
+        if (eventDate < new Date()) {
+            return alert("The event date cannot be in the past.");
+        }
+
+        const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events`, {
+            method: "POST",
+            body: JSON.stringify(newEvent),
+            credentials: "include",
+        });
+
+        if (response.ok) {
+            const createdEvent = await response.json();
+
+            setEvents(prevEvents => prevEvents ? [createdEvent, ...prevEvents] : [createdEvent]);
+            setEventOffset(prevOffset => prevOffset + 1);
+            setShowEventForm(false);
+            setNewEvent({ title: "", description: "", date: "", user_response: "" });
+
+        } else {
+            console.log("Failed to create event");
+        }
+
     };
 
     const handleGoing = async (eventId, response) => {
@@ -310,9 +321,9 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
                 <div className="popup">
                     <div className="popup-content">
                         <h2>Create Event</h2>
-                        <input type="text" placeholder="Title" value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
-                        <textarea placeholder="Description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
-                        <input type="datetime-local" value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
+                        <input type="text" maxLength={50} placeholder="Title" value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
+                        <textarea placeholder="Description" maxLength={200} value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
+                        <input type="datetime-local" min={new Date().toISOString().slice(0, 16)} value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
                         <div className="radio-group">
 
                             <input type="radio" id="going" value="going" checked={newEvent.user_response === "going"} onChange={() => setNewEvent({ ...newEvent, user_response: "going" })} />

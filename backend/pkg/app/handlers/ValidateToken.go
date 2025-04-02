@@ -11,13 +11,15 @@ func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 		Token string `json:"token"`
 	}
 	var res Response
-	json.NewDecoder(r.Body).Decode(&res)
+	if err := json.NewDecoder(r.Body).Decode(&res);err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 	
 	_, err := models.GetUserIDFromToken(res.Token, h.db)
 
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Token is invalid"})
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
 

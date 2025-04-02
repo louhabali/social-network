@@ -3,7 +3,7 @@ import { useEffect, useState, useContext } from "react";
 import ChatList from "../../components/chat/chatlist";
 import ChatSection from "../../components/chat/chatSection";
 import styles from "./chatPage.module.css";
-import { WebSocketContext } from "@/components/websocket";
+import { WebSocketContext } from "@/context/WebSocketContext";
 
 export default function messages() {
   const [conversations, setConversations] = useState([]);

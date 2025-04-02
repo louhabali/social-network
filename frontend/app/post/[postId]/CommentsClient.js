@@ -58,6 +58,8 @@ export default function ClientSideComments({ postId, lenComments, initialComment
 
     const handleCommentSubmit = async () => {
         if (!content.trim() && !selectedImage) return;
+        if (content.length > 200) return alert("Comment must be less than 200 characters");
+
         const formData = new FormData();
         formData.append('content', content);
         formData.append('image', sendImage);
@@ -87,6 +89,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                         type="text"
                         placeholder="Write a comment..."
                         value={content}
+                        maxLength={200}
                         onChange={(e) => setContent(e.target.value)}
                         className="comment-input"
                     />

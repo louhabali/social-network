@@ -9,7 +9,11 @@ import (
 func (h Handler) Suggestions(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value("userID").(int)
 
-	followers := models.NotFollowing(h.db, userID)
+	followers ,err := models.NotFollowing(h.db, userID)
+	if err != nil {
+		http.Error(w, "Error fetching suggestions", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(followers)

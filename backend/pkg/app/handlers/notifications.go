@@ -12,7 +12,7 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-	userId, _ := r.Context().Value("userID").(int)
+	userId:= r.Context().Value("userID").(int)
 
 	notifications, err := models.GetNotifications(h.db, userId)
 	if err != nil {
@@ -53,7 +53,7 @@ func (h *Handler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, _ := r.Context().Value("userID").(int)
+	userId := r.Context().Value("userID").(int)
 
 	unreadCount, err := models.GetUnreadCount(h.db, userId)
 	if err != nil {

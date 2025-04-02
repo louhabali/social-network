@@ -29,10 +29,21 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	privacy := r.FormValue("privacy")
 	groupID, _ := strconv.Atoi(r.FormValue("groupId"))
+	
 	file, header, err := r.FormFile("image")
 
 	if content == "" && file == nil {
 		http.Error(w, "Content or image is required", http.StatusBadRequest)
+		return
+	}
+
+	if len(content) > 200 || len(content) < 3 {
+		http.Error(w, "Content must be 3-200 characters", http.StatusBadRequest)
+		return
+	}
+
+	if privacy != "public" && privacy != "private" && privacy != "almost_private" {
+		http.Error(w, "Invalid privacy setting", http.StatusBadRequest)
 		return
 	}
 
@@ -81,8 +92,11 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to set post privacy", http.StatusInternalServerError)
 		return
 	}
-
-	// Respond with created post
+	p, err := models.GetPost(h.db, postID, userID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve post", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(models.GetPost(h.db, postID, userID))
+	json.NewEncoder(w).Encode(p)
 }

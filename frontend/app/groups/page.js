@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link"
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { WebSocketContext } from "@/context/WebSocketContext";
 import styles from "./Groups.module.css";
 
 export default function GroupsPage() {
@@ -13,6 +14,8 @@ export default function GroupsPage() {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef(null);
+    const { showNotification } = useContext(WebSocketContext);
+
 
     function openModal() {
         setIsOpen(true);
@@ -20,6 +23,8 @@ export default function GroupsPage() {
 
     function closeModal() {
         setIsOpen(false);
+        setTitle("");
+        setDescription("");
     }
 
     const fetchGroups = async () => {
@@ -29,9 +34,13 @@ export default function GroupsPage() {
         const res = await fetch(`http://localhost:8080/api/groups?offset=${offset}`, {
             credentials: "include",
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+            showNotification("Error fetching groups", "error");
+            setLoading(false);
+            return;
+        }
         const data = await res.json();
-        
+
         if (data === null) {
             setHasMore(false);
             setLoading(false);
@@ -47,17 +56,32 @@ export default function GroupsPage() {
 
     async function handleSubmit(e) {
         e.preventDefault();
+
+        if (!title || !description) {
+            showNotification("Please fill in all fields", "error");
+            return;
+        };
+        if (title.length < 3 || title.length > 50) {
+            showNotification("Title must be between 3 and 50 characters.", "error");
+            return;
+        }
+        if (description.length < 10 || description.length > 200) {
+            showNotification("Description must be between 10 and 200 characters.", "error");
+            return;
+        }
+
         const response = await fetch("http://localhost:8080/api/groups", {
             method: "POST",
             credentials: "include",
             body: JSON.stringify({ title, description }),
         });
+        if (!response.ok) {
+            showNotification("Error creating group", "error");
+            return
+        }
 
         const newGroup = await response.json();
-        console.log(newGroup);
         setGroups((prevGroups) => (prevGroups ? [newGroup, ...prevGroups] : [newGroup]));
-        setTitle("");
-        setDescription("");
         setOffset((prevOffset) => prevOffset + 1);
         setIsOpen(false);
     }
@@ -92,16 +116,23 @@ export default function GroupsPage() {
             credentials: "include",
         });
 
-        if (response.ok) {
-            setGroups((prevGroups) =>
-                prevGroups.map((group) =>
-                    group.id === groupId ? { ...group, status: newStatus } : group
-                )
-            );
+        if (!response.ok) {
+            showNotification("Error joining group", "error");
+            return;
+        }
+        setGroups((prevGroups) =>
+            prevGroups.map((group) =>
+                group.id === groupId ? { ...group, status: newStatus } : group
+            )
+        );
+        if (currentStatus === "pending") {
+            showNotification("Request cancelled", "info");
+        } else {
+            showNotification("Request sent", "info");
         }
 
     }
-        
+
     return (
         <div className={styles.container}>
             <div className={styles.pageHeader}>
@@ -114,7 +145,7 @@ export default function GroupsPage() {
                     <li key={group.id} className={styles.groupItem}>
                         <h3 className={styles.groupTitle}>{group.title}</h3>
                         <p className={styles.groupDescription}>{group.description}</p>
-                        
+
                         <div className={styles.groupActions}>
                             {group.status === "approved" || group.status === "creator" ? (
                                 <Link href={`/groups/${group.id}`}>
@@ -123,7 +154,7 @@ export default function GroupsPage() {
                             ) : group.status === "pending" ? (
                                 <div className={styles.pendingStatus}>
                                     <span>Request Pending</span>
-                                    <button 
+                                    <button
                                         className={styles.cancelBtn}
                                         onClick={() => handleJoin(group.id, "pending")}
                                     >
@@ -131,8 +162,8 @@ export default function GroupsPage() {
                                     </button>
                                 </div>
                             ) : (
-                                <button 
-                                    className={styles.joinBtn} 
+                                <button
+                                    className={styles.joinBtn}
                                     onClick={() => handleJoin(group.id)}
                                 >
                                     Join Group
@@ -159,10 +190,11 @@ export default function GroupsPage() {
                                     placeholder="Enter a name for your group"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
+                                    maxLength={50}
                                     required
                                 />
                             </div>
-                            
+
                             <div className={styles.formGroup}>
                                 <label htmlFor="groupDescription">Description</label>
                                 <textarea
@@ -170,10 +202,11 @@ export default function GroupsPage() {
                                     placeholder="What's your group about?"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
+                                    maxLength={200}
                                     required
                                 ></textarea>
                             </div>
-                            
+
                             <div className={styles.modalButtons}>
                                 <button type="button" onClick={closeModal}>Cancel</button>
                                 <button type="submit">Create</button>

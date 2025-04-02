@@ -2,23 +2,26 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileArrowUp, faShare } from "@fortawesome/free-solid-svg-icons";
+import { WebSocketContext } from "@/context/WebSocketContext";
 import "./postform.css";
 
 const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     const [newPost, setNewPost] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
+    const { showNotification } = useContext(WebSocketContext);
+    
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
             if (file.size > 4*1024 * 1024) {
-                // setErrorMessage("Profile image must be less than 4MB");
+                showNotification("Image size must be under 4MB", "error");
                 return;
               }
               const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
               if (!allowedTypes.includes(file.type)) {
-                // setErrorMessage("Only JPG, PNG, or GIF images are allowed");
+                showNotification("Only JPG, PNG, or GIF images are allowed", "error");
                 return;
               }
             setSelectedImage(URL.createObjectURL(file));
@@ -31,11 +34,17 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     };
 
     const handlePostSubmit = async () => {
-        if (!newPost.trim() && !selectedImage) return;
-
+        if (!newPost.trim() && !selectedImage) {
+            showNotification("Post cannot be empty!", "error");
+            return;
+        }
         const formData = new FormData();
         formData.append("content", newPost);
         formData.append("groupId", groupId);
+        if (newPost.length > 200 || newPost.length < 3) {
+            showNotification("Post must be between 3 and 200 characters.", "error");
+            return;
+        }
 
         if (sendImage) formData.append("image", sendImage);
 
@@ -57,7 +66,7 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             setSendImage(null);
             document.getElementById("fileInput").value = "";
         } catch (error) {
-            console.error("Error posting:", error);
+            showNotification("Failed to post", "error");
         }
     };
 

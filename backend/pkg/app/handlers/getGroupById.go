@@ -10,7 +10,11 @@ import (
 )
 
 func (h *Handler) GetGroupByIdHandler(w http.ResponseWriter, r *http.Request) {
-	groupID, _ := strconv.Atoi(r.PathValue("groupId"))
+	groupID, err := strconv.Atoi(r.PathValue("groupId"))
+	if err != nil {
+		http.Error(w, "Invalid group ID", http.StatusBadRequest)
+		return
+	}
 	userID := r.Context().Value("userID").(int)
 
 	group, err := models.GetGroup(h.db, groupID)

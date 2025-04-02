@@ -1,14 +1,16 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Image from 'next/image';
 import styles from '../app/page.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
+import { WebSocketContext } from "@/context/WebSocketContext";
 import Link from 'next/link';
 
 export default function Post({ post }) {
     const [likes, setLikes] = useState(post.Likes);
     const [userInteraction, setUserInteraction] = useState(post.UserInteraction);
+    const { showNotification } = useContext(WebSocketContext);
 
     const handleLike = async (postId) => {
         let likeStatus = userInteraction === 1 ? 0 : 1;
@@ -22,6 +24,8 @@ export default function Post({ post }) {
         if (response.ok) {
             setUserInteraction(likeStatus);
             setLikes((prevLikes) => prevLikes + (likeStatus ? 1 : -1));
+        }else {
+            showNotification("Error liking the post", "error");
         }
     };
 

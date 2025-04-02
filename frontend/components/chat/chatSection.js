@@ -3,7 +3,7 @@ import styles from "./chatSection.module.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faFaceSmile, faRotate } from "@fortawesome/free-solid-svg-icons";
 import EmojiPicker from './emojiPicker';
-import { WebSocketContext } from "@/components/websocket";
+import { WebSocketContext } from "@/context/WebSocketContext";
 
 export default function ChatSection({ selectedChat, closeChat }) {
     const [message, setMessage] = useState("");

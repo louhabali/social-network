@@ -109,7 +109,7 @@
   flex-direction: column;
   gap: 15px;
   width: 36rem;
-  /* margin-left: 6rem; */
+  word-break: break-word;
 }
 
 .post:hover {
