@@ -23,6 +23,7 @@ LABEL project="sociale network"
 LABEL version = "1"
 LABEL team = ""
 
+EXPOSE 8080
 
 CMD ["./main"]
 
