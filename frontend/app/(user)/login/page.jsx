@@ -24,6 +24,21 @@ export default function LoginPage() {
       setErrorMessage("Please fill all the required fields")
       return
     }
+
+    if (!formData.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
+      setErrorMessage("Please enter a valid email");
+      return
+    } 
+    if (formData.password.length < 8) {
+      setErrorMessage("Password must be at least 8 characters long");
+      return
+    }
+
+    if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
+      setErrorMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+      return
+    }
+
     try {
       const response = await fetch("http://localhost:8080/api/login", {
         method: "POST",

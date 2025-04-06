@@ -6,7 +6,7 @@ import ErrorPage from "@/components/ErrorPage";
 // import "./post.css"
 
 async function getPost(postId) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
 
   const res = await fetch(`http://localhost:8080/api/posts/${postId}`, {
@@ -24,7 +24,7 @@ async function getPost(postId) {
 }
 
 async function getComments(postId, offset = 0) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
 
   const res = await fetch(`http://localhost:8080/api/posts/${postId}/comments?offset=${offset}`, {
@@ -40,7 +40,9 @@ async function getComments(postId, offset = 0) {
   return res.json();
 }
 
-export default async function PostPage({ params }) {
+export default async function PostPage({ params: paramsPromise }) {
+  const params = await paramsPromise;
+
   try {
     const post = await getPost(params.postId);
     const initialComments = await getComments(params.postId);

@@ -12,7 +12,7 @@
   }
   
   /* Main button styling */
-  button {
+  .button {
     background-color: var(--fb-dark-surface);
     color: var(--fb-dark-text);
     border: none;
@@ -23,18 +23,18 @@
     transition: background-color 0.2s;
   }
   
-  button:hover {
+  .button:hover {
     background-color: var(--fb-dark-surface-hover);
   }
   
   /* Primary action button styling (Invite) */
-  li button {
+  .inviteButton {
     background-color: var(--fb-blue);
     padding: 6px 10px;
     font-size: 0.9em;
   }
   
-  li button:hover {
+  .inviteButton:hover {
     background-color: var(--fb-blue-hover);
   }
   
@@ -141,9 +141,13 @@
   }
   
   /* Close button container */
-  .popup-content > button {
+  .closeButton {
     margin-top: 16px;
     background-color: var(--fb-dark-surface-hover);
+    color: var(--fb-dark-text);
+    padding: 7px;
+    border-radius: 6px;
+    border: none;
     align-self: flex-end;
   }
   

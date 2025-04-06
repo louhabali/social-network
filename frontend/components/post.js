@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useContext } from 'react';
 import Image from 'next/image';
-import styles from '../app/page.module.css';
+import styles from './post.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import { WebSocketContext } from "@/context/WebSocketContext";

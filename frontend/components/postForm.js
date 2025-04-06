@@ -137,9 +137,9 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             <div className="create-post">
                 <div className="user-avatar">
                     {userInfo && userInfo.Avatar ? (
-                        <Image src={`http://localhost:8080/api/images/${userInfo.Avatar}`} alt="User Avatar" width={40} height={40} />
+                        <Image src={`http://localhost:8080/api/images/${userInfo.Avatar}`} className="userAvatar" alt="User Avatar" width={40} height={40} />
                     ) : (
-                        <Image src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} />
+                        <Image src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} className="userAvatar" />
                     )}
                 </div>
 

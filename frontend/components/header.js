@@ -180,9 +180,6 @@ const Header = () => {
                                 <Link href={`/profile/${u.ID}`} className={styles.dropdownItem}>
                                     Profile
                                 </Link>
-                                {/* <Link href="/settings" className={styles.dropdownItem}>
-                                    Settings
-                                </Link> */}
                                 <button onClick={handleLogout} className={styles.dropdownItem}>
                                     Logout
                                 </button>

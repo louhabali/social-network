@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 
 async function getProfile(userId) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
 
   const res = await fetch(`http://localhost:8080/api/profile/${userId}`, {
@@ -24,7 +24,9 @@ async function getProfile(userId) {
   return res.json();
 }
 
-export default async function ProfilePage({ params }) {
+export default async function ProfilePage({ params: paramsPromise }) {
+  const params = await paramsPromise;
+
   let profile = null;
 
   try {

@@ -50,6 +50,40 @@ export default function RegisterPage() {
       return
     }
 
+    if (!formData.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
+      setErrorMessage("Please enter a valid email" );
+      return
+    }
+    if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
+      setErrorMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number");
+      return
+    }
+    if (!formData.firstName.match(/^[a-zA-Z]{1,10}$/) || !formData.lastName.match(/^[a-zA-Z]{1,10}$/)) {
+      setErrorMessage("First and last name must contain only letters and be less than 10 characters each");
+      return;
+    }
+    if (formData.nickname && !formData.nickname.match(/^[a-zA-Z0-9]{1,10}$/)) {
+      setErrorMessage("Nickname must contain only letters and numbers and be less than 10 characters long");
+      return
+    }
+    if (formData.aboutMe && formData.aboutMe.length > 100) {
+      setErrorMessage("About me must be less than 100 characters long");
+      return
+    }
+    
+    if (formData.dateOfBirth) {
+      const dateOfBirth = new Date(formData.dateOfBirth) 
+      const today = new Date()
+      let age = today.getFullYear() - dateOfBirth.getFullYear()
+      if (today.getMonth() - dateOfBirth.getMonth() < 0 || (dateOfBirth.getMonth() === today.getMonth() && today.getDate() < dateOfBirth.getDate())) {
+        age--
+      }
+      if (age < 5) {
+        setErrorMessage("You must be at least 5 years old to register" );
+        return
+      }
+    }
+
     const formDataToSend = new FormData()
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value)
@@ -101,7 +135,7 @@ export default function RegisterPage() {
           <div className={styles.inputGroup}>
             <div className={styles.inputField}>
               <span className={styles.inputLabel}>Date of Birth</span>
-              <input type="date" name="dateOfBirth" required className={styles.inputs} onChange={handleChange} value={formData.dateOfBirth} />
+              <input type="date" name="dateOfBirth" required className={styles.inputs} onChange={handleChange} value={formData.dateOfBirth} max={new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().split("T")[0]}/>
             </div>
             <div className={styles.inputField}>
               <span className={styles.inputLabel}>Nickname (Optional)</span>

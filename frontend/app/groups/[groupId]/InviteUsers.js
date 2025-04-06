@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { WebSocketContext } from "@/context/WebSocketContext";
-import "./invite-users.css"
+import styles from "./inviteUsers.module.css"
 
 export default function InviteUsers({ groupId }) {
   const [showPopup, setShowPopup] = useState(false);
@@ -66,35 +66,36 @@ export default function InviteUsers({ groupId }) {
 
   return (
     <div>
-      <button onClick={() => setShowPopup(true)}>Invite Users</button>
+      <button className={styles.button} onClick={() => setShowPopup(true)}>Invite Users</button>
 
       {showPopup && (
-        <div className="popup">
-          <div className="popup-content">
-            <h3>Invite Users</h3>
+        <div className={styles.popup}>
+          <div className={styles["popup-content"]}>
+            <h3 className={styles.header}>Invite Users</h3>
             <input
+              className={styles.searchInput}
               type="text"
               placeholder="Search users..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <ul onScroll={(e) => {
+            <ul className={styles.userList} onScroll={(e) => {
               if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
                 fetchUsers();
               }
             }}>
               {users?.map((user) => (
-                <li key={user.ID}>
+                <li key={user.ID} className={styles.userItem}>
                   {user.Firstname} {user.Lastname}
                   {invitedUsers[user.ID] ? (
-                    <button disabled>Done</button>
+                    <button disabled className={styles.inviteButton}>Done</button>
                   ) : (
-                    <button onClick={() => inviteUser(user.ID)}>Invite</button>
+                    <button className={styles.inviteButton} onClick={() => inviteUser(user.ID)}>Invite</button>
                   )}
                 </li>
               ))}
             </ul>
-            <button onClick={() => setShowPopup(false)}>Close</button>
+            <button className={styles.closeButton} onClick={() => setShowPopup(false)}>Close</button>
           </div>
         </div>
       )}

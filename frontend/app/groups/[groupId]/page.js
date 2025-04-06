@@ -5,7 +5,7 @@ import './GroupClient.css';
 
 
 async function fetchGroupById(groupId) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
     const res = await fetch(`http://localhost:8080/api/groups/${groupId}`, {
@@ -24,7 +24,7 @@ async function fetchGroupById(groupId) {
 }
 
 async function fetchUserInfo() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
     const res = await fetch("http://localhost:8080/api/userdata", {
@@ -41,7 +41,7 @@ async function fetchUserInfo() {
 }
 
 async function getPosts(groupId) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
     const res = await fetch(`http://localhost:8080/api/posts?groupId=${groupId}`, {
@@ -56,7 +56,9 @@ async function getPosts(groupId) {
     return res.json();
 }
 
-export default async function GroupDetailsPage({ params }) {
+export default async function GroupDetailsPage({ params: paramsPromise }) {
+    const params = await paramsPromise;
+
     try {
         const group = await fetchGroupById(params.groupId);
         const initialPosts = await getPosts(params.groupId);

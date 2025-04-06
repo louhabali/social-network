@@ -165,79 +165,41 @@
 }
 
 
-@media (max-width: 768px) {
-  .create-post {
-    width: 1rem;
-  }
-  .post-form-container {
-    max-width: 95%;
-  }
 
-  .post-tools {
-    flex-wrap: wrap;
-  }
-
-  .privacy-selector {
-    margin-top: 8px;
-    width: 100%;
-    justify-content: flex-end;
-  }
-}
 
 @media (max-width: 480px) {
-  .post-form-container {
-    max-width: 83%;
-    border-radius: 15px;
+  .userAvatar{
+    height: 30px;
+    width: 30px;
+  }
+  .post-input {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .post-icon-btn {
+    width: 30px;
+    height: 28px;
   }
 
-  .create-post {
-    padding: 10px;
-    width: 1rem;
+  .privacy-dropdown{
+    padding: 6px 10px;
+    font-size: 12px;
   }
-
-  .user-avatar {
-    margin-right: 8px;
+  .upload-button {
+    padding: 6px 10px;
+    font-size: 12px;
   }
-
-  .post-tools {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .upload-button,
-  .submit-button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .privacy-selector {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .privacy-dropdown {
-    width: 100%;
-  }
-
-  .private-users-popup {
-    max-height: 150px;
-  }
+  
+  
 }
 
 @media (max-width: 320px) {
-  .post-form-container {
-    max-width: 100%;
-    /* margin-left: 1rem; */
-    border-radius: 15px;
-  }
   .post-input {
-    font-size: 14px;
-    padding: 8px 12px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
-
   .post-icon-btn {
-    width: 35px;
-    height: 32px;
+    width: 28px;
+    height: 26px;
   }
 }

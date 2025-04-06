@@ -223,7 +223,6 @@
 
 .mobileNavLabel {
   font-size: 10px;
-  display: none;
 }
 
 .notificationIndicator {
@@ -385,10 +384,22 @@
   .userName {
     display: none;
   }
+
+  .userMenu {
+    margin-right: 20px;
+    gap: 5px;
+  }
+
+  .userMenu span {
+    font-size: 12px;
+  }
+  .userAvatar, .defaultAvatar {
+    width: 20px;
+    height: 20px;
+  }
   
   .dropdown {
-    right: 10px;
-    top: 45px;
+    right: 0;
   }
   
   .mobileNavItem {
@@ -452,8 +463,11 @@
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 450px) {
   .searchInput {
     width: 120px;
+  }
+  .userMenu{
+    display: none;
   }
 }
