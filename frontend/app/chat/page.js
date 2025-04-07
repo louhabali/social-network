@@ -3,18 +3,10 @@ import { useEffect, useState, useContext } from "react";
 import ChatList from "../../components/chat/chatlist";
 import ChatSection from "../../components/chat/chatSection";
 import styles from "./chatPage.module.css";
-import { WebSocketContext } from "@/context/WebSocketContext";
 
 export default function messages() {
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
-
-  useEffect(() => {
-    const storedConv = localStorage.getItem("conv")
-    if (storedConv) {
-      setSelectedChat(JSON.parse(storedConv))
-    }
-  },[])
   
   useEffect(() => {
     async function fetchConversations() {
@@ -23,25 +15,23 @@ export default function messages() {
           credentials: "include",
         });
         const data = await response.json();
-        console.log("vonvs",data);
-        setConversations(data ? data : [] );
+        setConversations(() => data ? data : [] );
       } catch (error) {
         console.error("Failed to fetch conversations", error);
       }
     }
 
     fetchConversations();
-  }, []);
+  }, [selectedChat]);
+
 
 
 
   const handleChatSelect = (conv) => {
-    localStorage.setItem("conv", JSON.stringify(conv));
     setSelectedChat(conv);
   };
 
   function closeChat() {
-    localStorage.removeItem("conv");
     setSelectedChat(null);
   }
 

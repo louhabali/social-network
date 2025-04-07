@@ -29,16 +29,16 @@ func (h *Handler) MarkNotifAsRead(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-
-	var notif models.Notification
-	err := json.NewDecoder(r.Body).Decode(&notif)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-	r.Body.Close()
-
-	err = models.MarkNotificationAsRead(h.db, notif.Id)
+	userId:= r.Context().Value("userID").(int)
+	// var notif models.Notification
+	// err := json.NewDecoder(r.Body).Decode(&notif)
+	// if err != nil {
+	// 	http.Error(w, "Invalid request body", http.StatusBadRequest)
+	// 	return
+	// }
+	// r.Body.Close()
+	
+	err := models.MarkNotificationAsRead(h.db, userId)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return

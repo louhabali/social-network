@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -83,7 +84,7 @@ func GetConversations(db *sql.DB, userID int) ([]Conversation, error) {
 		)
 		if err != nil {
 			return nil, err
-		}		
+		}
 
 		conversations = append(conversations, conv)
 	}
@@ -115,6 +116,10 @@ func GetMessages(db *sql.DB, userID, chatID, offset int) ([]Message, error) {
 
 // InsertMessage inserts a new message into the database
 func InsertMessage(db *sql.DB, senderID, chatID int, content string) (Message, error) {
+	if !CanInsert(db, chatID, senderID) {
+		return Message{}, fmt.Errorf("At least one follow the other constraint")
+	}
+
 	time := time.Now().Format("2006-01-02 15:04:05")
 
 	result, err := db.Exec(`INSERT INTO messages (chat_id, sender_id, content, created_at) VALUES (?, ?, ?, ?)`, chatID, senderID, content, time)
@@ -232,12 +237,44 @@ func MarkMessagesAsRead(db *sql.DB, chat_id, userID int) error {
 	return err
 }
 
-
-func GetChatIDByGroupName(db *sql.DB,groupName string) (int, error) {
+func GetChatIDByGroupName(db *sql.DB, groupName string) (int, error) {
 	var chatID int
 	err := db.QueryRow("SELECT id FROM chats WHERE name = ?", groupName).Scan(&chatID)
 	if err != nil {
 		return 0, err
 	}
 	return chatID, nil
+}
+
+func CanInsert(db *sql.DB, chatId, senderId int) bool {
+	query := `
+		SELECT 1
+		FROM chats c
+		JOIN chat_members cm1 ON c.id = cm1.chat_id
+		WHERE c.id = ?
+		AND cm1.user_id = ?
+		AND (
+		    c.is_group = 1
+		    OR EXISTS (
+		        SELECT 1
+		        FROM follow_requests f
+		        JOIN chat_members cm2 ON cm2.chat_id = c.id
+		        WHERE f.status = 'approved'
+		        AND cm2.user_id != cm1.user_id
+		        AND (
+		            (f.follower_id = cm1.user_id AND f.following_id = cm2.user_id)
+		            OR
+		            (f.follower_id = cm2.user_id AND f.following_id = cm1.user_id)
+		        )
+		    )
+		);
+	`
+
+	var exists int
+	err := db.QueryRow(query, chatId, senderId).Scan(&exists)
+	if err != nil {
+		return false
+	}
+
+	return true
 }

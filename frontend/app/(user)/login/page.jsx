@@ -34,10 +34,10 @@ export default function LoginPage() {
       return
     }
 
-    if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
-      setErrorMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number");
-      return
-    }
+    // if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
+    //   setErrorMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+    //   return
+    // }
 
     try {
       const response = await fetch("http://localhost:8080/api/login", {

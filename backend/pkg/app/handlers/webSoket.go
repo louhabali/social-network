@@ -258,7 +258,8 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 
 	msg, err := models.InsertMessage(db,senderID, messageData.ChatId, messageData.Content)
 	if err != nil {
-		log.Printf("Error inserting message: %v", err)
+		// ana khasni nmchi daba ,ghi kheliha 7ta n9adoha mn b3d , matnsach tpushi dakchi  
+
 		return
 	}
 

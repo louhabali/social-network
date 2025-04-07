@@ -26,7 +26,7 @@ export default function NotificationsPage() {
   const handleAccept = async (notif) => {
     let url
     switch (notif.type) {
-      case "follow reqeust":
+      case "follow request":
         url = 'http://localhost:8080/api/follow/accept'
         break
       default:
@@ -54,7 +54,7 @@ export default function NotificationsPage() {
     console.log(notif.type);
     
     switch (notif.type) {
-      case "follow reqeust":
+      case "follow request":
         url = 'http://localhost:8080/api/follow/reject'
         break
       default:

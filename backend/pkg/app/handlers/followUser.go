@@ -71,7 +71,6 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) AcceptFollowReq(w http.ResponseWriter, r *http.Request) {

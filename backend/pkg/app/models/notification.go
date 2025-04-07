@@ -36,16 +36,21 @@ func DeleteGroupMemberNotifications(db *sql.DB, groupID, userID int) error {
 // GetNotifications retrieves unread notifications for a user
 func GetNotifications(db *sql.DB, userId int) ([]Notification, error) {
 	query := `
-		SELECT n.id, n.type, n.related_id, n.sender_id, n.recever_id,
+		SELECT 
+		    n.id, 
+		    n.type, 
+		    n.related_id,
+		    n.sender_id,
+			n.recever_id,
 		    COALESCE(ge.group_id, gm.group_id) AS group_id,
 		    u.first_name || ' ' || u.last_name AS sender_name,
 		    g.title AS group_name
 		FROM notifications AS n
 		JOIN users As u ON n.sender_id = u.id
-		LEFT JOIN group_events AS ge ON ((n.type = 'group event') AND n.related_id = ge.id)
-		LEFT JOIN group_members AS gm ON  ((n.type = 'group join invatation' OR n.type = 'group join request') AND n.related_id = gm.id)
+		LEFT JOIN group_events AS ge ON n.related_id = ge.id
+		LEFT JOIN group_members AS gm ON n.related_id = gm.id
 		LEFT JOIN groups AS g ON g.id = COALESCE(ge.group_id, gm.group_id)
-		WHERE n.recever_id = ? AND n.is_read = 0;
+		WHERE n.recever_id = ?;
 	`
 	rows, err := db.Query(query, userId)
 	if err != nil {
@@ -67,7 +72,7 @@ func GetNotifications(db *sql.DB, userId int) ([]Notification, error) {
 
 // MarkNotificationAsRead updates a notification as read
 func MarkNotificationAsRead(db *sql.DB, notifID int) error {
-	_, err := db.Exec("UPDATE notifications SET is_read = 1 WHERE id = ?", notifID)
+	_, err := db.Exec("UPDATE notifications SET is_read = 1 WHERE recever_id = ?", notifID)
 	return err
 }
 

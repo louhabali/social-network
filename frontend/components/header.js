@@ -3,23 +3,16 @@ import React from 'react';
 import Link from 'next/link';
 import styles from './Header.module.css';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { WebSocketContext } from '@/context/WebSocketContext';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 
-const Header = () => {
+const Header = ({ userID, Avatar, fname, lname }) => {
 
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [u, setUser] = useState([])
-
-    useEffect(() => {
-        fetch('http://localhost:8080/api/userdata', {
-            credentials: "include",
-        }).then(data => data.json()).then(d => {
-            setUser(d)
-        })
-    }, []);
 
     const handleLogout = async () => {
         try {
@@ -70,9 +63,9 @@ const Header = () => {
                     if (data) {
                         setSearchResults(Object.values(data));
                     }
-                    console.log(data);
                 }
 
+                //console.log(users);
 
             }
             )
@@ -105,14 +98,7 @@ const Header = () => {
                                 color: "white"
                             }}>
                                 {searchResults.map((user, index) => (
-                                    <p key={index}>
-                                        <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/profile/${user.Uid}`}>
-                                        {user.Avatar ? (
-                                        <Image src={`http://localhost:8080/api/images/${user.Avatar}`} alt="user" style={{ borderRadius: "50%" }} width={32} height={32} />
-
-                                    ) : (
-                                        <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
-                                    )} {user.Fname} {user.Lname}</Link></p>
+                                    <p key={index}>{user.Fname} {user.Lname}</p>
                                 ))}
                             </div>
                         )}
@@ -140,30 +126,26 @@ const Header = () => {
                             </svg>
                         </Link>
                         <Link href="/chat" className={styles.navItem}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
+                            <ChatIcon />
                         </Link>
                         <Link href="/notifications" className={styles.navItem}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
+                            <NotifIcon />
                         </Link>
                     </nav>
                 </div>
 
                 <div className={styles.headerRight}>
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                        {u.Avatar ? (
+                        {Avatar ? (
                             <img
-                                src={`http://localhost:8080/api/images/${u.Avatar}`} alt="user"
+                                src={`data:image/png;base64,${Avatar}`} alt="user"
                                 className={styles.userAvatar}
                                 width={20} height={20}
                             />
                         ) : (
                             <Image src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
 
-                        )}<span>{u.Firstname} {u.Lastname}</span>
+                        )}<span>{fname} {lname}</span>
 
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -177,9 +159,12 @@ const Header = () => {
 
                         {isDropdownOpen && (
                             <div className={styles.dropdown}>
-                                <Link href={`/profile/${u.ID}`} className={styles.dropdownItem}>
+                                <Link href={`/profile/${userID}`} className={styles.dropdownItem}>
                                     Profile
                                 </Link>
+                                {/* <Link href="/settings" className={styles.dropdownItem}>
+                                    Settings
+                                </Link> */}
                                 <button onClick={handleLogout} className={styles.dropdownItem}>
                                     Logout
                                 </button>
@@ -206,11 +191,8 @@ const Header = () => {
                         <span className={styles.mobileNavLabel}>Groups</span>
                     </Link>
 
-                    <Link href="/messages" className={styles.mobileNavItem}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.mobileNavIcon}>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span className={styles.mobileNavLabel}>Chat</span>
+                    <Link href="/chat" className={styles.navItem}>
+                        <ChatIcon />
                     </Link>
 
                     <Link href="/notifications" className={styles.mobileNavItem}>
@@ -222,10 +204,10 @@ const Header = () => {
 
                     <Link href="/profile" className={styles.mobileNavItem}>
                         <div className={styles.userMenuIcon}>
-                            {u.Avatar ? (
+                            {Avatar ? (
                                 <img
-                                    src={`http://localhost:8080/api/images/${u.Avatar}`}
-                                    alt={u.Firstname}
+                                    src={Avatar}
+                                    alt={fname}
                                     className={styles.mobileUserAvatar}
                                     width={20} height={20}
                                 />
@@ -242,5 +224,123 @@ const Header = () => {
     );
 };
 
+function NotifIcon() {
+    const [notifsCount, setNotifsCount] = useState(0)
+    const { ws } = useContext(WebSocketContext);
+    const path = usePathname();
+
+    function handleNewNotif(notif) {
+        const data = JSON.parse(notif.data)
+        console.log(data);
+        
+        if (data.type === "notification" && path !== "/notifications") {
+            setNotifsCount(notifsCount => notifsCount + 1);
+        }
+    }
+
+    useEffect(() => {
+        async function getNotifsCount() {
+            const res = await fetch("http://localhost:8080/api/notifications/count", {
+                credentials: "include"
+            })
+            if (res.ok) {
+                const jsonRes = await res.json();
+                setNotifsCount(jsonRes.unread_count);
+            } else {
+                console.log("ERROR GETTING NOTIFS UNREAD COUNT");
+            }
+        }
+
+        getNotifsCount()
+        
+        setTimeout(() => {
+            ws.current.addEventListener("message", handleNewNotif)
+        }, 500)
+        return (
+            () => { if (ws.current) ws.current.removeEventListener("message", handleNewNotif) }
+        )
+    }, [])
+
+    async function markNotifsAsRead() {
+        const response = await fetch("http://localhost:8080/api/notifications/read", {
+            credentials: "include",
+            method: "POST",
+        });
+
+        if (!response.ok) {
+            console.log("ERROR marking notis as read");
+        }
+    }
+
+    return (
+        <span onClick={async () => {
+            await markNotifsAsRead();
+            setNotifsCount(0)
+        }
+        }
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {notifsCount > 0 && <span style={{ color: '#05ff9f', fontSize: '18px', textDecoration: 'none' }}>
+                {notifsCount}
+            </span>}
+        </span>
+    )
+}
+
+function ChatIcon() {
+    const [msgsCount, setMsgsCount] = useState(0);
+    const { ws } = useContext(WebSocketContext);
+    const path = usePathname();
+
+    function handleNewMessage(msg) {
+        console.log("new !!!!!!!!!");
+        console.log(path);
+
+
+        const data = JSON.parse(msg.data)
+        if (data.type === "new_message" && path != "/chat") {
+            setMsgsCount(msgsCount => msgsCount + 1);
+        }
+    }
+
+    useEffect(() => {
+        async function getConvs() {
+            const res = await fetch("http://localhost:8080/api/conversations", {
+                credentials: "include"
+            })
+            if (res.ok) {
+                let jsonRes = await res.json();
+                jsonRes = jsonRes ? jsonRes : []
+                setMsgsCount(jsonRes.reduce((sum, conv) => sum + conv.unread_count, 0));
+            } else {
+                console.log("ERROR GETTING NOTIFS UNREAD COUNT");
+            }
+        }
+
+        getConvs()
+
+        setTimeout(() => {
+            ws.current.addEventListener("message", handleNewMessage)
+        }, 500)
+        return (
+            () => { if (ws.current) ws.current.removeEventListener("message", handleNewMessage) }
+        )
+    }, [])
+
+    return (
+        <span onClick={() => { setMsgsCount(0) }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.navIcon}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            {
+                msgsCount > 0 && <span style={{ color: '#05ff9f', fontSize: '18px', textDecoration: 'none' }}>
+                    {msgsCount}
+                </span>
+            }
+        </span>
+    )
+}
 
 export default Header;

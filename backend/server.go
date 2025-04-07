@@ -47,7 +47,7 @@ func main() {
 
 	http.HandleFunc("/api/ws", handlers.HandleCORS(handler.Midd(handler.HandleWebSocket)))
 	http.HandleFunc("/api/notifications", handlers.HandleCORS(handler.Midd(handler.GetNotifications)))
-	http.HandleFunc("/api/notification/read", handlers.HandleCORS(handler.Midd(handler.MarkNotifAsRead)))
+	http.HandleFunc("/api/notifications/read", handlers.HandleCORS(handler.Midd(handler.MarkNotifAsRead)))
 	http.HandleFunc("/api/notifications/count", handlers.HandleCORS(handler.Midd(handler.GetUnreadCount)))
 	http.HandleFunc("/api/conversations", handlers.HandleCORS(handler.Midd(handler.GetConversations)))
 	http.HandleFunc("/api/messages", handlers.HandleCORS(handler.Midd(handler.GetMessages)))

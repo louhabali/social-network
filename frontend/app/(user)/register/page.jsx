@@ -54,10 +54,10 @@ export default function RegisterPage() {
       setErrorMessage("Please enter a valid email" );
       return
     }
-    if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
-      setErrorMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number");
-      return
-    }
+    // if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
+    //   setErrorMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number");
+    //   return
+    // }
     if (!formData.firstName.match(/^[a-zA-Z]{1,10}$/) || !formData.lastName.match(/^[a-zA-Z]{1,10}$/)) {
       setErrorMessage("First and last name must contain only letters and be less than 10 characters each");
       return;
