@@ -122,7 +122,7 @@ func InsertMessage(db *sql.DB, senderID, chatID int, content string) (Message, e
 
 	time := time.Now().Format("2006-01-02 15:04:05")
 
-	result, err := db.Exec(`INSERT INTO messages (chat_id, sender_id, content, created_at) VALUES (?, ?, ?, ?)`, chatID, senderID, content, time)
+	result, err := db.Exec(`INSERT INTO messages (chat_id, sender_id, content) VALUES (?, ?, ?)`, chatID, senderID, content)
 	if err != nil {
 		return Message{}, err
 	}

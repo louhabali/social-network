@@ -33,7 +33,8 @@ export default function ChatSection({ selectedChat, closeChat }) {
         });
         let data = await response.json();
         data = data ? data.reverse() : []
-
+        console.log(data);
+        
         return data;
     }
 
@@ -52,6 +53,18 @@ export default function ChatSection({ selectedChat, closeChat }) {
         }
     }
 
+    async function updateLastMsgReaded(id) {
+        const resp = await fetch("http://localhost:8080/api/messages/read", {
+            credentials: "include",
+            method: 'POST',
+            body: JSON.stringify({id})
+        })
+
+        if (!resp.ok) {
+
+        }
+    }
+
     useEffect(() => {
         //initial msgs
         async function initialFetch() {
@@ -65,11 +78,16 @@ export default function ChatSection({ selectedChat, closeChat }) {
         }
 
         function handleMessage(msg) {
+            console.log("new msg from chatSection!!!!!!!!");
+            
             const data = JSON.parse(msg.data);
             if (data.type === "new_message" && data.payload.chat_id == selectedChat.chat_id) {
                 setMessages((messages) => [...messages, data.payload])
                 setNewMsg((newMsg) => !newMsg)
                 offset.current += 1;
+                console.log("update ->", data.payload.chat_id);
+                
+                updateLastMsgReaded(data.payload.chat_id)
             }else if (data.type === "error_message") {
                 showNotification("At least one follow the other constraint", "error");
             }
@@ -151,7 +169,9 @@ export default function ChatSection({ selectedChat, closeChat }) {
 
 function formatTime(dateStr) {
     const date = new Date(dateStr);
-    const hours = date.getHours().toString().padStart(2, '0');
+    console.log(dateStr,"//", date);
+    
+    const hours = (date.getHours()).toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
 
     return `${hours}:${minutes}`;

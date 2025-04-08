@@ -1,9 +1,8 @@
 "use client";
-import React from 'react';
 import Link from 'next/link';
 import styles from './Header.module.css';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { WebSocketContext } from '@/context/WebSocketContext';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -236,13 +235,16 @@ const Header = ({ userID, Avatar, fname, lname }) => {
 function NotifIcon() {
     const [notifsCount, setNotifsCount] = useState(0)
     const { ws } = useContext(WebSocketContext);
-    const path = usePathname();
+    const pathName = usePathname();
+    const path =  useRef(pathName)
 
+    useEffect(() => {
+        path.current = pathName
+    }, [pathName])
+    
     function handleNewNotif(notif) {
         const data = JSON.parse(notif.data)
-        console.log(data);
-        
-        if (data.type === "notification" && path !== "/notifications") {
+        if (data.type === "notification" && path.current !== "/notifications") {
             setNotifsCount(notifsCount => notifsCount + 1);
         }
     }
@@ -301,16 +303,16 @@ function NotifIcon() {
 function ChatIcon() {
     const [msgsCount, setMsgsCount] = useState(0);
     const { ws } = useContext(WebSocketContext);
-    const path = usePathname();
+    const pathName = usePathname();
+    const path =  useRef(pathName)
+
+    useEffect(() => {
+        path.current = pathName
+    }, [pathName])
 
     function handleNewMessage(msg) {
-        console.log("new !!!!!!!!!");
-        console.log(path);
-
-
         const data = JSON.parse(msg.data)
-        
-        if (data.type === "new_message" && path != "/chat" && !data.payload.is_sender) {
+        if (data.type === "new_message" && path.current != "/chat" && !data.payload.is_sender) {
             setMsgsCount(msgsCount => msgsCount + 1);
         }
     }

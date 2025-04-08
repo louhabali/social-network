@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"main/pkg/app/models"
 	"net/http"
 	"strconv"
+
+	"main/pkg/app/models"
 )
 
 func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
@@ -32,4 +33,20 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println(messages)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
+}
+
+func (h *Handler) MarkMsgAsRead(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	userID := r.Context().Value("userID").(int)
+	var msg struct {
+		Id int `json:"id"`
+	}
+	json.NewDecoder(r.Body).Decode(&msg)
+
+	if err := models.MarkMessagesAsRead(h.db, msg.Id, userID); err != nil {
+		http.Error(w, "Database Error", http.StatusInternalServerError)
+	}
 }

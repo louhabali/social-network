@@ -107,7 +107,7 @@ func GetPostsWithPrivacy(userID int, baseWhere string, args []interface{}, offse
 
 		post.Content = html.UnescapeString(post.Content)
 		post.Username = firstName + " " + lastName
-		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
+		post.CreatedAt = timeCreated.Format("Jan 2, 2006 at 15:04")
 		post.Likes = getPostLikeDisLike(post.Pid, db)
 		post.UserInteraction = getPostInteractions(post.Pid, userID, db)
 
@@ -134,7 +134,7 @@ func GetPost(db *sql.DB, postID, userID int) (Post, error) {
 	}
 	p.Likes = getPostLikeDisLike(p.Pid, db)
 	p.UserInteraction = getPostInteractions(p.Pid, userID, db)
-	p.CreatedAt = timeCreated.Format("Jan 2, 2006 at 3:04")
+	p.CreatedAt = timeCreated.Format("Jan 2, 2006 at 15:04")
 	return p, nil
 }
 

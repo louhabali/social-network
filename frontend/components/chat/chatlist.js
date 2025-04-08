@@ -3,16 +3,17 @@ import { useContext, useEffect } from 'react';
 import { WebSocketContext } from "@/context/WebSocketContext";
 
 
-export default function ChatList({ conversations, onChatSelect, setConversations }) {
+
+export default function ChatList({ sortConvs, conversations, onChatSelect, setConversations }) {
     const {ws} = useContext(WebSocketContext);
-    
     function newMsg(msg) {
-        console.log("newmsg");
+        // console.log("new msg from chatSection!!!!!!!!");
         
         const data = JSON.parse(msg.data);
+        // console.log("sortConvs 00000000000000", data);
         if (data.type === "new_message") {
-            setConversations(preConvs => {
-                return preConvs.map(conv => {
+            setConversations((preConvs) => {
+                const updatedConvs = preConvs.map(conv => {
                     if (conv.chat_id === data.payload.chat_id) {
                         return {
                             ...conv,
@@ -23,13 +24,21 @@ export default function ChatList({ conversations, onChatSelect, setConversations
                     }
                     return conv
                 })
+                
+                return sortConvs(updatedConvs) 
             })
+
+            // setConversations(() => [convx, ...newConvs])
+            // console.log(conversations);
         }
     }
 
 
     useEffect(() => {
-        if (ws.current) ws.current.addEventListener("message", newMsg)
+        setTimeout(()=>{
+            console.log(ws.current);
+            ws.current.addEventListener("message", newMsg)
+        },500)
         return (
             () => {
                 if (ws.current) ws.current.removeEventListener("message", newMsg)
@@ -52,8 +61,6 @@ export default function ChatList({ conversations, onChatSelect, setConversations
                         key={conversation.chat_id}
                         onClick={() => {
                             onChatSelect(conversation);
-                            console.log(conversation.unread_count);
-                            
                             setConversations(
                                 conversations.map((conv) => {
                                     if (conv.chat_id === conversation.chat_id) {
