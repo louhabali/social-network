@@ -44,8 +44,8 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if len(e.Title) > 50 || len(e.Description) > 200 || len(e.Title) < 3 || len(e.Description) < 3 {
-			http.Error(w, "Title must be 3-50 characters and description must be 3-200 characters", http.StatusBadRequest)
+		if len(e.Title) > 50 || len(e.Description) > 200 {
+			http.Error(w, "Title or description too long", http.StatusBadRequest)
 			return
 		}
 

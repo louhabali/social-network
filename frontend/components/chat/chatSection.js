@@ -13,7 +13,7 @@ export default function ChatSection({ selectedChat, closeChat }) {
     const [shouldScroll, setShouldScroll] = useState(false);
     const [showEmojis, setShowEmojis] = useState(false);
     const [newMsg, setNewMsg] = useState(false)
-    const { ws, sendMessage } = useContext(WebSocketContext)
+    const { ws, sendMessage,showNotification } = useContext(WebSocketContext)
     const msgsContainer = useRef(null);
     const textarea = useRef(null);
     const offset = useRef(0);
@@ -70,6 +70,8 @@ export default function ChatSection({ selectedChat, closeChat }) {
                 setMessages((messages) => [...messages, data.payload])
                 setNewMsg((newMsg) => !newMsg)
                 offset.current += 1;
+            }else if (data.type === "error_message") {
+                showNotification("At least one follow the other constraint", "error");
             }
         }
         initialFetch();

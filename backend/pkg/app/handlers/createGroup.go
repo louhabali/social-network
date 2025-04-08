@@ -22,8 +22,8 @@ func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "All fields are required", http.StatusBadRequest)
 			return
 		}
-		if len(g.Title) > 50 || len(g.Description) > 200 || len(g.Title) < 3 || len(g.Description) < 3 {
-			http.Error(w, "Title must be 3-50 characters and description must be 3-200 characters", http.StatusBadRequest)
+		if len(g.Title) > 50 || len(g.Description) > 200 {
+			http.Error(w, "Title or description too long", http.StatusBadRequest)
 			return
 		}
 
@@ -201,8 +201,7 @@ func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-
-	err = models.RemoveGroupMember(h.db, *notif.GroupId, notif.SenderId)
+	err = models.RemoveGroupMember(h.db, *notif.GroupId, notif.ReceverId)
 	if err != nil {
 		http.Error(w, "Error rejecting request", http.StatusInternalServerError)
 		return

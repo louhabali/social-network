@@ -37,8 +37,8 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(content) > 200 || len(content) < 3 {
-		http.Error(w, "Content must be 3-200 characters", http.StatusBadRequest)
+	if len(content) > 200 {
+		http.Error(w, "Content too long", http.StatusBadRequest)
 		return
 	}
 

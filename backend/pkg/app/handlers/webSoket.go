@@ -259,7 +259,13 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	msg, err := models.InsertMessage(db,senderID, messageData.ChatId, messageData.Content)
 	if err != nil {
 		// ana khasni nmchi daba ,ghi kheliha 7ta n9adoha mn b3d , matnsach tpushi dakchi  
-
+		if err.Error() == "At least one follow the other constraint" {
+			notification := WebSocketMessage{
+				Type:    "error_message",
+				Payload: msg,
+			}
+			wm.sendToUsers([]int{senderID}, notification)
+		}
 		return
 	}
 

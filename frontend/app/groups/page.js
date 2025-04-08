@@ -40,7 +40,8 @@ export default function GroupsPage() {
             return;
         }
         const data = await res.json();
-
+        console.log(data);
+        
         if (data === null) {
             setHasMore(false);
             setLoading(false);
@@ -61,12 +62,12 @@ export default function GroupsPage() {
             showNotification("Please fill in all fields", "error");
             return;
         };
-        if (title.length < 3 || title.length > 50) {
-            showNotification("Title must be between 3 and 50 characters.", "error");
+        if (title.length > 50) {
+            showNotification("Title must be less than 50 characters.", "error");
             return;
         }
-        if (description.length < 10 || description.length > 200) {
-            showNotification("Description must be between 10 and 200 characters.", "error");
+        if (description.length > 200) {
+            showNotification("Description must be less than 200 characters.", "error");
             return;
         }
 

@@ -32,7 +32,7 @@ func GetUserGroupStatus(db *sql.DB, groupID, userID int) (string, error) {
 	var status string
 	err := db.QueryRow("SELECT status FROM group_members WHERE group_id = ? AND user_id = ?", groupID, userID).Scan(&status)
 	if err == sql.ErrNoRows {
-		return "", nil 
+		return "", nil
 	}
 	return status, err
 }
@@ -102,7 +102,6 @@ func ApproveJoinRequest(db *sql.DB, memberID int) error {
 	return err
 }
 
-
 // GetGroupCreator retrieves the creator ID of a group
 func GetGroupCreator(db *sql.DB, groupID int) (int, error) {
 	var creatorID int
@@ -110,29 +109,27 @@ func GetGroupCreator(db *sql.DB, groupID int) (int, error) {
 	return creatorID, err
 }
 
-func GetGroupMembers(db *sql.DB, groupId int) ([]int, error){
+func GetGroupMembers(db *sql.DB, groupId int) ([]int, error) {
 	var members []int
 
-    query := `SELECT user_id FROM group_members WHERE group_id = ? AND (status = 'approved' OR status = 'creator')`
-    
+	query := `SELECT user_id FROM group_members WHERE group_id = ? AND (status = 'approved' OR status = 'creator')`
 
-    rows, err := db.Query(query, groupId)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	rows, err := db.Query(query, groupId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    for rows.Next() {
-        var userId int
-        if err := rows.Scan(&userId); err != nil {
-            return nil, err
-        }
-        members = append(members, userId)
-    }
+	for rows.Next() {
+		var userId int
+		if err := rows.Scan(&userId); err != nil {
+			return nil, err
+		}
+		members = append(members, userId)
+	}
 
-    return members, nil
+	return members, nil
 }
-
 
 // GetUsersForGroupInvitation retrieves users who are not already in the group
 func GetUsersForGroupInvitation(db *sql.DB, groupID string, search string, offset int) ([]User, error) {

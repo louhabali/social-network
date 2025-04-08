@@ -41,8 +41,8 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
         const formData = new FormData();
         formData.append("content", newPost);
         formData.append("groupId", groupId);
-        if (newPost.length > 200 || newPost.length < 3) {
-            showNotification("Post must be between 3 and 200 characters.", "error");
+        if (newPost.length > 200) {
+            showNotification("Post content must be less than 200 characters.", "error");
             return;
         }
 

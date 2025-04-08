@@ -9,7 +9,7 @@ import (
 func (h *Handler) GetAllusers(w http.ResponseWriter, r *http.Request) {
 	myId := r.Context().Value("userID").(int)
 
-	followers, err := models.GetFollowing(h.db, myId)
+	followers, err := models.GetFollowers(h.db, myId)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return

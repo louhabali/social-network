@@ -131,12 +131,12 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             showNotification("Please fill in all fields", "error");
             return;
         };
-        if (newEvent.title.length < 3 || newEvent.title.length > 50) {
-            showNotification("Title must be between 3 and 50 characters.");
+        if (newEvent.title.length > 50) {
+            showNotification("Title must be less than 50 characters.");
             return
         }
-        if (newEvent.description.length < 10 || newEvent.description.length > 200) {
-            showNotification("Description must be between 10 and 200 characters.");
+        if (newEvent.description.length > 200) {
+            showNotification("Description must be less than 200 characters.");
             return
         }
         if (newEvent.user_response !== "going" && newEvent.user_response !== "not_going") {

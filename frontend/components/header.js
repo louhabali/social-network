@@ -13,6 +13,15 @@ const Header = ({ userID, Avatar, fname, lname }) => {
 
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [u, setUser] = useState([])
+
+    useEffect(() => {
+        fetch('http://localhost:8080/api/userdata', {
+            credentials: "include",
+        }).then(data => data.json()).then(d => {
+            setUser(d)
+        })
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -136,16 +145,16 @@ const Header = ({ userID, Avatar, fname, lname }) => {
 
                 <div className={styles.headerRight}>
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                        {Avatar ? (
+                        {u.Avatar ? (
                             <img
-                                src={`data:image/png;base64,${Avatar}`} alt="user"
+                                src={`http://localhost:8080/api/images/${u.Avatar}`} alt="user"
                                 className={styles.userAvatar}
                                 width={20} height={20}
                             />
                         ) : (
                             <Image src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
 
-                        )}<span>{fname} {lname}</span>
+                        )}<span>{u.Firstname} {u.Lastname}</span>
 
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -159,7 +168,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
 
                         {isDropdownOpen && (
                             <div className={styles.dropdown}>
-                                <Link href={`/profile/${userID}`} className={styles.dropdownItem}>
+                                <Link href={`/profile/${u.ID}`} className={styles.dropdownItem}>
                                     Profile
                                 </Link>
                                 {/* <Link href="/settings" className={styles.dropdownItem}>
@@ -202,12 +211,12 @@ const Header = ({ userID, Avatar, fname, lname }) => {
                         <span className={styles.mobileNavLabel}>Notifications</span>
                     </Link>
 
-                    <Link href="/profile" className={styles.mobileNavItem}>
+                    <Link href={`/profile/${u.ID}`} className={styles.mobileNavItem}>
                         <div className={styles.userMenuIcon}>
-                            {Avatar ? (
+                            {u.Avatar ? (
                                 <img
-                                    src={Avatar}
-                                    alt={fname}
+                                    src={`http://localhost:8080/api/images/${u.Avatar}`}
+                                    alt={u.Firstname}
                                     className={styles.mobileUserAvatar}
                                     width={20} height={20}
                                 />
@@ -300,7 +309,8 @@ function ChatIcon() {
 
 
         const data = JSON.parse(msg.data)
-        if (data.type === "new_message" && path != "/chat") {
+        
+        if (data.type === "new_message" && path != "/chat" && !data.payload.is_sender) {
             setMsgsCount(msgsCount => msgsCount + 1);
         }
     }

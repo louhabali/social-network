@@ -78,8 +78,8 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             showNotification("Post cannot be empty!", "error");
             return;
         }
-        if (newPost.length > 200 || newPost.length < 3) {
-            showNotification("Post must be between 3 and 200 characters.", "error");
+        if (newPost.length > 200) {
+            showNotification("Post content must be less than 200 characters.", "error");
             return;
         }
         if (ops === "private" && selectedOptions.length === 0) {
@@ -124,7 +124,9 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             setSelectedImage(null);
             setSendImage(null);
             document.getElementById("fileInput").value = "";
-
+            setOp("public")
+            setPrivateUsers([])
+            setSelectedOptions([])
             showNotification("Post created successfully!", "info");
 
         } catch (error) {
@@ -169,6 +171,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
                                 <select
                                     id="slct"
                                     className="privacy-dropdown"
+                                    value={ops}
                                     onChange={(o) => setOp(o.target.value)}
                                 >
                                     <option value="public">Public</option>
