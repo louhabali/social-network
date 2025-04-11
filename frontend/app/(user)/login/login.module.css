@@ -1,17 +1,3 @@
-:root {
-  --primary-color: #3a86ff;
-  --text-color: #f8f9fa;
-  --bg-dark: #121212;
-  --bg-darker: #0a0a0a;
-  --border-color: rgba(255, 255, 255, 0.12);
-  --input-bg: rgba(30, 30, 30, 0.8);
-  --shadow-color: rgba(0, 0, 0, 0.25);
-  --gradient-start: rgba(58, 134, 255, 0.8);
-  --gradient-end: rgba(123, 97, 255, 0.8);
-  --hover-color: #4a95ff;
-  --focus-glow: rgba(58, 134, 255, 0.5);
-}
-
 .pageContainer {
   min-height: 100vh;
   margin: 0;

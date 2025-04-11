@@ -1,15 +1,19 @@
 "use client";
+
+
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function SearchResults() {
-    const searchParams = useSearchParams();
-    const query = searchParams.get("q");
+    const params = useSearchParams();
+    const query = params.get("q");
     const [results, setResults] = useState([]);
-
+    
     useEffect(() => {
+        console.log(query);
+        
         if (!query) return;
         console.log("query", query);
         const formDataToSend = new FormData();
@@ -29,7 +33,7 @@ export default function SearchResults() {
                 }
             } )
             .catch((err) => console.error("Error:", err));
-    }, [query]);
+    }, []);
     console.log("results", results);
     return (
         <div style={{ margin: "80px" }}>

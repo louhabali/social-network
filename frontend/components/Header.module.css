@@ -303,9 +303,9 @@
     display: block;
   }
   
-  body {
+  /* body {
     padding-bottom: 56px;
-  }
+  } */
   
   .container {
     padding-bottom: 56px;
@@ -318,9 +318,9 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  body {
+  /* body {
     padding-bottom: 70px;
-  }
+  } */
   
   .container {
     padding-bottom: 70px;
@@ -353,9 +353,9 @@
     display: block;
   }
   
-  body {
+  /* body {
     padding-bottom: 56px;
-  }
+  } */
   
   .container {
     padding-bottom: 56px;
@@ -422,9 +422,9 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  body {
+  /* body {
     padding-bottom: 70px;
-  }
+  } */
   
   .container {
     padding-bottom: 70px;

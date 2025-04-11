@@ -1,4 +1,38 @@
 :root {
+  --primary-color: #3a86ff;
+  --text-color: #f8f9fa;
+  --bg-dark: #121212;
+  --bg-darker: #0a0a0a;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --input-bg: rgba(30, 30, 30, 0.8);
+  --shadow-color: rgba(0, 0, 0, 0.25);
+  --gradient-start: rgba(58, 134, 255, 0.8);
+  --gradient-end: rgba(123, 97, 255, 0.8);
+  --hover-color: #4a95ff;
+  --focus-glow: rgba(58, 134, 255, 0.5);
+  --fb-dark-bg: #18191a;
+  --fb-dark-surface: #242526;
+  --fb-dark-surface-hover: #3a3b3c;
+  --fb-dark-border: #3e4042;
+  --fb-dark-text: #e4e6eb;
+  --fb-dark-text-secondary: #b0b3b8;
+  --fb-blue: #2d88ff;
+  --fb-blue-hover: #4599ff;
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --accent-color: #1877f2;
+  --border-color: #333333;
+  --hover-color: #2a2a2a;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+
+}
+
+
+:root {
   --background: #fffafa;
   --foreground: #171717;
 }
