@@ -10,7 +10,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2B
+          memory: 512MB
   frontend:
     build: ./frontend
     ports:
