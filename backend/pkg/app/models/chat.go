@@ -180,8 +180,8 @@ func GetUsersInChat(db *sql.DB, chatID int) ([]int, error) {
 // CreatePrivateChat creates a private chat between two users
 func CreatePrivateChat(db *sql.DB, user1, user2 int) (int, error) {
 	var chatID int
-	err := db.QueryRow(`SELECT chat_id FROM chat_members WHERE user_id IN (?, ?) GROUP BY chat_id HAVING COUNT(DISTINCT user_id) = 2`, user1, user2).Scan(&chatID)
-
+	err := db.QueryRow(`SELECT cm.chat_id FROM chat_members as cm LEFT join chats as c on c.id = cm.chat_id WHERE cm.user_id IN (?, ?) GROUP BY cm.chat_id HAVING COUNT(DISTINCT cm.user_id) = 2 and c.is_group = 0`, user1, user2).Scan(&chatID)
+	println("CAHTID ->",chatID)
 	if err == nil {
 		return chatID, nil
 	} else if err != sql.ErrNoRows {
