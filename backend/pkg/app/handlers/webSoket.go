@@ -16,7 +16,7 @@ import (
 
 type WebSocketMessage struct {
 	Type    string         `json:"type"`
-	Payload models.Message `json:"payload"`
+	Payload any `json:"payload"`
 }
 
 type WebSocketManager struct {
@@ -85,7 +85,12 @@ func (h *Handler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	// wsManager.broadcastOnlineStatus(userID, true)
 
 	// Handle incoming messages in a goroutine
-	fmt.Println(wsManager.connections)
+	// fmt.Println(wsManager.connections)
+	userInfo := WebSocketMessage {
+		Type: "userInfo",
+		Payload: struct{UserId int `json:"user_id"`}{UserId: userID},
+	}
+	conn.WriteJSON(userInfo)
 	go wsManager.handleMessages(userID, conn, h.db)
 }
 
@@ -179,7 +184,8 @@ func (wm *WebSocketManager) handleMessages(userID int, conn *websocket.Conn, db 
 			switch msg.Type {
 			case "new_message":
 				wm.handleNewMessage(userID, msg.Payload, db)
-			case "typing":
+			case "notification":
+				// wm.SendToUsers([]int{senderID}, notification)
 				// wm.handleTypingStatus(userID, msg.Payload)
 			case "reconnect":
 				// if err := data.UpdateUserOnlineStatus(userID, true); err != nil {
@@ -264,7 +270,7 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 				Type:    "error_message",
 				Payload: msg,
 			}
-			wm.sendToUsers([]int{senderID}, notification)
+			wm.SendToUsers([]int{senderID}, notification)
 		}
 		return
 	}
@@ -288,17 +294,17 @@ func (wm *WebSocketManager) handleNewMessage(senderID int, payload interface{}, 
 	recivers, _ := models.GetUsersInChat(db,msg.ChatID)
 	fmt.Println(notification)
 	// recivers = []int{2}
-	wm.sendToUsers(recivers, notification)
+	wm.SendToUsers(recivers, notification)
 	// wm.sendToUser(senderID, notification)
 }
 
-func (wm *WebSocketManager) sendToUsers(recivers []int, msg WebSocketMessage) {
+func (wm *WebSocketManager) SendToUsers(recivers []int, msg WebSocketMessage) {
 	for _, userID := range recivers {
 		wm.mu.RLock()
 		connections, exists := wm.connections[userID]
 		wm.mu.RUnlock()
 		if exists {
-			msg.Payload.IsSender = userID == msg.Payload.SenderID
+			// msg.Payload.IsSender = userID == msg.Payload.SenderID
 			for _, conn := range connections {
 				if err := conn.WriteJSON(msg); err != nil {
 					log.Printf("Error sending message to user %d: %v", userID, err)

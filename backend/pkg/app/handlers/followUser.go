@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"main/pkg/app/models"
+	"fmt"
 	"net/http"
 	"strconv"
+
+	"main/pkg/app/models"
 )
 
 func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +46,7 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(user)
 		} else {
-			err = models.InsertNotification(h.db, &models.Notification{
+			notif, err := models.InsertNotification(h.db, &models.Notification{
 				SenderId:  followerID,
 				ReceverId: userID,
 				RelatedId: int(reqID),
@@ -54,6 +56,10 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Database error", http.StatusInternalServerError)
 				return
 			}
+			wsManager.SendToUsers([]int{notif.ReceverId}, WebSocketMessage{
+				Type:    "notification",
+				Payload: notif,
+			})
 		}
 	} else if r.Method == "DELETE" {
 		err := models.DeleteFollowRequest(h.db, followerID, userID)
@@ -62,7 +68,7 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = models.DeleteNotification(h.db, userID)
+		err = models.DeleteNotification(h.db, 0, followerID, userID)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
@@ -90,7 +96,7 @@ func (h *Handler) AcceptFollowReq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := models.DeleteNotification(h.db, notif.Id); err != nil {
+	if err := models.DeleteNotification(h.db, notif.Id, 0, 0); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
@@ -114,13 +120,13 @@ func (h *Handler) RejectFollowReq(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-
-	if err := models.DeleteFollowRequest(h.db, notif.RelatedId, 0); err != nil {
+	fmt.Println(notif)
+	if err := models.DeleteFollowRequest(h.db, notif.SenderId, notif.ReceverId); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}
 
-	if err := models.DeleteNotification(h.db, notif.Id); err != nil {
+	if err := models.DeleteNotification(h.db, notif.Id, 0, 0); err != nil {
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
 		return
 	}

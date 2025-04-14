@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"main/pkg/app/models"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
+	"main/pkg/app/models"
 )
 
 func (h *Handler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,23 +104,27 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if memberInvitation {
-			err = models.InsertNotification(h.db, &models.Notification{
+			notif, err := models.InsertNotification(h.db, &models.Notification{
 				RelatedId: int(joinReqId),
 				SenderId:  joinSender,
 				ReceverId: userID,
-				Type:      "group join invatation",
+				Type:      "group join invitation",
 			})
 			if err != nil {
 				http.Error(w, "Error inserting notification", http.StatusInternalServerError)
 				return
 			}
+			wsManager.SendToUsers([]int{notif.ReceverId}, WebSocketMessage{
+				Type:    "notification",
+				Payload: notif,
+			})
 		} else {
 			adminId, err := models.GetGroupCreator(h.db, groupID)
 			if err != nil {
 				http.Error(w, "Error retrieving group creator", http.StatusInternalServerError)
 				return
 			}
-			err = models.InsertNotification(h.db, &models.Notification{
+			notif, err := models.InsertNotification(h.db, &models.Notification{
 				RelatedId: int(joinReqId),
 				SenderId:  joinSender,
 				ReceverId: adminId,
@@ -128,6 +134,10 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Error inserting notification", http.StatusInternalServerError)
 				return
 			}
+			wsManager.SendToUsers([]int{notif.ReceverId}, WebSocketMessage{
+				Type:    "notification",
+				Payload: notif,
+			})
 		}
 
 	} else if r.Method == "DELETE" {
@@ -166,7 +176,7 @@ func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := models.DeleteNotification(h.db, notif.Id); err != nil {
+	if err := models.DeleteNotification(h.db, notif.Id, 0, 0); err != nil {
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return
 	}
@@ -175,9 +185,10 @@ func (h *Handler) JoinAccept(w http.ResponseWriter, r *http.Request) {
 	if notif.Type == "group join request" {
 		joinerId = notif.SenderId
 	}
-
+	fmt.Println(notif)
 	chatId, err := models.GetChatIDByGroupName(h.db, *notif.GroupName)
 	if err != nil {
+		fmt.Println(chatId)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -201,13 +212,18 @@ func (h *Handler) JoinReject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	err = models.RemoveGroupMember(h.db, *notif.GroupId, notif.ReceverId)
+	userToRemove := notif.ReceverId
+	if notif.Type == "group join request" {
+		userToRemove = notif.SenderId
+	}
+
+	err = models.RemoveGroupMember(h.db, *notif.GroupId, userToRemove)
 	if err != nil {
 		http.Error(w, "Error rejecting request", http.StatusInternalServerError)
 		return
 	}
 
-	err = models.DeleteNotification(h.db, notif.Id)
+	err = models.DeleteNotification(h.db, notif.Id, 0, 0)
 	if err != nil {
 		http.Error(w, "DATABASE ERROR", http.StatusInternalServerError)
 		return

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -26,6 +27,7 @@ func (h *Handler) GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	messages, err := models.GetMessages(h.db, userID, chatId, offset)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Failed to fetch messages", http.StatusInternalServerError)
 		return
 	}

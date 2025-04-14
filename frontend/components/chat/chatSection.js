@@ -5,6 +5,7 @@ import { faPaperPlane, faFaceSmile, faRotate } from "@fortawesome/free-solid-svg
 // import EmojiPicker from './emojiPicker';
 import { WebSocketContext } from "@/context/WebSocketContext";
 import Picker from "./emojiPicker";
+import Link from "next/link";
 
 export default function ChatSection({ selectedChat, closeChat }) {
     const [message, setMessage] = useState("");
@@ -13,11 +14,11 @@ export default function ChatSection({ selectedChat, closeChat }) {
     const [shouldScroll, setShouldScroll] = useState(false);
     const [showEmojis, setShowEmojis] = useState(false);
     const [newMsg, setNewMsg] = useState(false)
-    const { ws, sendMessage,showNotification } = useContext(WebSocketContext)
+    const { userId, ws, sendMessage,showNotification } = useContext(WebSocketContext)
     const msgsContainer = useRef(null);
     const textarea = useRef(null);
     const offset = useRef(0);
-
+    
     async function fetchMoremsgs() {
         const data = await fetchMsgs();
         setMessages([...data, ...messages]);
@@ -78,14 +79,14 @@ export default function ChatSection({ selectedChat, closeChat }) {
         }
 
         function handleMessage(msg) {
-            console.log("new msg from chatSection!!!!!!!!");
+            // console.log("new msg from chatSection!!!!!!!!");
             
             const data = JSON.parse(msg.data);
             if (data.type === "new_message" && data.payload.chat_id == selectedChat.chat_id) {
                 setMessages((messages) => [...messages, data.payload])
                 setNewMsg((newMsg) => !newMsg)
                 offset.current += 1;
-                console.log("update ->", data.payload.chat_id);
+                console.log("update ->", data.payload);
                 
                 updateLastMsgReaded(data.payload.chat_id)
             }else if (data.type === "error_message") {
@@ -96,7 +97,7 @@ export default function ChatSection({ selectedChat, closeChat }) {
 
         function handleKeyPress(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                console.log("comme");
+                // console.log("comme");
                 e.preventDefault();
                 sendMsg();
             }
@@ -133,8 +134,8 @@ export default function ChatSection({ selectedChat, closeChat }) {
                     </span>
                 }
                 {messages.map((msg) => (
-                    <span key={msg.id} className={`${styles.message} ${msg.is_sender ? styles.sender : styles.receiver}`} >
-                        {msg.is_group && !msg.is_sender ? <span className={styles.senderName}>{msg.sender_name}</span> : ''}
+                    <span key={msg.id} className={`${styles.message} ${userId.current == msg.sender_id ? styles.sender : styles.receiver}`} >
+                        {msg.is_group && !(userId.current == msg.sender_id) ? <Link href={`/profile/${msg.sender_id}`}><span className={styles.senderName}>{msg.sender_name}</span></Link> : ''}
                         <span>{msg.content}</span>
                         <span className={styles.msgTime}>{formatTime(msg.created_at)}</span>
                     </span>
@@ -169,7 +170,7 @@ export default function ChatSection({ selectedChat, closeChat }) {
 
 function formatTime(dateStr) {
     const date = new Date(dateStr);
-    console.log(dateStr,"//", date);
+    // console.log(dateStr,"//", date);
     
     const hours = (date.getHours()).toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');

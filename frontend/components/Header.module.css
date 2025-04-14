@@ -223,6 +223,7 @@
 
 .mobileNavLabel {
   font-size: 10px;
+  display: block;
 }
 
 .notificationIndicator {

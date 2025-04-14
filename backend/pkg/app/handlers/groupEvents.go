@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"main/pkg/app/models"
+	"fmt"
 	"net/http"
 	"strconv"
+
+	"main/pkg/app/models"
 )
 
 func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,8 +40,8 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Missing required fields", http.StatusBadRequest)
 			return
 		}
-
-		if e.UserResponse != "going" && e.UserResponse != "not going" {
+		fmt.Println(e)
+		if e.UserResponse != "going" && e.UserResponse != "not_going" {
 			http.Error(w, "Invalid user response", http.StatusBadRequest)
 			return
 		}
@@ -49,7 +51,7 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		id,err := models.CreateGroupEvent(h.db, groupID, e.Title, e.Description, e.Date, e.UserResponse, userID)
+		id, err := models.CreateGroupEvent(h.db, groupID, e.Title, e.Description, e.Date, e.UserResponse, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -57,7 +59,7 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 		e.ID = id
 		if e.UserResponse == "going" {
 			e.GoingCount++
-		}else {
+		} else {
 			e.NotGoingCount++
 		}
 		// notification
@@ -69,7 +71,7 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 
 		for _, id := range members {
 			if id != userID {
-				err = models.InsertNotification(h.db, &models.Notification{
+				notif, err := models.InsertNotification(h.db, &models.Notification{
 					SenderId:  userID,
 					ReceverId: id,
 					RelatedId: groupID,
@@ -79,12 +81,16 @@ func (h *Handler) GroupEventsHandler(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, "Database error", http.StatusInternalServerError)
 					return
 				}
+				wsManager.SendToUsers([]int{notif.ReceverId}, WebSocketMessage{
+					Type:    "notification",
+					Payload: notif,
+				})
 			}
 		}
 
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(e)
-	}else {
+	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -109,5 +115,4 @@ func (h *Handler) CreateEventResponse(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
-
 }

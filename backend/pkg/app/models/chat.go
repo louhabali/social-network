@@ -15,12 +15,13 @@ type Conversation struct {
 }
 
 type Message struct {
-	ID        int    `json:"id"`
-	ChatID    int    `json:"chat_id"`
-	SenderID  int    `json:"sender_id"`
-	IsSender  bool   `json:"is_sender"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"created_at"`
+	ID         int    `json:"id"`
+	ChatID     int    `json:"chat_id"`
+	SenderID   int    `json:"sender_id"`
+	SenderName string `json:"sender_name"`
+	IsGroup    bool   `json:"is_group"`
+	Content    string `json:"content"`
+	CreatedAt  string `json:"created_at"`
 }
 
 // CreateChatAfterApproval creates a chat after a follow request is accepted
@@ -94,7 +95,18 @@ func GetConversations(db *sql.DB, userID int) ([]Conversation, error) {
 
 // GetMessages fetches messages for a given chat ID with pagination
 func GetMessages(db *sql.DB, userID, chatID, offset int) ([]Message, error) {
-	rows, err := db.Query(`SELECT id, chat_id, sender_id, content, created_at FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 10 OFFSET ?`, chatID, offset)
+	rows, err := db.Query(`SELECT 
+		m.id,
+		m.chat_id,
+		m.sender_id,
+		u.first_name || ' ' || u.last_name,
+		m.content,
+		m.created_at,
+		c.is_group
+		FROM messages as m 
+		left join users as u on u.id = m.sender_id
+		left join chats as c on c.id = m.chat_id
+		WHERE m.chat_id = ? ORDER BY m.created_at DESC LIMIT 10 OFFSET ?`, chatID, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +115,9 @@ func GetMessages(db *sql.DB, userID, chatID, offset int) ([]Message, error) {
 	var messages []Message
 	for rows.Next() {
 		var msg Message
-		if err := rows.Scan(&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.CreatedAt); err != nil {
+		if err := rows.Scan(&msg.ID, &msg.ChatID, &msg.SenderID, &msg.SenderName, &msg.Content, &msg.CreatedAt, &msg.IsGroup); err != nil {
 			return nil, err
 		}
-		msg.IsSender = msg.SenderID == userID
 		messages = append(messages, msg)
 	}
 

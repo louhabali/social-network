@@ -19,6 +19,7 @@ function WebSocketProvider({ children }) {
     // also rather than use a regular var as variables when component re-render
     //  they re-initialized
     const ws = useRef(null);
+    const userId = useRef(null);
 
     const [notification, setNotification] = useState(null);
     const timeoutRef = useRef(null);
@@ -37,23 +38,32 @@ function WebSocketProvider({ children }) {
         ws.current.send(JSON.stringify(msg))
     }
 
+    function handleMsg(msg) {
+        msg = JSON.parse(msg.data)
+        if (msg.type == "userInfo") userId.current = msg.payload.user_id
+    }
+
     useEffect(() => {
         // the current property of ref obj is what actually hold the referenced thing
         ws.current = new WebSocket(`ws://localhost:8080/api/ws`);
         
         ws.current.onopen = () => {
-            console.log("ws connected");   
+            console.log("ws connected");
+            ws.current.addEventListener("message", handleMsg)
         }
 
         ws.current.onclose = () => {
             console.log("ws disconnected")
+        }
+        return () => {
+            ws.current.removeEventListener("message", handleMsg)
         }
     }, [])
 
     // now we need to store the values we want them accessible in Provider
     // component witch is a property of context obj
     return (
-        <WebSocketContext.Provider value={{ws, sendMessage, showNotification}}>
+        <WebSocketContext.Provider value={{ws, userId, sendMessage, showNotification}}>
             {children}
             {notification && (
                 <div className={`notification ${notification.type}`}>

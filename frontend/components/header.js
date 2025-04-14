@@ -199,14 +199,13 @@ const Header = ({ userID, Avatar, fname, lname }) => {
                         <span className={styles.mobileNavLabel}>Groups</span>
                     </Link>
 
-                    <Link href="/chat" className={styles.navItem}>
+                    <Link href="/chat" className={styles.mobileNavItem}>
                         <ChatIcon />
+                        <div className={styles.mobileNavLabel}>Chat</div>
                     </Link>
 
                     <Link href="/notifications" className={styles.mobileNavItem}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={styles.mobileNavIcon}>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
+                        <NotifIcon/>
                         <span className={styles.mobileNavLabel}>Notifications</span>
                     </Link>
 
@@ -236,14 +235,18 @@ function NotifIcon() {
     const [notifsCount, setNotifsCount] = useState(0)
     const { ws } = useContext(WebSocketContext);
     const pathName = usePathname();
-    const path =  useRef(pathName)
+    const path = useRef(pathName)
 
     useEffect(() => {
         path.current = pathName
     }, [pathName])
-    
+
     function handleNewNotif(notif) {
         const data = JSON.parse(notif.data)
+        console.log(data);
+        console.log(path.current);
+        
+
         if (data.type === "notification" && path.current !== "/notifications") {
             setNotifsCount(notifsCount => notifsCount + 1);
         }
@@ -263,7 +266,7 @@ function NotifIcon() {
         }
 
         getNotifsCount()
-        
+
         setTimeout(() => {
             ws.current.addEventListener("message", handleNewNotif)
         }, 500)
@@ -304,7 +307,7 @@ function ChatIcon() {
     const [msgsCount, setMsgsCount] = useState(0);
     const { ws } = useContext(WebSocketContext);
     const pathName = usePathname();
-    const path =  useRef(pathName)
+    const path = useRef(pathName)
 
     useEffect(() => {
         path.current = pathName

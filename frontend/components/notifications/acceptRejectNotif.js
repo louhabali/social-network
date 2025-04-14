@@ -5,8 +5,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function AcceptRejectNotif({ notification, onAccept, onReject }) {
   let msg
+  console.log(notification);
+  
   switch (notification.type) {
-    case "follow reqeust":
+    case "follow request":
       msg = ` send you a follow request`
       break
     case "group join request":
@@ -23,7 +25,7 @@ export default function AcceptRejectNotif({ notification, onAccept, onReject }) 
           <span>{notification.sender_name}</span>
         </Link>
         {msg}
-        {notification.type != "follow reqeust"
+        {notification.type != "follow request"
           &&
           <Link className={styles.link} href={`/groups/${notification.group_id}`}>
             <span>{notification.group_name}</span>

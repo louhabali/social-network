@@ -1,7 +1,14 @@
 import Link from "next/link"
 import styles from "./notifs.module.css";
 
-export default function EventNotif({ notification, deleteNotif }) {
+export default function EventNotif({notification}) {
+  function deleteNotif() {
+    fetch('http://localhost:8080/api/notification/delete', {
+      credentials: "include",
+      method:"DELETE",
+      body: JSON.stringify({id: notification.id})
+    })
+  }
   return (
     <div className={styles.notif}>
       <p>
@@ -14,7 +21,7 @@ export default function EventNotif({ notification, deleteNotif }) {
         <Link
           className={styles.link}
           href={`/groups/${notification.related_id}`}
-          onClick={() => deleteNotif(notification)}
+          onClick={() => deleteNotif()}
         >
           {notification.group_name}
         </Link>

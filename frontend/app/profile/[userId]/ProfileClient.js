@@ -20,7 +20,8 @@ export default function ProfileClient({ profile, userId }) {
 
   const isOwnProfile = profile.user.ID === profile.userid;
   const canViewProfile = isPublic || followStatus === "approved" || isOwnProfile;
-
+  console.log(profile);
+  
   async function handleProfilePrivacyToggle() {
     const newStatus = !isPublic;
     const res = await fetch(`http://localhost:8080/api/profile/${userId}/privacy`, {

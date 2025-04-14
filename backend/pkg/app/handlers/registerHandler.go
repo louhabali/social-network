@@ -89,7 +89,6 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		name := rand + extension
 		path := "uploads/avatars/" + name
 		out, err := os.Create(path)
-
 		if err != nil {
 			http.Error(w, "Failed to save avatar", http.StatusInternalServerError)
 			return
@@ -102,8 +101,15 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Insert user using models
 	userID, err := user.Insert(h.db)
 	if err != nil {
+		if err.Error() == "UNIQUE constraint failed: users.email" {
+			http.Error(w, "email already used!", http.StatusBadRequest)
+			return
+		}
+		if err.Error() == "UNIQUE constraint failed: users.first_name, users.last_name" {
+			http.Error(w, "user already used!", http.StatusBadRequest)
+			return
+		}
 		http.Error(w, "Failed to insert the user", http.StatusInternalServerError)
-		fmt.Println("Failed to insert user:", err)
 		return
 	}
 

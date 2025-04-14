@@ -75,6 +75,13 @@
     margin-left: auto;
 }
 
+.senderName {
+    display: block;
+    font-size: 14px;
+    color: #b3b3b3;
+    text-decoration: underline;
+}
+
 .msgTime {
     display: block;
     font-size: 12px;

@@ -1,10 +1,19 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import EventNotif from "@/components/notifications/eventNotif.js";
 import AcceptRejectNotif from "@/components/notifications/acceptRejectNotif.js";
+import { WebSocketContext } from "@/context/WebSocketContext";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
+  const {ws} = useContext(WebSocketContext)
+  const handlNotif = (notif) => {
+    console.log("notifs =>", notifications);
+    notif = JSON.parse(notif.data)
+    if (notif.type == "notification") {
+      setNotifications((notifications) => [notif.payload, ...notifications])
+    }
+  }
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -21,6 +30,9 @@ export default function NotificationsPage() {
     }
     
     fetchNotifications();
+    setTimeout(() => {
+      ws.current.addEventListener("message", handlNotif)
+    }, 500)
   }, []);
 
   const handleAccept = async (notif) => {
