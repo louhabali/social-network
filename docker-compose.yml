@@ -11,6 +11,7 @@ services:
       resources:
         limits:
           memory: 512MB
+
   frontend:
     build: ./frontend
     ports:
@@ -19,6 +20,9 @@ services:
       - backend
     networks:
       - zone
+    env_file:
+      - ./frontend/frontend/.env.docker
+      
 
 networks:
   zone:
