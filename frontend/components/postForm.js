@@ -10,7 +10,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     const [newPost, setNewPost] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
     const [sendImage, setSendImage] = useState(null);
-
+    const [showprivate,setShowprivate]= useState(false)
     const [ops, setOp] = useState("public")
     const [privateUsers, setPrivateUsers] = useState([])
     const [selectedOptions, setSelectedOptions] = useState([]);
@@ -25,7 +25,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     };
     useEffect(() => {
         if (ops === "private") {
-            if (document.getElementById("popup")) document.getElementById("popup").style.display = "flex"
+            setShowprivate(true)
 
             fetch('http://localhost:8080/api/getfollowedusers', {
                 credentials: "include",
@@ -45,7 +45,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             });
 
         } else {
-            if (document.getElementById("popup")) document.getElementById("popup").style.display = "none"
+           setShowprivate(false)
         }
     }, [ops]);
 
@@ -192,7 +192,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
                 </div>
             </div>
 
-            {privateUsers && (
+            {privateUsers && showprivate && (
                 <div id='popup' className="private-users-popup">
                     {privateUsers.map((p) => (
                         <label key={p.id} className="user-checkbox">

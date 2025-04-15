@@ -52,7 +52,9 @@ export default async function PostPage({ params: paramsPromise }) {
     return (
 
       <div className='comment-div'>
-        <Post post={post} />
+        <div className='post-comment'>
+          <Post post={post} />
+        </div>
         <CommentsClient postId={params.postId} lenComments={post.NbComment} initialComments={initialComments} />
       </div>
     );

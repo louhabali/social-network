@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import GroupsClient from './GroupsClient';
 import ErrorPage from "@/components/ErrorPage";
+import InviteUsers from "./InviteUsers";
 import './GroupClient.css';
 
 
@@ -15,7 +16,7 @@ async function fetchGroupById(groupId) {
         },
         cache: "no-store",
     });
-    
+
     if (!res.ok) {
         throw new Error(res.status === 404 ? "Group not found" : res.status === 500 ? "Internal server error" : `Unexpected error: ${res.status}`);
     }
@@ -67,8 +68,12 @@ export default async function GroupDetailsPage({ params: paramsPromise }) {
         return (
             <div className="groupContainer">
                 <div className="groupHeader">
+                    <div className='group-cover'></div>
                     <h1 className="groupTitle">{group.title}</h1>
                     <p className="groupDescription">{group.description}</p>
+                    <div className="invite-users">
+                        <InviteUsers groupId={params.groupId} />
+                    </div>
                 </div>
 
                 <GroupsClient

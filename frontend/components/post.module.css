@@ -10,6 +10,7 @@
     gap: 15px;
     width: 100%;
     word-break: break-word;
+    box-sizing: border-box;
 }
 
 .post:hover {
