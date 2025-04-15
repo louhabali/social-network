@@ -10,7 +10,6 @@ export async function middleware(request) {
   if (!token && pathname !== "/login" && pathname !== "/register") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-console.log(apiUrl);
 
   if (token) {
     const apiResponse = await fetch(`${apiUrl}/api/validate-token`, {
