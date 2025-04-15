@@ -5,17 +5,20 @@ import ErrorPage from "@/components/ErrorPage";
 
 // import "./post.css"
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 async function getPost(postId) {
+  console.log("in post");
+  
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
 
-  const res = await fetch(`http://localhost:8080/api/posts/${postId}`, {
+  const res = await fetch(`${apiUrl}/api/posts/${postId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Cookie: sessionToken ? `Token=${sessionToken}` : "",
     },
-    cache: "no-store",
   });
   if (!res.ok) {
     throw new Error("Internal server error");
@@ -24,10 +27,12 @@ async function getPost(postId) {
 }
 
 async function getComments(postId, offset = 0) {
+  console.log("in comment");
+
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
 
-  const res = await fetch(`http://localhost:8080/api/posts/${postId}/comments?offset=${offset}`, {
+  const res = await fetch(`${apiUrl}/api/posts/${postId}/comments?offset=${offset}`, {
     headers: {
       "Content-Type": "application/json",
       Cookie: sessionToken ? `Token=${sessionToken}` : "",

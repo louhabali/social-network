@@ -6,6 +6,8 @@ import Post from "@/components/post";
 import PostForm from "@/components/postForm";
 import { websoketProvider } from "./oldwebSocket";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 const HomePage = () => {
     
     const [posts, setPosts] = useState([]);
@@ -31,7 +33,7 @@ const HomePage = () => {
 
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/posts?offset=${offset}`, {
+            const response = await fetch(`${apiUrl}/api/posts?offset=${offset}`, {
                 credentials: "include",
             });
 
