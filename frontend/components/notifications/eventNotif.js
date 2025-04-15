@@ -1,9 +1,11 @@
 import Link from "next/link"
 import styles from "./notifs.module.css";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function EventNotif({notification}) {
   function deleteNotif() {
-    fetch('http://localhost:8080/api/notification/delete', {
+    fetch(`${apiUrl}/api/notification/delete`, {
       credentials: "include",
       method:"DELETE",
       body: JSON.stringify({id: notification.id})

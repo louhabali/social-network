@@ -7,6 +7,8 @@ import { WebSocketContext } from "@/context/WebSocketContext";
 import Picker from "./emojiPicker";
 import Link from "next/link";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function ChatSection({ selectedChat, closeChat }) {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
@@ -29,7 +31,7 @@ export default function ChatSection({ selectedChat, closeChat }) {
     }
 
     async function fetchMsgs() {
-        const response = await fetch(`http://localhost:8080/api/messages?chat_id=${selectedChat.chat_id}&offset=${offset.current}`, {
+        const response = await fetch(`${apiUrl}/api/messages?chat_id=${selectedChat.chat_id}&offset=${offset.current}`, {
             credentials: "include",
         });
         let data = await response.json();
@@ -55,7 +57,7 @@ export default function ChatSection({ selectedChat, closeChat }) {
     }
 
     async function updateLastMsgReaded(id) {
-        const resp = await fetch("http://localhost:8080/api/messages/read", {
+        const resp = await fetch(`${apiUrl}/api/messages/read`, {
             credentials: "include",
             method: 'POST',
             body: JSON.stringify({id})

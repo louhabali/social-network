@@ -5,11 +5,14 @@ import InviteUsers from "./InviteUsers";
 import './GroupClient.css';
 
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+
 async function fetchGroupById(groupId) {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
-    const res = await fetch(`http://localhost:8080/api/groups/${groupId}`, {
+    const res = await fetch(`${apiUrl}/api/groups/${groupId}`, {
         method: "GET",
         headers: {
             Cookie: sessionToken ? `Token=${sessionToken}` : "",
@@ -28,7 +31,7 @@ async function fetchUserInfo() {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
-    const res = await fetch("http://localhost:8080/api/userdata", {
+    const res = await fetch(`${apiUrl}/api/userdata`, {
         method: "GET",
         headers: {
             Cookie: sessionToken ? `Token=${sessionToken}` : "",
@@ -45,7 +48,7 @@ async function getPosts(groupId) {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('Token')?.value;
 
-    const res = await fetch(`http://localhost:8080/api/posts?groupId=${groupId}`, {
+    const res = await fetch(`${apiUrl}/api/posts?groupId=${groupId}`, {
         headers: {
             Cookie: sessionToken ? `Token=${sessionToken}` : "",
         },

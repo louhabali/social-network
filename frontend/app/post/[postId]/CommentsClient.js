@@ -7,6 +7,9 @@ import { WebSocketContext } from "@/context/WebSocketContext";
 import Image from "next/image";
 import './comments.css'
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+
 export default function ClientSideComments({ postId, lenComments, initialComments }) {
     const [comments, setComments] = useState(initialComments || []);
     const [content, setContent] = useState('');
@@ -40,7 +43,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
 
     async function loadMoreComments() {
         const newOffset = offset + 4;
-        const response = await fetch(`http://localhost:8080/api/posts/${postId}/comments?offset=${offset}`, {
+        const response = await fetch(`${apiUrl}/api/posts/${postId}/comments?offset=${offset}`, {
             credentials: "include",
         });
 
@@ -70,7 +73,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
         const formData = new FormData();
         formData.append('content', content);
         formData.append('image', sendImage);
-        const response = await fetch(`http://localhost:8080/api/posts/${postId}/comments`, {
+        const response = await fetch(`${apiUrl}/api/posts/${postId}/comments`, {
             method: 'POST',
             body: formData,
             credentials: "include",
@@ -131,7 +134,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                     <div key={comment.Id} className="comment-item">
                         <div className="comment-avatar">
                             {comment.Avatar ? (
-                                <Image src={`http://localhost:8080/api/images/${comment.Avatar}`} alt="" width={32} height={32} />
+                                <Image src={`${apiUrl}/api/images/${comment.Avatar}`} alt="" width={32} height={32} />
                             ) : (
                                 <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
                             )}
@@ -145,7 +148,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                             {comment.Image && (
                                 <div className="comment-image">
                                     <Image
-                                        src={"http://localhost:8080/api/images/" + comment.Image}
+                                        src={`${apiUrl}/api/images/` + comment.Image}
                                         alt="Comment Image"
                                         width={300}
                                         height={300}
