@@ -7,6 +7,9 @@ import InviteUsers from "./InviteUsers";
 import { WebSocketContext } from "@/context/WebSocketContext";
 import './GroupClient.css';
 
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function ClientSideGroups({ groupId, status, initialPosts, userInfo }) {
     const [posts, setPosts] = useState(initialPosts || []);
     const [events, setEvents] = useState([]);
@@ -33,7 +36,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
         if (loading || !hasMore) return;
 
         setLoading(true);
-        const response = await fetch(`http://localhost:8080/api/posts?offset=${offset}&groupId=${groupId}`, {
+        const response = await fetch(`${apiUrl}/api/posts?offset=${offset}&groupId=${groupId}`, {
             credentials: "include",
         });
         if (!response.ok) {
@@ -63,7 +66,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
         setLoadingEvents(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events?offset=${eventOffset}`, {
+            const response = await fetch(`${apiUrl}/api/groups/${groupId}/events?offset=${eventOffset}`, {
                 credentials: "include",
             });
             if (!response.ok) {
@@ -154,7 +157,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
             return
         }
 
-        const response = await fetch(`http://localhost:8080/api/groups/${groupId}/events`, {
+        const response = await fetch(`${apiUrl}/api/groups/${groupId}/events`, {
             method: "POST",
             body: JSON.stringify(newEvent),
             credentials: "include",
@@ -175,7 +178,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
     const handleGoing = async (eventId, response) => {
 
-        const res = await fetch(`http://localhost:8080/api/groups/${groupId}/events/going`, {
+        const res = await fetch(`${apiUrl}/api/groups/${groupId}/events/going`, {
             method: "POST",
             body: JSON.stringify({ eventId, response }),
             credentials: "include",
@@ -223,7 +226,7 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
     async function handleJoinGroup() {
         let method = memberStatus === "pending" ? "DELETE" : "POST";
 
-        const response = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
+        const response = await fetch(`${apiUrl}/api/groups/${groupId}/join`, {
             method,
             credentials: "include",
         });

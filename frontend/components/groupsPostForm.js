@@ -48,6 +48,8 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             return;
         }
 
+        
+
         if (sendImage) formData.append("image", sendImage);
         formData.append("privacy", "public");
         try {

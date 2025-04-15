@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { WebSocketContext } from "@/context/WebSocketContext";
 import styles from "./Groups.module.css";
 
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function GroupsPage() {
 
     const [groups, setGroups] = useState([]);
@@ -31,7 +34,7 @@ export default function GroupsPage() {
         if (loading || !hasMore) return;
 
         setLoading(true);
-        const res = await fetch(`http://localhost:8080/api/groups?offset=${offset}`, {
+        const res = await fetch(`${apiUrl}/api/groups?offset=${offset}`, {
             credentials: "include",
         });
         if (!res.ok) {
@@ -71,7 +74,7 @@ export default function GroupsPage() {
             return;
         }
 
-        const response = await fetch("http://localhost:8080/api/groups", {
+        const response = await fetch(`${apiUrl}/api/groups`, {
             method: "POST",
             credentials: "include",
             body: JSON.stringify({ title, description }),
@@ -114,7 +117,7 @@ export default function GroupsPage() {
         let newStatus = currentStatus === "pending" ? "" : "pending";
         let method = currentStatus === "pending" ? "DELETE" : "POST";
 
-        const response = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
+        const response = await fetch(`${apiUrl}/api/groups/${groupId}/join`, {
             method,
             credentials: "include",
         });

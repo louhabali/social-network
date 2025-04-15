@@ -2,6 +2,9 @@ import { useEffect, useState, useContext } from "react";
 import { WebSocketContext } from "@/context/WebSocketContext";
 import styles from "./inviteUsers.module.css"
 
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function InviteUsers({ groupId }) {
   const [showPopup, setShowPopup] = useState(false);
   const [users, setUsers] = useState([]);
@@ -26,7 +29,7 @@ export default function InviteUsers({ groupId }) {
 
   const fetchUsers = async (reset = false) => {
     const res = await fetch(
-      `http://localhost:8080/api/groups/${groupId}/invite?search=${search}&offset=${reset ? 0 : offset}`,
+      `${apiUrl}/api/groups/${groupId}/invite?search=${search}&offset=${reset ? 0 : offset}`,
       { credentials: "include" }
     );
 
@@ -52,7 +55,7 @@ export default function InviteUsers({ groupId }) {
   }, [showPopup, groupId, search]);
 
   const inviteUser = async (userId) => {
-    const res = await fetch(`http://localhost:8080/api/groups/${groupId}/join`, {
+    const res = await fetch(`${apiUrl}/api/groups/${groupId}/join`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({ userId }),
