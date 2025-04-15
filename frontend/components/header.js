@@ -7,6 +7,7 @@ import { WebSocketContext } from '@/context/WebSocketContext';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const Header = ({ userID, Avatar, fname, lname }) => {
 
@@ -15,7 +16,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
     const [u, setUser] = useState([])
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/userdata', {
+        fetch(`${apiUrl}/api/userdata`, {
             credentials: "include",
         }).then(data => data.json()).then(d => {
             setUser(d)
@@ -24,7 +25,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
 
     const handleLogout = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/logout', {
+            const response = await fetch(`${apiUrl}/api/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });
@@ -57,7 +58,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
         }
         const formDataToSend = new FormData();
         formDataToSend.append("searchValue", searchData);
-        fetch('http://localhost:8080/api/searchData', {
+        fetch(`${apiUrl}/api/searchData`, {
             method: 'POST',
             credentials: "include",
             body: formDataToSend,
@@ -146,7 +147,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
                     <div className={styles.userMenu} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                         {u.Avatar ? (
                             <img
-                                src={`http://localhost:8080/api/images/${u.Avatar}`} alt="user"
+                                src={`${apiUrl}/api/images/${u.Avatar}`} alt="user"
                                 className={styles.userAvatar}
                                 width={20} height={20}
                             />
@@ -213,7 +214,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
                         <div className={styles.userMenuIcon}>
                             {u.Avatar ? (
                                 <img
-                                    src={`http://localhost:8080/api/images/${u.Avatar}`}
+                                    src={`${apiUrl}/api/images/${u.Avatar}`}
                                     alt={u.Firstname}
                                     className={styles.mobileUserAvatar}
                                     width={20} height={20}
@@ -254,7 +255,7 @@ function NotifIcon() {
 
     useEffect(() => {
         async function getNotifsCount() {
-            const res = await fetch("http://localhost:8080/api/notifications/count", {
+            const res = await fetch(`${apiUrl}/api/notifications/count`, {
                 credentials: "include"
             })
             if (res.ok) {
@@ -276,7 +277,7 @@ function NotifIcon() {
     }, [])
 
     async function markNotifsAsRead() {
-        const response = await fetch("http://localhost:8080/api/notifications/read", {
+        const response = await fetch(`${apiUrl}/api/notifications/read`, {
             credentials: "include",
             method: "POST",
         });
@@ -322,7 +323,7 @@ function ChatIcon() {
 
     useEffect(() => {
         async function getConvs() {
-            const res = await fetch("http://localhost:8080/api/conversations", {
+            const res = await fetch(`${apiUrl}/api/conversations`, {
                 credentials: "include"
             })
             if (res.ok) {

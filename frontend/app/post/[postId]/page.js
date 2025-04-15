@@ -8,7 +8,6 @@ import ErrorPage from "@/components/ErrorPage";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 async function getPost(postId) {
-  console.log("in post");
   
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
@@ -27,7 +26,6 @@ async function getPost(postId) {
 }
 
 async function getComments(postId, offset = 0) {
-  console.log("in comment");
 
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;

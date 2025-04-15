@@ -4,10 +4,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse,faUserPlus,faEnvelope,faBell,faUser,faUserGroup,faRightFromBracket} from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from "next/navigation";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function NavigationMenu(){
     const r = useRouter()
     function handlelogout() {
-        fetch("http://localhost:8080/api/logout",{
+        fetch(`${apiUrl}/api/logout`,{
             credentials:"include"
         }).then(d =>{
             d.text()

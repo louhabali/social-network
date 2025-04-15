@@ -5,6 +5,8 @@ import { faFileArrowUp, faShare } from "@fortawesome/free-solid-svg-icons";
 import { WebSocketContext } from "@/context/WebSocketContext";
 import "./postform.css";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
     const [newPost, setNewPost] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
@@ -49,7 +51,7 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
         if (sendImage) formData.append("image", sendImage);
         formData.append("privacy", "public");
         try {
-            const response = await fetch("http://localhost:8080/api/posting", {
+            const response = await fetch(`${apiUrl}/api/posting`, {
                 method: "POST",
                 body: formData,
                 credentials: "include",
@@ -76,7 +78,7 @@ const GroupsPostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             <div className="create-post">
                 <div className="user-avatar">
                     {userInfo && userInfo.Avatar ? (
-                        <Image src={`http://localhost:8080/api/images/${userInfo.Avatar}`} alt="User Avatar" width={40} height={40} />
+                        <Image src={`${apiUrl}/api/images/${userInfo.Avatar}`} alt="User Avatar" width={40} height={40} />
                     ) : (
                         <Image src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} />
                     )}

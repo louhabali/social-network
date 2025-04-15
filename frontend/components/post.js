@@ -7,6 +7,8 @@ import { faHeart, faComment } from '@fortawesome/free-solid-svg-icons';
 import { WebSocketContext } from "@/context/WebSocketContext";
 import Link from 'next/link';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function Post({ post }) {
     const [likes, setLikes] = useState(post.Likes);
     const [userInteraction, setUserInteraction] = useState(post.UserInteraction);
@@ -15,7 +17,7 @@ export default function Post({ post }) {
     const handleLike = async (postId) => {
         let likeStatus = userInteraction === 1 ? 0 : 1;
 
-        const response = await fetch("http://localhost:8080/api/like", {
+        const response = await fetch(`${apiUrl}/api/like`, {
             method: "POST",
             body: JSON.stringify({ postId, likeStatus }),
             credentials: "include",
@@ -34,7 +36,7 @@ export default function Post({ post }) {
             <div className={styles.postHeader}>
                 <Link href={`/profile/${post.Uid}`}>
                     {post.Avatar ? (
-                        <Image style={{ cursor: "pointer", borderRadius: "50%" }} src={`http://localhost:8080/api/images/${post.Avatar}`} alt="" width={32} height={32} />
+                        <Image style={{ cursor: "pointer", borderRadius: "50%" }} src={`${apiUrl}/api/images/${post.Avatar}`} alt="" width={32} height={32} />
                     ) : (
                         <Image style={{ cursor: "pointer", borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
                     )}
@@ -46,7 +48,7 @@ export default function Post({ post }) {
             </div>
             <div>{post.Content}</div>
             <Link href={`/post/${post.Pid}`}>
-                {post.Image && <Image src={`http://localhost:8080/api/images/${post.Image}`} alt="" width={400} height={200} />}
+                {post.Image && <Image src={`${apiUrl}/api/images/${post.Image}`} alt="" width={400} height={200} />}
             </Link>
             <div className={styles.postActions}>
                 <div style={{ flexDirection: "column", textAlign: "center" }}>

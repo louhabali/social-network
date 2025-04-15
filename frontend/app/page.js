@@ -61,7 +61,7 @@ const HomePage = () => {
     };
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/userdata", { credentials: "include" })
+        fetch(`${apiUrl}/api/userdata`, { credentials: "include" })
             .then((response) => response.json())
             .then((data) => setUserInfo(data))
             .catch((error) => console.error("Error fetching user data:", error));
