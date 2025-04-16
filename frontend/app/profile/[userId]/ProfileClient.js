@@ -7,6 +7,8 @@ import Link from "next/link"
 import "../../styles/profile.css";
 import { WebSocketContext } from "@/context/WebSocketContext";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function ProfileClient({ profile, userId }) {
   const [isPublic, setIsPublic] = useState(profile.user.IsPublic);
   const [followStatus, setFollowStatus] = useState(profile.followStatus);
@@ -24,7 +26,7 @@ export default function ProfileClient({ profile, userId }) {
   
   async function handleProfilePrivacyToggle() {
     const newStatus = !isPublic;
-    const res = await fetch(`http://localhost:8080/api/profile/${userId}/privacy`, {
+    const res = await fetch(`${apiUrl}/api/profile/${userId}/privacy`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({ isPublic: newStatus }),
@@ -43,7 +45,7 @@ export default function ProfileClient({ profile, userId }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/posts?offset=${offset}&userId=${userId}`, {
+      const response = await fetch(`${apiUrl}/api/posts?offset=${offset}&userId=${userId}`, {
         credentials: "include",
       });
 
@@ -91,7 +93,7 @@ export default function ProfileClient({ profile, userId }) {
 
   async function onFollowToggle() {
     const method = followStatus ? "DELETE" : "POST";
-    const res = await fetch(`http://localhost:8080/api/profile/${userId}/follow`, {
+    const res = await fetch(`${apiUrl}/api/profile/${userId}/follow`, {
       method,
       credentials: "include",
     });
@@ -130,7 +132,7 @@ export default function ProfileClient({ profile, userId }) {
         <div className="profile-info">
           <div className="profile-avatar">
             {profile.user.Avatar ? (
-              <Image src={`http://localhost:8080/api/images/${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
+              <Image src={`${apiUrl}/api/images/${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
             ) : (
               <Image src="/image/no-avatar.png" alt="No Avatar" width={120} height={120} />
             )}

@@ -3,13 +3,15 @@ import {useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 export default function Sugg() {
     const [suggs , setSuggs ]= useState([])
 const [text, settext]= useState("")
     const r = useRouter()
     useEffect(()=>{
         
-    fetch("http://localhost:8080/api/suggestions", { credentials: "include" }).then(d=>d.json()).then(dd=>{
+    fetch(`${apiUrl}/api/suggestions`, { credentials: "include" }).then(d=>d.json()).then(dd=>{
         
         //console.log("dd is  : " ,dd );
         if (dd==null){
@@ -34,7 +36,7 @@ const [text, settext]= useState("")
                  <li style={{ listStyle:"none",marginBottom:"10px"}} key={v.id}>
                  <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/profile/${v.id}`}>
                   {v.Avatar ? (
-                     <Image src={`http://localhost:8080/api/images/${v.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
+                     <Image src={`${apiUrl}/api/images/${v.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
 
                      ) : (
                      <Image src="/image/no-avatar.png" alt="" width={32} height={32} />

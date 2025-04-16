@@ -2,12 +2,13 @@ import ProfileClient from "./ProfileClient";
 import ErrorPage from "@/components/ErrorPage";
 import { cookies } from 'next/headers';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 async function getProfile(userId) {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('Token')?.value;
 
-  const res = await fetch(`http://localhost:8080/api/profile/${userId}`, {
+  const res = await fetch(`${apiUrl}/api/profile/${userId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

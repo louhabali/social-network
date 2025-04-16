@@ -4,6 +4,8 @@ import ChatList from "../../components/chat/chatlist";
 import ChatSection from "../../components/chat/chatSection";
 import styles from "./chatPage.module.css";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 function sortConvs(convs) {
   const newConvs = [...convs]
   newConvs.sort((a, b) => {
@@ -27,7 +29,7 @@ export default function messages() {
   useEffect(() => {
     async function fetchConversations() {
       try {
-        const response = await fetch(`http://localhost:8080/api/conversations`, {
+        const response = await fetch(`${apiUrl}/api/conversations`, {
           credentials: "include",
         });
         let data = await response.json();

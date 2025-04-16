@@ -4,6 +4,8 @@ import EventNotif from "@/components/notifications/eventNotif.js";
 import AcceptRejectNotif from "@/components/notifications/acceptRejectNotif.js";
 import { WebSocketContext } from "@/context/WebSocketContext";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const {ws} = useContext(WebSocketContext)
@@ -18,7 +20,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     async function fetchNotifications() {
       try {
-        const response = await fetch(`http://localhost:8080/api/notifications`, {
+        const response = await fetch(`${apiUrl}/api/notifications`, {
           credentials: "include",
         });
         const data = await response.json();
@@ -39,10 +41,10 @@ export default function NotificationsPage() {
     let url
     switch (notif.type) {
       case "follow request":
-        url = 'http://localhost:8080/api/follow/accept'
+        url = `${apiUrl}/api/follow/accept`
         break
       default:
-        url = 'http://localhost:8080/api/group-join/accept'
+        url = `${apiUrl}/api/group-join/accept`
     }
 
     console.log(notif);
@@ -67,10 +69,10 @@ export default function NotificationsPage() {
     
     switch (notif.type) {
       case "follow request":
-        url = 'http://localhost:8080/api/follow/reject'
+        url = `${apiUrl}/api/follow/reject`
         break
       default:
-        url = 'http://localhost:8080/api/group-join/reject'
+        url = `${apiUrl}/api/group-join/reject`
     }
 
     const response = await fetch(url, {
@@ -87,7 +89,7 @@ export default function NotificationsPage() {
   };
 
   async function visit(notif) {
-    const response = await fetch('http://localhost:8080/api/notification/read', {
+    const response = await fetch(`${apiUrl}/api/notification/read`, {
       credentials: "include",
       method: "POST",
       body: JSON.stringify(notif),
