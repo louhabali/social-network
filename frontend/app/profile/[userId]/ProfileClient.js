@@ -132,9 +132,9 @@ export default function ProfileClient({ profile, userId }) {
         <div className="profile-info">
           <div className="profile-avatar">
             {profile.user.Avatar ? (
-              <Image src={`${apiUrl}/api/images/${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
+              <img src={`${apiUrl}/api/images/${profile.user.Avatar}`} alt="Avatar" width={120} height={120} />
             ) : (
-              <Image src="/image/no-avatar.png" alt="No Avatar" width={120} height={120} />
+              <img src="/image/no-avatar.png" alt="No Avatar" width={120} height={120} />
             )}
           </div>
           <h1 className="profile-name">

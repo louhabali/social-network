@@ -36,9 +36,9 @@ export default function Post({ post }) {
             <div className={styles.postHeader}>
                 <Link href={`/profile/${post.Uid}`}>
                     {post.Avatar ? (
-                        <Image style={{ cursor: "pointer", borderRadius: "50%" }} src={`${apiUrl}/api/images/${post.Avatar}`} alt="" width={32} height={32} />
+                        <img style={{ cursor: "pointer", borderRadius: "50%" }} src={`http://localhost:8080/api/images/${post.Avatar}`} alt="" width={32} height={32} />
                     ) : (
-                        <Image style={{ cursor: "pointer", borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
+                        <img style={{ cursor: "pointer", borderRadius: "50%" }} src="/image/no-avatar.png" alt="" width={32} height={32} />
                     )}
                 </Link>
                 <div>
@@ -48,7 +48,7 @@ export default function Post({ post }) {
             </div>
             <div>{post.Content}</div>
             <Link href={`/post/${post.Pid}`}>
-                {post.Image && <Image src={`${apiUrl}/api/images/${post.Image}`} alt="" width={400} height={200} />}
+                {post.Image && <img src={`http://localhost:8080/api/images/${post.Image}`} alt="" width={400} height={200} />}
             </Link>
             <div className={styles.postActions}>
                 <div style={{ flexDirection: "column", textAlign: "center" }}>

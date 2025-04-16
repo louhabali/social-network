@@ -54,7 +54,7 @@ const SearchResults = () => {
                                 href={`/profile/${user.Uid}`}
                             >
                                 {user.Avatar ? (
-                                    <Image
+                                    <img
                                         src={`http://localhost:8080/api/images/${user.Avatar}`}
                                         alt="user"
                                         style={{ borderRadius: "50%" }}
@@ -62,7 +62,7 @@ const SearchResults = () => {
                                         height={32}
                                     />
                                 ) : (
-                                    <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
+                                    <img src="/image/no-avatar.png" alt="" width={32} height={32} />
                                 )}
                                 {user.Fname} {user.Lname}
                             </Link>
