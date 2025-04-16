@@ -23,6 +23,12 @@ type Post struct {
 
 // CreatePost inserts a new post into the database and returns the post ID
 func CreatePost(db *sql.DB, userID int, content, privacy string, imagePath *string, groupID int) (int, error) {
+	if groupID != 0 {
+		_,err := GetGroup(db,groupID)
+		if err != nil {
+			return 0 , err
+		}
+	}
 	var postID int
 	err := db.QueryRow(`
 		INSERT INTO posts (user_id, content, privacy, image_path, group_id)
@@ -155,11 +161,17 @@ func getPostInteractions(pid, uid int, db *sql.DB) int {
 
 // InsertOrUpdateLike handles inserting or updating likes in the database
 func InsertOrUpdateLike(db *sql.DB, userID, postID, likeStatus int) error {
+
+	_,err := GetPost(db,postID,userID)
+	if err != nil {
+		return err
+	}
+
 	query := `
 		INSERT INTO post_interactions (user_id, post_id, interaction)
 		VALUES (?, ?, ?)
 		ON CONFLICT(user_id, post_id) DO UPDATE SET interaction=excluded.interaction
 	`
-	_, err := db.Exec(query, userID, postID, likeStatus)
+	_, err = db.Exec(query, userID, postID, likeStatus)
 	return err
 }

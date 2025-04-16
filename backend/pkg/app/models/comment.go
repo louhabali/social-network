@@ -18,8 +18,13 @@ type Comment struct {
 
 // InsertComment inserts a new comment into the database
 func InsertComment(db *sql.DB, postID, userID int, content string, imagePath *string) (int, error) {
+	_, err := GetPost(db, postID, userID)
+	if (err != nil) {
+		return 0, err
+	}
+
 	var commentID int
-	err := db.QueryRow(`INSERT INTO comments (post_id, user_id, content, image_path) VALUES (?, ?, ?, ?) RETURNING id`, postID, userID, html.EscapeString(content), imagePath).
+	err = db.QueryRow(`INSERT INTO comments (post_id, user_id, content, image_path) VALUES (?, ?, ?, ?) RETURNING id`, postID, userID, html.EscapeString(content), imagePath).
 		Scan(&commentID)
 	if err != nil {
 		return 0, err

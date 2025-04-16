@@ -77,6 +77,10 @@ func GetGroups(db *sql.DB, userID int, offset int) ([]Group, error) {
 
 // JoinGroup adds a user to a group
 func JoinGroup(db *sql.DB, groupID, userID int) (int64, error) {
+	_,err := GetGroup(db,groupID)
+	if err != nil {
+		return 0 , err
+	}
 	res, err := db.Exec("INSERT INTO group_members (group_id, user_id) VALUES (?, ?)", groupID, userID)
 	if err != nil {
 		return 0, err

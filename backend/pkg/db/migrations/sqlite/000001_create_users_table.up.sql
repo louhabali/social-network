@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE,
-    nickname TEXT UNIQUE DEFAULT NULL,
+    nickname TEXT DEFAULT NULL,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     password_hash TEXT NOT NULL,

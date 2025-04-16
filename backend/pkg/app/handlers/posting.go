@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"main/pkg/app/models"
@@ -82,6 +83,10 @@ func (h *Handler) PostCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create post in database
 	postID, err := models.CreatePost(h.db, userID, content, privacy, imagePath, groupID)
+	if err == sql.ErrNoRows {
+		http.Error(w, "", http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		http.Error(w, "Failed to insert post", http.StatusInternalServerError)
 		return

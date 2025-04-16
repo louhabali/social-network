@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"main/pkg/app/models"
@@ -61,9 +62,14 @@ func (h *Handler) CommentCreationHandler(w http.ResponseWriter, r *http.Request)
 
 			imagePath = &fullPath
 		}
-
+		
 		// Insert comment
 		commentID, err := models.InsertComment(h.db, postID, userID, content, imagePath)
+		if(err == sql.ErrNoRows) {
+			http.Error(w, "", http.StatusBadRequest)
+			return
+		}
+
 		if err != nil {
 			http.Error(w, "Failed to insert the comment", http.StatusInternalServerError)
 			return

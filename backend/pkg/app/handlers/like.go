@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -27,6 +28,10 @@ func (h *Handler) LikeHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 
 	err = models.InsertOrUpdateLike(h.db, userID, data.Pid, data.Interact)
+	if err == sql.ErrNoRows{
+		http.Error(w, "", http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,6 +33,10 @@ func (h *Handler) FollowUser(w http.ResponseWriter, r *http.Request) {
 
 		reqID, err := models.InsertFollowRequest(h.db, followerID, userID, status)
 		if err != nil {
+			if err == sql.ErrNoRows{
+				http.Error(w, "", http.StatusBadRequest)
+				return
+			}
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}

@@ -71,11 +71,6 @@ func GetFollowStatus(db *sql.DB, followerID, followingID int) (string, error) {
 	return status, nil
 }
 
-func CreateFollowRequest(db *sql.DB, followerID, followingID int) error {
-	_, err := db.Exec("INSERT INTO follow_requests (follower_id, following_id, status) VALUES (?, ?, 'pending')",
-		followerID, followingID)
-	return err
-}
 
 func NotFollowing(db *sql.DB, userID int) ([]Follower,error) {
 	rows, err := db.Query(`SELECT users.id, users.first_name, users.last_name ,users.avatar FROM users
@@ -100,6 +95,12 @@ func NotFollowing(db *sql.DB, userID int) ([]Follower,error) {
 
 // InsertFollowRequest inserts a new follow request (Pending or Approved)
 func InsertFollowRequest(db *sql.DB, followerID, followingID int, status string) (int64, error) {
+
+	_,err := GetUserInfo(db,followingID)
+	if err != nil {
+		return 0 , err
+	}
+
 	res, err := db.Exec("INSERT INTO follow_requests (follower_id, following_id, status) VALUES (?, ?, ?)", followerID, followingID, status)
 	if err != nil {
 		return 0, err

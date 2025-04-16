@@ -127,6 +127,10 @@ func GetMessages(db *sql.DB, userID, chatID, offset int) ([]Message, error) {
 
 // InsertMessage inserts a new message into the database
 func InsertMessage(db *sql.DB, senderID, chatID int, content string) (Message, error) {
+	_, err := getChat(db, chatID)
+	if err != nil {
+		return Message{}, err
+	}
 	if !CanInsert(db, chatID, senderID) {
 		return Message{}, fmt.Errorf("At least one follow the other constraint")
 	}
@@ -288,4 +292,14 @@ func CanInsert(db *sql.DB, chatId, senderId int) bool {
 	}
 
 	return true
+}
+
+func getChat(db *sql.DB, chatId int) (int, error){
+	var id int
+	err := db.QueryRow("select id from chats where id = ?", chatId).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
