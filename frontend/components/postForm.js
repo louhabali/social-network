@@ -141,9 +141,9 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
             <div className="create-post">
                 <div className="user-avatar">
                     {userInfo && userInfo.Avatar ? (
-                        <Image src={`${apiUrl}/api/images/${userInfo.Avatar}`} className="userAvatar" alt="User Avatar" width={40} height={40} />
+                        <img src={`${apiUrl}/api/images/${userInfo.Avatar}`} className="userAvatar" alt="User Avatar" width={40} height={40} />
                     ) : (
-                        <Image src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} className="userAvatar" />
+                        <img src="/image/no-avatar.png" alt="No Avatar" width={40} height={40} className="userAvatar" />
                     )}
                 </div>
 
@@ -211,7 +211,7 @@ const PostForm = ({ userInfo, setPosts, setOffset, groupId }) => {
 
             {selectedImage && (
                 <div className="selected-image-container">
-                    <Image
+                    <img
                         src={selectedImage}
                         alt="Selected"
                         width={400}

@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
+ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 export async function middleware(request) {
+  
   const token = request.cookies.get("Token");
-
+  const url = process.env.ENVEREMENT === "developpement" ? "http://localhost:8080" : "http://backend:8080"
   const { pathname } = request.nextUrl;
 
   if (!token && pathname !== "/login" && pathname !== "/register") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
+  console.log(url);
 
   if (token) {
+    
+    
     const apiResponse = await fetch(`${apiUrl}/api/validate-token`, {
       method: "POST",
       body: JSON.stringify({ token : token.value }),

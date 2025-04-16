@@ -152,7 +152,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
                                 width={20} height={20}
                             />
                         ) : (
-                            <Image src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
+                            <img src="/image/no-avatar.png" alt="" className={styles.userAvatar} width={20} height={20} />
 
                         )}<span>{u.Firstname} {u.Lastname}</span>
 
@@ -220,7 +220,7 @@ const Header = ({ userID, Avatar, fname, lname }) => {
                                     width={20} height={20}
                                 />
                             ) : (
-                                <Image src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20} />
+                                <img src="/image/no-avatar.png" alt="" className={styles.mobileUserAvatar} width={20} height={20} />
 
                             )}
                         </div>

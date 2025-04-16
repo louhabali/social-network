@@ -36,10 +36,10 @@ const [text, settext]= useState("")
                  <li style={{ listStyle:"none",marginBottom:"10px"}} key={v.id}>
                  <Link style={{ textDecoration:"none",color:"white",display:"flex",alignItems:"center" ,gap:"10px" }} href={`/profile/${v.id}`}>
                   {v.Avatar ? (
-                     <Image src={`${apiUrl}/api/images/${v.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
+                     <img src={`${apiUrl}/api/images/${v.Avatar}`} alt="user" style={{ borderRadius:"50%" }} width={32} height={32} />
 
                      ) : (
-                     <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
+                     <img src="/image/no-avatar.png" alt="" width={32} height={32} />
                      )} {v.fname} {v.lname}</Link></li> 
             ))}
         </ul>

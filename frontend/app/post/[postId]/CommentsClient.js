@@ -124,7 +124,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                 </div>
                 {selectedImage && (
                     <div className="selected-image-preview">
-                        <Image src={selectedImage} alt="Selected" width={100} height={100} />
+                        <img src={selectedImage} alt="Selected" width={100} height={100} />
                     </div>
                 )}
             </div>
@@ -134,9 +134,9 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                     <div key={comment.Id} className="comment-item">
                         <div className="comment-avatar">
                             {comment.Avatar ? (
-                                <Image src={`${apiUrl}/api/images/${comment.Avatar}`} alt="" width={32} height={32} />
+                                <img src={`${apiUrl}/api/images/${comment.Avatar}`} alt="" width={32} height={32} />
                             ) : (
-                                <Image src="/image/no-avatar.png" alt="" width={32} height={32} />
+                                <img src="/image/no-avatar.png" alt="" width={32} height={32} />
                             )}
                         </div>
                         <div className="comment-content">
@@ -147,7 +147,7 @@ export default function ClientSideComments({ postId, lenComments, initialComment
                             <div className="comment-text">{comment.Content}</div>
                             {comment.Image && (
                                 <div className="comment-image">
-                                    <Image
+                                    <img
                                         src={`${apiUrl}/api/images/` + comment.Image}
                                         alt="Comment Image"
                                         width={300}
