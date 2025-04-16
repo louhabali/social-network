@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import Post from "@/components/post";
 import PostForm from "@/components/groupsPostForm";
-import InviteUsers from "./InviteUsers";
 import { WebSocketContext } from "@/context/WebSocketContext";
 import './GroupClient.css';
 
@@ -257,9 +256,6 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
 
     return (
         <div className="group-container">
-            <div className="invite-users">
-                <InviteUsers groupId={groupId} />
-            </div>
 
             <div className="group-tabs">
                 <button className={activeTab === "posts" ? "active" : ""} onClick={() => setActiveTab("posts")}>
@@ -274,38 +270,15 @@ export default function ClientSideGroups({ groupId, status, initialPosts, userIn
                 <div className="posts-container">
                     <PostForm userInfo={userInfo} setPosts={setPosts} setOffset={setOffset} groupId={groupId} />
 
-                    <>
-                        <style jsx>{`
-                            .posts-responsive-container {
-                              width: 90%;
-                              max-width: 800px;
-                              margin-left: 6rem;
-                            }
-                            
-                            @media (max-width: 768px) {
-                              .posts-responsive-container {
-                                width: 95%;
-                                margin-left: 3.5rem;
-                              }
-                            }
-                            
-                            @media (max-width: 480px) {
-                              .posts-responsive-container {
-                                width: 82%;
-                                margin-left: '1.5rem';
-                                padding: 0 1rem;
-                              }
-                            }
-                        `}</style>
 
-                        <div className="posts-responsive-container">
-                            {posts.length > 0 ? posts.map((post) => (
-                                <Post key={post.Pid} post={post} />
-                            )) : (
-                                <p>No posts yet.</p>
-                            )}
-                        </div>
-                    </>
+
+                    <div className="posts-responsive-container">
+                        {posts.length > 0 ? posts.map((post) => (
+                            <Post key={post.Pid} post={post} />
+                        )) : (
+                            <p>No posts yet.</p>
+                        )}
+                    </div>
                     {hasMore && <div id="load-more" style={{ height: "10px" }} />}
                     {loading && <p className="loading">Loading...</p>}
                 </div>

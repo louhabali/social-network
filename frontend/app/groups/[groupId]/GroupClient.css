@@ -6,15 +6,33 @@
 }
 
 .groupHeader {
-  margin-top: 5rem;
-  margin-left: 20rem;
+  margin: auto;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
 }
+
+
 
 .invite-users {
   margin-bottom: 20px;
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* background-color: #0b5ed7; */
+  right: 0;
+  position: absolute;
+  top: 170px;
+}
+
+.groupDescription {
+  color: #b5b5b5;
+  margin-left: 15px;
+  margin-top: -10px;
+}
+
+.groupTitle {
+  margin-top: 5px;
 }
 
 .group-tabs {
@@ -102,25 +120,23 @@
 
 .event-card {
   padding: 15px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   word-wrap: break-word;
+  color: white;
 }
 
 .event-card h3 {
   margin-top: 0;
-  color: #212529;
 }
 
 .event-card p {
-  color: #6c757d;
   margin-bottom: 10px;
 }
 
 .event-date {
   font-weight: 500;
-  color: #495057 !important;
 }
 
 .event-actions {
@@ -128,6 +144,13 @@
   gap: 10px;
   margin-top: 15px;
   flex-wrap: wrap;
+}
+
+.group-cover {
+  background-color: #2d3b59;
+  background-image: linear-gradient(to bottom right, #2d3b59, #1a2236);
+  height: 170px;
+  width: 100%;
 }
 
 .event-actions button {
@@ -169,12 +192,13 @@
   width: 90%;
   max-width: 500px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: var(--fb-dark-surface);
+  color: white;
 }
 
 .popup-content h2 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: #212529;
 }
 
 .popup-content input,
@@ -226,7 +250,7 @@
   display: none;
 }
 
-.radio-group input:checked + label {
+.radio-group input:checked+label {
   background-color: #0d6efd;
   border-color: #0d6efd;
   color: white;
@@ -257,11 +281,7 @@
 }
 
 @media (max-width: 768px) {
-  .groupHeader {
-    margin-left: 2rem;
-    margin-top: 4rem;
-  }
-  
+
   .popup-content {
     width: 95%;
     padding: 20px;
@@ -272,41 +292,35 @@
   .group-container {
     padding: 15px;
   }
-  
-  .groupHeader {
-    margin-top: 5rem;
-    margin-left: 0;
-    text-align: center;
-  }
-  
+
   .group-tabs {
     justify-content: space-between;
   }
-  
+
   .group-tabs button {
     padding: 8px 12px;
     font-size: 14px;
     flex: 1;
     text-align: center;
   }
-  
+
   .event-actions {
     justify-content: space-between;
   }
-  
+
   .event-actions button {
     flex-grow: 1;
     text-align: center;
   }
-  
+
   .popup-content {
     padding: 15px;
   }
-  
+
   .popup-actions {
     flex-direction: column;
   }
-  
+
   .popup-actions button {
     width: 100%;
   }
@@ -316,16 +330,16 @@
   .group-container {
     padding: 10px;
   }
-  
+
   .invite-users {
     padding: 10px;
   }
-  
+
   .group-tabs button {
     padding: 6px 8px;
     font-size: 12px;
   }
-  
+
   .event-card {
     padding: 10px;
   }

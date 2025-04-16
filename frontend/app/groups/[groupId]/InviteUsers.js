@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState, useContext } from "react";
 import { WebSocketContext } from "@/context/WebSocketContext";
 import styles from "./inviteUsers.module.css"

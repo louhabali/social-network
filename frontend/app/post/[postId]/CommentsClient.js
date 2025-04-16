@@ -2,7 +2,7 @@
 
 import { useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileArrowUp, faShare } from '@fortawesome/free-solid-svg-icons';
+import { faFileArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { WebSocketContext } from "@/context/WebSocketContext";
 import Image from "next/image";
 import './comments.css'

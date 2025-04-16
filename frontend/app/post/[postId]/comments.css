@@ -16,24 +16,34 @@
     margin-top: 5rem;
 } */
 .comment-div {
-    margin-left: 12rem;
-    margin-top: 5rem;
+    width: 100%;
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
 }
 
 .comments-container {
-    width: 30rem;
-    margin: 0 auto;
-    padding: 12px 0;
+    width: 90%;
     font-family: Helvetica, Arial, sans-serif;
-    margin-left: 1rem;
+    max-width: 800px;
 }
+
+.post-comment{
+    width: 90%;
+    max-width: 800px;
+}
+
 
 /* Comment input styles */
 .comment-input-wrapper {
     background-color: var(--fb-dark-card);
     border-radius: 8px;
     margin-bottom: 12px;
-    padding: 12px;
+    padding:10px 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .comment-input-area {
@@ -53,6 +63,7 @@
     padding: 10px 16px;
     min-height: 36px;
     outline: none;
+    box-sizing: border-box;
 }
 
 .comment-input::placeholder {
@@ -100,6 +111,7 @@
     background-color: var(--fb-highlight);
     border-radius: 8px;
     display: inline-block;
+    box-sizing: border-box;
 }
 
 .selected-image-preview img {
@@ -109,13 +121,17 @@
 
 /* Comments list styles */
 .comments-list {
-    margin-bottom: 16px;
+    width: 100%;
 }
 
 .comment-item {
     display: flex;
     margin-bottom: 12px;
-    position: relative;
+    background-color: var(--fb-dark-card);
+    border-radius: 18px;
+    padding: 10px 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .comment-avatar {
@@ -130,10 +146,6 @@
 
 .comment-content {
     flex-grow: 1;
-    background-color: var(--fb-dark-card);
-    border-radius: 18px;
-    padding: 8px 12px;
-    position: relative;
 }
 
 .comment-header {
