@@ -99,11 +99,11 @@ func (h *Handler) JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		joinReqId, err := models.JoinGroup(h.db, groupID, userID)
-		if err != sql.ErrNoRows {
-			http.Error(w, "Database error", http.StatusBadRequest)
-			return
-		}
 		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "Database error", http.StatusBadRequest)
+				return
+			}
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
